@@ -4,7 +4,7 @@ window.addEventListener('beforeunload', function () {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Fade-in animation for all main sections except header/footer
-    const fadeSections = document.querySelectorAll('main > section, .footer-content, .footer-bottom');
+    const fadeSections = document.querySelectorAll('main > section');
     function checkVisibility() {
         fadeSections.forEach(section => {
             const rect = section.getBoundingClientRect();
@@ -34,12 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.main-nav').prepend(mobileMenuToggle);
     }
     mobileMenuToggle.addEventListener('click', function() {
-        const navLinks = document.querySelector('.nav-links');
-        navLinks.classList.toggle('active');
+        const mobileNav = document.querySelector('.mobile-nav');
+        if (mobileNav) {
+            mobileNav.classList.toggle('active');
+        }
     });
-
-    // Remove all click handlers for .dropdown-btn and .nested-btn on mobile
-    // (No nested dropdowns for mobile)
 
     // Copy phone number functionality
     const contactLinks = document.querySelectorAll('.contact-link');
