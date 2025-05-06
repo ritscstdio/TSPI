@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TSPI - Tulay sa Pag-unlad, Inc.</title>
+    <title>Tulay sa Pag-unlad, Inc. | Homepage</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
 </head>
 <body>
     <header class="header">
@@ -15,6 +16,9 @@
                     <a href="tel:+63284038627" class="contact-link">
                         <i class="fas fa-phone"></i> (02) 8-403-8627
                     </a>
+                    <a href="mailto:partners@tspi.org" class="contact-link">
+                        <i class="fas fa-envelope"></i> partners@tspi.org
+                    </a>
                     <a href="https://maps.app.goo.gl/RdRgzFpL6f3BpZXd9" target="_blank" class="address-link">
                         <i class="fas fa-map-marker-alt"></i> 2363 Antipolo St. Guadaluep Nuevo Makati City, Philippines
                     </a>
@@ -22,8 +26,15 @@
             </div>
         </div>
         <nav class="main-nav">
-            <div class="logo">
+            <div class="logo" style="display: flex; align-items: center;">
                 <img src="assets/logo.jpg" alt="TSPI Logo">
+                <button class="mobile-menu-toggle" style="margin-left: auto;">
+                  <span class="hamburger-icon" aria-label="Open menu" aria-hidden="false" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 24px; height: 24px;">
+                    <span style="display: block; width: 22px; height: 3px; background: var(--primary-blue); border-radius: 2px; margin: 2.5px 0;"></span>
+                    <span style="display: block; width: 22px; height: 3px; background: var(--primary-blue); border-radius: 2px; margin: 2.5px 0;"></span>
+                    <span style="display: block; width: 22px; height: 3px; background: var(--primary-blue); border-radius: 2px; margin: 2.5px 0;"></span>
+                  </span>
+                </button>
             </div>
             <div class="nav-links">
                 <a href="#home">Home</a>
@@ -162,24 +173,56 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="hero">
-            <h1>TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
-            <p>Tulay sa Pag-unlad, Inc. (TSPI) is a microfinance NGO in the Philippines dedicated to empowering communities through financial inclusion and sustainable development. For decades, we have been committed to providing financial services and support to underserved communities, helping them build better futures.</p>
-            <button class="cta-button">Join Us!</button>
-            <div class="news-carousel">
-                <!-- News articles will be dynamically loaded here -->
+        <section class="hero" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 350px;">
+            <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"><source src="assets/TSPI Intro.mp4" type="video/mp4">Your browser does not support the video tag.</video>
+            <div class="hero-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--primary-blue), var(--dark-navy)); opacity: 0.7; z-index: 1;"></div>
+            <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center;" class="hero-fade-up">
+                <h1>TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
+                <p>Tulay sa Pag-unlad, Inc. (TSPI) is a microfinance NGO in the Philippines dedicated to empowering communities through financial inclusion and sustainable development. For decades, we have been committed to providing financial services and support to underserved communities, helping them build better futures.</p>
+                <button class="cta-button">Join Us!</button>
             </div>
         </section>
 
-        <!-- Client Stories Section -->
-        <section class="client-stories">
-            <h2>Client Success Stories</h2>
-            <div class="stories-grid">
-                <!-- Client stories will be dynamically loaded here -->
-            </div>
-            <button class="read-more-stories">Read More Stories</button>
-        </section>
+        <button class="scroll-to-top-btn" id="scrollToTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Scroll to top">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M9 15l5-5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
 
+        <!-- News Grid Section -->
+        <section class="news-grid-section">
+            <h2 style="text-align: center; margin-top: 2rem;">Latest TSPI News!</h2>
+            <div class="news-grid">
+                <div class="news-card" style="background-image: url('assets/MIla-Torrano.png');">
+                    <div class="news-card-overlay"></div>
+                    <div class="news-card-title">Sa pag-aalaga ng baboy, asenso'y tuloy-tuloy</div>
+                    <div class="news-card-desc">
+                        <div class="news-card-desc-text">“Ang mga pinakikinabangan, kailangan pakisamahan, bigyan ng konswelo” (Those who were helpful should be treated well and given consideration.”)<br><b>-Nanay Mila-</b></div>
+                        <button class="cta-button read-this-btn">Read this!</button>
+                    </div>
+                </div>
+                <div class="news-card" style="background-image: url('assets/luz-conde.png');">
+                    <div class="news-card-overlay"></div>
+                    <div class="news-card-title">Blessed to bless others</div>
+                    <div class="news-card-desc">
+                        <div class="news-card-desc-text">“Upang magtagumpay ang kabuhayan, disiplina, sipag, tiyaga at tamang diskarte ang kailangan.” (To have a successful livelihood, discipline, industriousness, perseverance and good strategy are needed.)<br><b>– Nanay Luz-</b></div>
+                        <button class="cta-button read-this-btn">Read this!</button>
+                    </div>
+                </div>
+                <div class="news-card" style="background-image: url('assets/CQFA.png');">
+                    <div class="news-card-overlay"></div>
+                    <div class="news-card-title">Expanding opportunities</div>
+                    <div class="news-card-desc">
+                        <div class="news-card-desc-text">The serene waters of Tayabas Bay would sometimes peek in between the coconut trees dotting the horizon in Catanauan, Quezon.<br><br>A six-hour drive from Manila, the first-class municipality stands on gently rolling hills, so fertile that almost every household depends on the land for sustenance, from copra production to rice farming.</div>
+                        <button class="cta-button read-this-btn">Read this!</button>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="#" style="font-size: 1.2rem; color: var(--primary-blue); text-decoration: underline;">Read more?</a>
+            </div>
+        </section>
 
         <!-- Message Sections -->
         <section class="message-section">
@@ -267,5 +310,15 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+    window.addEventListener('scroll', function() {
+        const btn = document.getElementById('scrollToTopBtn');
+        if (window.scrollY > 80) {
+            btn.classList.add('show-scroll-btn');
+        } else {
+            btn.classList.remove('show-scroll-btn');
+        }
+    });
+    </script>
 </body>
 </html> 
