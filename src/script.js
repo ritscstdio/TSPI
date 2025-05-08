@@ -3,19 +3,32 @@ window.addEventListener('beforeunload', function () {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Fade-in animation for all main sections except header/footer
+    // Fade-in animation for all main sections except header/footer using IntersectionObserver
     const fadeSections = document.querySelectorAll('main > section');
-    function checkVisibility() {
-        fadeSections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            const isVisible = (rect.top <= window.innerHeight * 0.9);
-            if (isVisible) {
-                section.classList.add('visible');
-            }
-        });
+    if ('IntersectionObserver' in window) {
+        const observerOptions = { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0 };
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        fadeSections.forEach(section => observer.observe(section));
+    } else {
+        // Fallback to scroll-based check
+        function checkVisibility() {
+            fadeSections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= window.innerHeight * 0.9) {
+                    section.classList.add('visible');
+                }
+            });
+        }
+        window.addEventListener('scroll', checkVisibility);
+        checkVisibility(); // Check on load
     }
-    window.addEventListener('scroll', checkVisibility);
-    checkVisibility(); // Check on load
 
     // Make hero h1 clickable
     const heroTitle = document.querySelector('.hero h1');
@@ -186,5 +199,91 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchButton.click();
             }
         });
+    }
+
+    // Similar Posts Carousel
+    const carousel = document.querySelector('.similar-posts-carousel');
+    if (carousel) {
+        const slidesContainer = carousel.querySelector('.carousel-slides');
+        const slides = Array.from(slidesContainer.children);
+        const prevButton = document.querySelector('.similar-posts-carousel-container .prev-arrow');
+        const nextButton = document.querySelector('.similar-posts-carousel-container .next-arrow');
+        const paginationContainer = document.querySelector('.similar-posts-carousel-container .carousel-pagination');
+        
+        let itemsPerView = 3;
+        const totalSlides = slides.length;
+        let currentCardIndex = 0; // Index of the leftmost visible card
+
+        function setItemsPerView() {
+            if (window.innerWidth <= 500) {
+                itemsPerView = 1;
+            } else if (window.innerWidth <= 768) {
+                itemsPerView = 2;
+            } else {
+                itemsPerView = 3;
+            }
+        }
+
+        function createPagination() {
+            paginationContainer.innerHTML = ''; // Clear existing dots
+            // Number of possible slide positions when scrolling one card at a time
+            const totalPositions = Math.max(totalSlides - itemsPerView + 1, 1);
+            for (let i = 0; i < totalPositions; i++) {
+                const dot = document.createElement('button');
+                dot.classList.add('pagination-dot');
+                dot.addEventListener('click', () => {
+                    currentCardIndex = i;
+                    updateCarousel();
+                });
+                paginationContainer.appendChild(dot);
+            }
+        }
+
+        function updatePaginationDots() {
+            const paginationDots = Array.from(paginationContainer.children);
+            // Highlight the dot that matches the currentCardIndex position
+            paginationDots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentCardIndex);
+            });
+        }
+
+        function updateCarousel() {
+            setItemsPerView(); // Ensure itemsPerView is up-to-date
+            const slideWidthPercentage = 100 / itemsPerView;
+            slidesContainer.style.transform = `translateX(-${currentCardIndex * slideWidthPercentage}%)`;
+            
+            prevButton.disabled = currentCardIndex === 0;
+            nextButton.disabled = currentCardIndex >= totalSlides - itemsPerView;
+            updatePaginationDots();
+        }
+
+        prevButton.addEventListener('click', () => {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateCarousel();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentCardIndex < totalSlides - itemsPerView) {
+                currentCardIndex++;
+                updateCarousel();
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            const oldItemsPerView = itemsPerView;
+            setItemsPerView();
+            if (oldItemsPerView !== itemsPerView) {
+                currentCardIndex = Math.min(currentCardIndex, totalSlides - itemsPerView);
+                currentCardIndex = Math.max(0, currentCardIndex);
+                createPagination();
+                updateCarousel();
+            }
+        });
+
+        setItemsPerView();
+        createPagination();
+        updateCarousel();
     }
 }); 

@@ -2,6 +2,7 @@
     --primary-blue: #1B3FAB;
     --secondary-gold: #e6b54c;
     --light-blue: #f0f5ff;
+    --ligher-blue: #fdfdff;
     --dark-navy: #153084;
     --text-gray: #4a4a4a;
     --impact-green: #26a69a;
@@ -19,6 +20,13 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-gray);
+    background: var(--ligher-blue);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Header Styles */
@@ -163,9 +171,9 @@ body {
 
 /* Message Sections */
 .message-section {
+    background-color: transparent;
     padding: 4rem 2rem;
-    background-color: var(--white);
-    margin-bottom: 3rem;
+    margin-bottom: 0;
     opacity: 0;
     transform: translateY(30px);
 }
@@ -233,7 +241,9 @@ body {
 }
 
 .read-more {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background-color: var(--secondary-gold);
     color: var(--dark-navy);
     border: none;
@@ -248,30 +258,17 @@ body {
     box-shadow: 0 2px 8px rgba(26, 61, 143, 0.08);
     position: relative;
     overflow: hidden;
+    gap: 0.5rem;
 }
 
-.read-more:hover {
-    background-color: var(--primary-blue);
-    color: var(--white);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 24px rgba(26, 61, 143, 0.18);
+.read-more-arrow {
+    font-size: 1.3em;
+    display: inline-block;
+    transition: transform 0.3s;
 }
 
-.read-more::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 1.5rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: translateY(-50%) rotate(-45deg);
-    transition: transform 0.3s ease;
-}
-
-.read-more:hover::after {
-    transform: translateY(-50%) rotate(-45deg) translateX(4px);
+.read-more:hover .read-more-arrow {
+    transform: translateX(4px);
 }
 
 /* Client Stories Section */
@@ -310,13 +307,14 @@ body {
 
 /* Testimonials Section */
 .testimonials {
+    background-color: transparent;
     padding: 4rem 2rem;
-    background-color: var(--light-blue);
+    margin: 4rem 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 4rem auto;
     border-radius: 32px;
     box-shadow: 0 8px 32px rgba(26, 61, 143, 0.13);
     transform: scale(1.1);
@@ -327,6 +325,12 @@ body {
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s;
+}
+
+.testimonial:hover {
+    transform: scale(1.06);
+    box-shadow: 0 8px 32px rgba(26, 61, 143, 0.18);
 }
 
 .testimonial blockquote {
@@ -346,8 +350,9 @@ body {
     z-index: 1;
     color: var(--white);
     padding: 2rem 2rem 2rem ;
-    margin-top: 4rem; /* Added more space above footer */
+    margin-top: auto;
     overflow: hidden;
+    flex-shrink: 0;
 }
 .footer::before {
     content: "";
@@ -423,7 +428,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
     margin-bottom: 1.5rem;
 }
 
@@ -632,7 +636,7 @@ body {
     }
     .hero {
         padding: 2rem 1rem 1.5rem 1rem;
-        margin-top: 120px;
+
     }
     .nav-links {
         display: none !important;
@@ -908,6 +912,22 @@ body {
         padding: 0.7rem 1.5rem !important;
         margin-bottom: 1rem !important;
     }
+
+    .footer-content {
+        grid-template-columns: 1fr !important;
+        gap: 2rem;
+    }
+    .footer-section {
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        width: 100%;
+    }
+    .footer-section:last-child {
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
 }
 
 .hero {
@@ -1146,9 +1166,9 @@ main > section.visible {
 }
 
 .news-grid-section {
-    background: var(--light-blue);
+    background: none;
     padding: 1rem 2rem 2rem;
-    margin: 0 0 4rem 0;
+    margin: 0;
 }
 
 .news-grid-section h2 {
@@ -1221,13 +1241,13 @@ main > section.visible {
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    box-shadow: 0 8px 32px rgba(26, 61, 143, 0.18), 0 2px 8px rgba(26, 61, 143, 0.10);
+    box-shadow: 0 12px 36px rgba(26, 61, 143, 0.28), 0 4px 16px rgba(26, 61, 143, 0.18);
     cursor: pointer;
     transition: box-shadow 0.2s, transform 0.2s, height 0.2s, min-height 0.2s;
 }
 
 .news-card:hover {
-    box-shadow: 0 16px 48px rgba(26, 61, 143, 0.22), 0 4px 16px rgba(26, 61, 143, 0.13);
+    box-shadow: 0 20px 60px rgba(26, 61, 143, 0.32), 0 8px 32px rgba(26, 61, 143, 0.22);
     transform: translateY(-6px) scale(1.04);
 }
 
@@ -1452,4 +1472,531 @@ main > section.visible {
     transform: scale(1.06);
     box-shadow: 0 4px 16px rgba(26, 61, 143, 0.18);
     outline: none;
+}
+
+/* Add these styles for sticky footer */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+main {
+    flex: 1 0 auto;
+    background-color: var(--light-blue); /* Light blue backdrop for the main area */
+   padding-bottom: 2rem; /* Add some padding at the bottom of main */
+}
+
+.footer {
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+/* Article Template Styles */
+.article-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background-color: var(--white);
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: relative;
+    z-index: 2;
+}
+
+.article-header {
+    margin-bottom: 2rem;
+}
+
+.article-thumbnail {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(26, 61, 143, 0.15);
+}
+
+.article-thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.article-thumbnail img:hover {
+    transform: scale(1.02);
+}
+
+.article-title {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.article-meta {
+    display: flex;
+    gap: 1.5rem;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+}
+
+.article-body {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-gray);
+    margin-bottom: 2rem;
+}
+
+.article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+}
+
+.tag {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.tag:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.article-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin: 3rem 0;
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(26, 61, 143, 0.1);
+    border-bottom: 1px solid rgba(26, 61, 143, 0.1);
+}
+
+.prev-post, .next-post {
+    max-width: 45%;
+}
+
+.nav-label {
+    display: block;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.nav-link {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--secondary-gold);
+}
+
+.similar-posts {
+    background-color: var(--light-blue);
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.similar-posts h2 {
+    text-align: left;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-blue);
+}
+
+.similar-posts-carousel-container {
+    max-width: 1200px;
+    margin: 0 auto; 
+    position: relative;
+    padding: 0 2rem;
+}
+
+.similar-posts-carousel {
+    overflow: hidden;
+}
+
+.carousel-slides {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+    flex: 0 0 calc(100% / 3);
+    padding: 0 0.75rem;
+    box-sizing: border-box;
+}
+
+.similar-post-card {
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.similar-post-thumbnail {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.similar-post-content {
+    padding: 1rem;
+}
+
+.similar-post-title {
+    font-size: 1.1rem;
+    color: var(--dark-navy);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.similar-post-meta {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.carousel-arrow {
+    position: absolute;
+    top: calc(50% - 20px);
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: var(--white);
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.carousel-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.prev-arrow {
+    left: 0px;
+}
+
+.next-arrow {
+    right: 0px;
+}
+
+.carousel-pagination {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.pagination-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ccc;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pagination-dot.active {
+    background-color: var(--dark-navy);
+}
+
+@media (max-width: 1240px) {
+    .prev-arrow {
+        left: 5px;
+    }
+    .next-arrow {
+        right: 5px;
+    }
+}
+
+@media (max-width: 500px) {
+    .carousel-slide {
+        flex: 0 0 100%;
+    }
+     .similar-posts h2 {
+        text-align: center;
+    }
+}
+
+/* Add back comments section styles that were accidentally removed */
+.comments-section {
+    margin: 3rem 0;
+}
+
+.comments-section h2 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+}
+
+.comment-form-container {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(26, 61, 143, 0.08);
+}
+
+.comment-form-container h3 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="url"],
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid rgba(26, 61, 143, 0.2);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(26, 61, 143, 0.1);
+}
+
+.form-group.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group.checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.form-group.checkbox label {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.submit-comment {
+    background: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-comment:hover {
+    background: var(--dark-navy);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26, 61, 143, 0.2);
+}
+
+/* Additional styles for comments */
+.comments-list {
+    margin-bottom: 2rem;
+}
+
+.comment {
+    display: flex;
+    margin-bottom: 2rem;
+    background-color: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.comment-avatar {
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.comment-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-content {
+    flex: 1;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.comment-author {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin: 0;
+}
+
+.comment-date {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.comment-body {
+    margin-bottom: 1rem;
+}
+
+.comment-body p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.comment-reply-btn {
+    background: none;
+    border: none;
+    color: var(--primary-blue);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.comment-reply-btn:hover {
+    color: var(--secondary-gold);
+}
+
+/* Nested comments/replies */
+.comment-reply {
+    margin-left: 2rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    background-color: var(--light-blue);
+    box-shadow: none;
+    border-left: 3px solid var(--primary-blue);
+}
+
+@media (max-width: 768px) {
+    .article-title {
+        font-size: 2rem;
+    }
+    
+    .article-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .article-navigation {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .prev-post, .next-post {
+        max-width: 100%;
+    }
+    
+    .comment-form-container {
+        padding: 1.5rem;
+    }
+    
+    .comment {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    
+    .comment-avatar {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .comment-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .comment-author {
+        margin-bottom: 0.2rem;
+    }
+    
+    .comment-reply {
+        margin-left: 1rem;
+    }
+}
+
+/* Article categories under title */
+.article-categories {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--secondary-gold);
+}
+.article-categories a {
+    color: var(--secondary-gold);
+    text-decoration: none;
+    margin-right: 0.5rem;
+}
+.article-categories a:hover {
+    text-decoration: underline;
+}
+
+/* Overlap hero on desktop */
+@media (min-width: 769px) {
+    .article-container {
+        margin-top: -120px; /* Pull up to overlap hero */
+    }
+}
+
+/* Article page specific styling */
+.article-page main {
+    padding-top: 160px; /* Add padding-top only for the article page */
+}
+
+.article-page .article-container {
+    margin-top: 2rem; /* Reset the negative margin we applied earlier for the article pages */
+}
+
+@media (max-width: 768px) {
+    .article-page main {
+        padding-top: 140px; /* Slightly less padding on mobile */
+    }
 } 
