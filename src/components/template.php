@@ -6,7 +6,7 @@
         <title>Tulay sa Pag-unlad, Inc. | Homepage</title>
         <link rel="stylesheet" href="/TSPI/assets/css/styles.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <link rel="icon" type="image/png" href="assets/favicon.png">
+        <link rel="icon" type="image/png" href="/TSPI/src/assets/favicon.png">
     </head>
     <body class="article-page">
         <header class="header">
@@ -27,7 +27,7 @@
             </div>
             <nav class="main-nav">
                 <div class="logo" style="display: flex; align-items: center;">
-                    <img src="assets/logo.jpg" alt="TSPI Logo">
+                    <img src="/TSPI/src/assets/logo.jpg" alt="TSPI Logo">
                     <button class="mobile-menu-toggle" style="margin-left: auto;">
                       <span class="hamburger-icon" aria-label="Open menu" aria-hidden="false" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 24px; height: 24px;">
                         <span style="display: block; width: 22px; height: 3px; background: var(--primary-blue); border-radius: 2px; margin: 2.5px 0;"></span>
@@ -177,7 +177,7 @@
             <!-- Article Header -->
             <header class="article-header">
                 <div class="article-thumbnail">
-                    <img src="assets/article-thumbnail.jpg" alt="Article Thumbnail">
+                    <img src="/TSPI/src/assets/article-thumbnail.jpg" alt="Article Thumbnail">
                 </div>
                 <h1 class="article-title">Article Title Goes Here</h1>
                 <div class="article-meta">
@@ -225,7 +225,7 @@
                             <!-- Placeholder Similar Post Cards -->
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
-                                    <img src="assets/similar-post-1.jpg" alt="Similar Post 1" class="similar-post-thumbnail">
+                                    <img src="/TSPI/src/assets/similar-post-1.jpg" alt="Similar Post 1" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">Prisoner or Architect: The Mindset of a Coder</h3>
                                         <p class="similar-post-meta">By Dawid • 2024-07-13</p>
@@ -234,7 +234,7 @@
                             </div>
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
-                                    <img src="assets/similar-post-2.jpg" alt="Similar Post 2" class="similar-post-thumbnail">
+                                    <img src="/TSPI/src/assets/similar-post-2.jpg" alt="Similar Post 2" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">Can AI Code? Sure. Replace Us? Nah.</h3>
                                         <p class="similar-post-meta">By Dawid • 2024-08-29</p>
@@ -243,7 +243,7 @@
                             </div>
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
-                                    <img src="assets/similar-post-3.jpg" alt="Similar Post 3" class="similar-post-thumbnail">
+                                    <img src="/TSPI/src/assets/similar-post-3.jpg" alt="Similar Post 3" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">Wu Wei: How Alan Watts Taught Me to Stop Wrestling</h3>
                                         <p class="similar-post-meta">By Dawid • 2024-09-17</p>
@@ -252,7 +252,7 @@
                             </div>
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
-                                    <img src="assets/similar-post-1.jpg" alt="Similar Post 4" class="similar-post-thumbnail">
+                                    <img src="/TSPI/src/assets/similar-post-1.jpg" alt="Similar Post 4" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">Another Great Article Title Goes Here</h3>
                                         <p class="similar-post-meta">By Jane Doe • 2024-10-01</p>
@@ -261,7 +261,7 @@
                             </div>
                              <div class="carousel-slide">
                                 <div class="similar-post-card">
-                                    <img src="assets/similar-post-2.jpg" alt="Similar Post 5" class="similar-post-thumbnail">
+                                    <img src="/TSPI/src/assets/similar-post-2.jpg" alt="Similar Post 5" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">Exploring New Coding Paradigms</h3>
                                         <p class="similar-post-meta">By John Smith • 2024-10-05</p>
@@ -392,14 +392,14 @@
                 <h3>Download Our App!</h3>
                 <div class="app-download-row" style="display: flex; align-items: center; gap: 1.5rem;">
                     <a href="https://play.google.com/store/apps/details?id=com.tspi.mfc_app.click" target="_blank" class="app-download-link">
-                        <img src="assets/application.jpg" alt="Download TSPI App">
+                        <img src="/TSPI/src/assets/application.jpg" alt="Download TSPI App">
                     </a>
                     <p style="margin: 0;">Where you can check your current and past loan transactions as well as track the balance of your CBU in real-time, anytime, anywhere using your smartphone.</p>
                 </div>
                
             </div>
             <div class="footer-section" style="display: flex; justify-content: center; align-items: center;">
-                <img src="assets/DPO Seal.png" alt="DPO Seal" style="width: 200%; height: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(26, 61, 143, 0.10);">
+                <img src="/TSPI/src/assets/DPO Seal.png" alt="DPO Seal" style="width: 200%; height: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(26, 61, 143, 0.10);">
             </div>
         </div>
         <div class="footer-bottom">
@@ -408,7 +408,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="/TSPI/src/js/script.js"></script>
     <script>
     window.addEventListener('scroll', function() {
         const btn = document.getElementById('scrollToTopBtn');

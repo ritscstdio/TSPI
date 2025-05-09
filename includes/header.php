@@ -22,7 +22,7 @@ if (!defined('DB_HOST')) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="<?php echo SITE_URL; ?>/src/assets/favicon.png">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/styles.css">
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/src/styles.css">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/src/css/mainstyles.css">
 </head>
 
 <body class="<?php echo isset($body_class) ? $body_class : ''; ?>">

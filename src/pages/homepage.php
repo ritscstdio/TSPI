@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tulay sa Pag-unlad, Inc. | Homepage</title>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/TSPI/src/css/mainstyles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="icon" type="image/png" href="/TSPI/src/assets/favicon.png">
 </head>
 <body>
     <header class="header">
@@ -28,7 +28,7 @@
         </div>
         <nav class="main-nav">
             <div class="logo" style="display: flex; align-items: center;">
-                <img src="assets/logo.jpg" alt="TSPI Logo">
+                <img src="/TSPI/src/assets/logo.jpg" alt="TSPI Logo">
                 <button class="mobile-menu-toggle" style="margin-left: auto;">
                   <span class="hamburger-icon" aria-label="Open menu" aria-hidden="false" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 24px; height: 24px;">
                     <span style="display: block; width: 22px; height: 3px; background: var(--primary-blue); border-radius: 2px; margin: 2.5px 0;"></span>
@@ -175,7 +175,7 @@
     <main>
         <!-- Hero Section -->
         <section class="hero" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 350px;">
-            <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"><source src="assets/TSPI Intro.mp4" type="video/mp4">Your browser does not support the video tag.</video>
+            <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;"><source src="/TSPI/src/assets/TSPI Intro.mp4" type="video/mp4">Your browser does not support the video tag.</video>
             <div class="hero-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--primary-blue), var(--dark-navy)); opacity: 0.7; z-index: 1;"></div>
             <div style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center;" class="hero-fade-up">
                 <h1>TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
@@ -195,7 +195,7 @@
         <section class="news-grid-section">
             <h2 style="text-align: center; margin-top: 2rem;">Latest TSPI News!</h2>
             <div class="news-grid">
-                <div class="news-card" style="background-image: url('assets/MIla-Torrano.png');">
+                <div class="news-card" style="background-image: url('/TSPI/src/assets/MIla-Torrano.png');">
                     <div class="news-card-overlay"></div>
                     <div class="news-card-title">Sa pag-aalaga ng baboy, asenso'y tuloy-tuloy</div>
                     <div class="news-card-desc">
@@ -203,7 +203,7 @@
                         <button class="cta-button read-this-btn">Read this!</button>
                     </div>
                 </div>
-                <div class="news-card" style="background-image: url('assets/luz-conde.png');">
+                <div class="news-card" style="background-image: url('/TSPI/src/assets/luz-conde.png');">
                     <div class="news-card-overlay"></div>
                     <div class="news-card-title">Blessed to bless others</div>
                     <div class="news-card-desc">
@@ -211,7 +211,7 @@
                         <button class="cta-button read-this-btn">Read this!</button>
                     </div>
                 </div>
-                <div class="news-card" style="background-image: url('assets/CQFA.png');">
+                <div class="news-card" style="background-image: url('/TSPI/src/assets/CQFA.png');">
                     <div class="news-card-overlay"></div>
                     <div class="news-card-title">Expanding opportunities</div>
                     <div class="news-card-desc">
@@ -229,7 +229,7 @@
         <section class="message-section">
             <div class="message-content">
                 <div class="message-image">
-                    <img src="assets/chairman.jpg" alt="Chairman">
+                    <img src="/TSPI/src/assets/chairman.jpg" alt="Chairman">
                 </div>
                 <div class="message-text">
                     <h2>THE TRANSFORMING POWER OF GOD'S LOVE</h2>
@@ -249,7 +249,7 @@
                     <a href="#president-message" class="read-more">Read More <span class="read-more-arrow">&#8594;</span></a>
                 </div>
                 <div class="message-image">
-                    <img src="assets/president.jpg" alt="President">
+                    <img src="/TSPI/src/assets/president.jpg" alt="President">
                 </div>
             </div>
         </section>
@@ -302,14 +302,14 @@
                 <h3>Download Our App!</h3>
                 <div class="app-download-row" style="display: flex; align-items: center; gap: 1.5rem;">
                     <a href="https://play.google.com/store/apps/details?id=com.tspi.mfc_app.click" target="_blank" class="app-download-link">
-                        <img src="assets/application.jpg" alt="Download TSPI App">
+                        <img src="/TSPI/src/assets/application.jpg" alt="Download TSPI App">
                     </a>
                     <p style="margin: 0;">Where you can check your current and past loan transactions as well as track the balance of your CBU in real-time, anytime, anywhere using your smartphone.</p>
                 </div>
                
             </div>
             <div class="footer-section" style="display: flex; justify-content: center; align-items: center;">
-                <img src="assets/DPO Seal.png" alt="DPO Seal" style="width: 200%; height: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(26, 61, 143, 0.10);">
+                <img src="/TSPI/src/assets/DPO Seal.png" alt="DPO Seal" style="width: 200%; height: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(26, 61, 143, 0.10);">
             </div>
         </div>
         <div class="footer-bottom">
@@ -318,7 +318,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="/TSPI/src/js/script.js"></script>
     <script>
     window.addEventListener('scroll', function() {
         const btn = document.getElementById('scrollToTopBtn');
