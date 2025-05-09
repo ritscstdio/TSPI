@@ -6,7 +6,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <aside class="admin-sidebar">
     <div class="sidebar-logo">
         <a href="index.php">
-            <img src="../assets/logo.jpg" alt="TSPI Logo">
+            <img src="<?php echo SITE_URL; ?>/src/assets/favicon.png" alt="TSPI CMS Logo">
             <span>TSPI CMS</span>
         </a>
         <button class="sidebar-toggle" id="sidebarToggle">

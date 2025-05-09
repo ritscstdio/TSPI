@@ -35,14 +35,14 @@
                 <h3>Download Our App!</h3>
                 <div class="app-download-row">
                     <a href="https://play.google.com/store/apps/details?id=com.tspi.mfc_app.click" target="_blank" class="app-download-link">
-                        <img src="<?php echo SITE_URL; ?>/assets/application.jpg" alt="Download TSPI App">
+                        <img src="<?php echo SITE_URL; ?>/src/assets/application.jpg" alt="Download TSPI App">
                     </a>
                     <p>Where you can check your current and past loan transactions as well as track the balance of your CBU in real-time, anytime, anywhere using your smartphone.</p>
                 </div>
             </div>
             
             <div class="footer-section">
-                <img src="<?php echo SITE_URL; ?>/assets/DPO Seal.png" alt="DPO Seal">
+                <img src="<?php echo SITE_URL; ?>/src/assets/DPO Seal.png" alt="DPO Seal">
             </div>
         </div>
         

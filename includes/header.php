@@ -20,7 +20,7 @@ if (!defined('DB_HOST')) {
     <meta property="og:image" content="<?php echo $page_image ?? SITE_URL . '/assets/default-thumbnail.jpg'; ?>" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="<?php echo SITE_URL; ?>/assets/favicon.png">
+    <link rel="icon" type="image/png" href="<?php echo SITE_URL; ?>/src/assets/favicon.png">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/styles.css">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/src/styles.css">
 </head>
@@ -45,7 +45,7 @@ if (!defined('DB_HOST')) {
         <nav class="main-nav">
             <div class="logo">
                 <a href="<?php echo SITE_URL; ?>">
-                    <img src="<?php echo SITE_URL; ?>/assets/logo.jpg" alt="TSPI Logo">
+                    <img src="<?php echo SITE_URL; ?>/src/assets/logo.jpg" alt="TSPI Logo">
                 </a>
                 <button class="mobile-menu-toggle">
                     <span class="hamburger-icon" aria-label="Open menu" aria-hidden="false">

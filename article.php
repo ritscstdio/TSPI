@@ -171,7 +171,12 @@ include 'includes/header.php';
 
         <!-- Article Body -->
         <div class="article-body">
-            <?php echo $article['content']; ?>
+            <?php
+                // Wrap iframes in a responsive container
+                $content = $article['content'];
+                $content = preg_replace('/<iframe.*?>.*?<\/iframe>/is', '<div class="video-embed-container">$0</div>', $content);
+                echo $content;
+            ?>
         </div>
 
         <!-- Article Tags -->

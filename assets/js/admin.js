@@ -145,8 +145,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
                             embedUrl = 'https://www.youtube.com/embed/' + videoId;
                         }
-                        const embedHtml = '<iframe width="560" height="315" src="' + embedUrl + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-                        document.execCommand('insertHTML', false, embedHtml);
+                        const iframeHtml = '<iframe src="' + embedUrl + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+                        const wrappedHtml = '<div class="video-embed-container">' + iframeHtml + '</div>';
+                        document.execCommand('insertHTML', false, wrappedHtml);
                     }
                 } else {
                     document.execCommand(command, false, value);
