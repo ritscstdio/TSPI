@@ -1,4 +1,3 @@
-
 <?php
 $page_title = "Articles";
 $body_class = "admin-articles-page";
@@ -44,18 +43,28 @@ $current_page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 $items_per_page = ITEMS_PER_PAGE;
 $offset = ($current_page - 1) * $items_per_page;
 
+// Fetch categories for filter dropdown
+$categories_list = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
+$filter_category = isset($_GET['category']) ? (int)$_GET['category'] : null;
+
 // Get total articles count
-$stmt = $pdo->query("SELECT COUNT(*) FROM articles");
+if ($filter_category) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM articles a JOIN article_categories ac ON a.id = ac.article_id WHERE ac.category_id = ?");
+    $stmt->execute([$filter_category]);
+} else {
+    $stmt = $pdo->query("SELECT COUNT(*) FROM articles");
+}
 $total_articles = $stmt->fetchColumn();
 $total_pages = ceil($total_articles / $items_per_page);
 
 // Get articles for current page
-$stmt = $pdo->prepare("SELECT a.*, u.name as author_name 
-                      FROM articles a 
-                      JOIN users u ON a.author_id = u.id 
-                      ORDER BY a.published_at DESC
-                      LIMIT ? OFFSET ?");
-$stmt->execute([$items_per_page, $offset]);
+if ($filter_category) {
+    $stmt = $pdo->prepare("SELECT a.*, u.name as author_name FROM articles a JOIN users u ON a.author_id = u.id JOIN article_categories ac ON a.id = ac.article_id WHERE ac.category_id = ? ORDER BY a.published_at DESC LIMIT ? OFFSET ?");
+    $stmt->execute([$filter_category, $items_per_page, $offset]);
+} else {
+    $stmt = $pdo->prepare("SELECT a.*, u.name as author_name FROM articles a JOIN users u ON a.author_id = u.id ORDER BY a.published_at DESC LIMIT ? OFFSET ?");
+    $stmt->execute([$items_per_page, $offset]);
+}
 $articles = $stmt->fetchAll();
 
 ?>
@@ -84,6 +93,18 @@ $articles = $stmt->fetchAll();
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>
                 <?php endif; ?>
+                
+                <!-- Category Filter Form -->
+                <form method="get" class="filter-form" style="margin-bottom: 1rem;">
+                    <label for="category-filter">Filter by Category:</label>
+                    <select id="category-filter" name="category">
+                        <option value="">All Categories</option>
+                        <?php foreach ($categories_list as $cat): ?>
+                            <option value="<?php echo $cat['id']; ?>" <?php echo $filter_category == $cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="btn btn-light">Filter</button>
+                </form>
                 
                 <div class="dashboard-section">
                     <div class="table-responsive">

@@ -41,10 +41,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <a href="categories.php"><i class="fas fa-folder"></i> Categories</a>
             </li>
             
-            <li class="<?php echo in_array($current_page, ['tags.php', 'add-tag.php', 'edit-tag.php']) ? 'active' : ''; ?>">
-                <a href="tags.php"><i class="fas fa-tags"></i> Tags</a>
-            </li>
-            
             <li class="<?php echo in_array($current_page, ['comments.php', 'edit-comment.php']) ? 'active' : ''; ?>">
                 <a href="comments.php"><i class="fas fa-comments"></i> Comments</a>
             </li>
