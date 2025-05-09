@@ -90,3 +90,16 @@ function generate_slug($text) {
     
     return $text;
 }
+
+function require_role($allowed_roles) {
+    // Ensure user is logged in first
+    if (!is_logged_in()) {
+        require_login();
+    }
+    $user = get_logged_in_user();
+    $roles = (array) $allowed_roles;
+    if (!$user || !in_array($user['role'], $roles)) {
+        $_SESSION['message'] = "You do not have permission to access that page.";
+        redirect('/admin/index.php');
+    }
+}

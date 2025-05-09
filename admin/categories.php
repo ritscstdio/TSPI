@@ -3,6 +3,7 @@ $page_title = "Categories";
 $body_class = "admin-categories-page";
 require_once '../includes/config.php';
 require_login();
+require_role(['admin','editor']);
 
 // Delete category if requested
 if (isset($_GET['delete'])) {

@@ -29,17 +29,19 @@ $current_page = basename($_SERVER['PHP_SELF']);
             
             <li class="nav-header">Content Management</li>
             
-            <li class="<?php echo in_array($current_page, ['articles.php', 'add-article.php', 'edit-article.php']) ? 'active' : ''; ?>">
-                <a href="articles.php"><i class="fas fa-newspaper"></i> Articles</a>
-            </li>
-            
-            <li class="<?php echo in_array($current_page, ['pages.php', 'add-page.php', 'edit-page.php']) ? 'active' : ''; ?>">
-                <a href="pages.php"><i class="fas fa-file-alt"></i> Pages</a>
-            </li>
-            
-            <li class="<?php echo in_array($current_page, ['categories.php', 'add-category.php', 'edit-category.php']) ? 'active' : ''; ?>">
-                <a href="categories.php"><i class="fas fa-folder"></i> Categories</a>
-            </li>
+            <?php if ($current_user && in_array($current_user['role'], ['admin', 'editor'])): ?>
+                <li class="<?php echo in_array($current_page, ['articles.php', 'add-article.php', 'edit-article.php']) ? 'active' : ''; ?>">
+                    <a href="articles.php"><i class="fas fa-newspaper"></i> Articles</a>
+                </li>
+                
+                <li class="<?php echo in_array($current_page, ['pages.php', 'add-page.php', 'edit-page.php']) ? 'active' : ''; ?>">
+                    <a href="pages.php"><i class="fas fa-file-alt"></i> Pages</a>
+                </li>
+                
+                <li class="<?php echo in_array($current_page, ['categories.php', 'add-category.php', 'edit-category.php']) ? 'active' : ''; ?>">
+                    <a href="categories.php"><i class="fas fa-folder"></i> Categories</a>
+                </li>
+            <?php endif; ?>
             
             <li class="<?php echo in_array($current_page, ['comments.php', 'edit-comment.php']) ? 'active' : ''; ?>">
                 <a href="comments.php"><i class="fas fa-comments"></i> Comments</a>

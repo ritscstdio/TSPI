@@ -3,10 +3,11 @@ $page_title = "Comments";
 $body_class = "admin-comments-page";
 require_once '../includes/config.php';
 require_login();
+require_role(['admin','editor','comment_moderator']);
 
 // Fetch all comments with article titles
 $stmt = $pdo->query(
-    "SELECT c.*, a.title AS article_title FROM comments c JOIN articles a ON c.article_id = a.id ORDER BY posted_at DESC"
+    "SELECT c.*, a.title AS article_title, a.slug AS article_slug FROM comments c JOIN articles a ON c.article_id = a.id ORDER BY posted_at DESC"
 );
 $comments = $stmt->fetchAll();
 ?>
@@ -51,7 +52,7 @@ $comments = $stmt->fetchAll();
                                     <?php foreach ($comments as $comment): ?>
                                         <tr>
                                             <td><?php echo sanitize($comment['author_name']); ?></td>
-                                            <td><?php echo nl2br(sanitize(substr($comment['content'], 0, 50))) . '...'; ?></td>
+                                            <td title="<?php echo sanitize($comment['content']); ?>"><?php echo nl2br(sanitize(substr($comment['content'], 0, 50))) . '...'; ?></td>
                                             <td><?php echo sanitize($comment['article_title']); ?></td>
                                             <td><span class="status-badge status-<?php echo $comment['status']; ?>"><?php echo ucfirst($comment['status']); ?></span></td>
                                             <td><?php echo date('M j, Y', strtotime($comment['posted_at'])); ?></td>
@@ -64,6 +65,7 @@ $comments = $stmt->fetchAll();
                                                 <?php elseif ($comment['status'] === 'spam'): ?>
                                                     <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=approve" class="btn-icon" title="Approve"><i class="fas fa-check"></i></a>
                                                 <?php endif; ?>
+                                                <a href="../article.php?slug=<?php echo $comment['article_slug']; ?>" target="_blank" class="btn-icon" title="View Article"><i class="fas fa-external-link-alt"></i></a>
                                                 <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=delete" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this comment?"><i class="fas fa-trash"></i></a>
                                             </td>
                                         </tr>

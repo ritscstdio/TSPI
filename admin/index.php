@@ -1,9 +1,9 @@
-
 <?php
 $page_title = "Admin Dashboard";
 $body_class = "admin-dashboard-page";
 require_once '../includes/config.php';
 require_login();
+require_role(['admin', 'editor', 'comment_moderator']);
 
 // Get dashboard stats
 $stats = [];
@@ -37,7 +37,7 @@ $stmt = $pdo->query("SELECT a.*, u.name as author_name
 $recent_articles = $stmt->fetchAll();
 
 // Recent comments
-$stmt = $pdo->query("SELECT c.*, a.title as article_title 
+$stmt = $pdo->query("SELECT c.*, a.title as article_title, a.slug as article_slug 
                       FROM comments c 
                       JOIN articles a ON c.article_id = a.id 
                       ORDER BY c.posted_at DESC 
@@ -187,7 +187,13 @@ $recent_comments = $stmt->fetchAll();
                                                     <a href="edit-comment.php?id=<?php echo $comment['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
                                                     <?php if ($comment['status'] === 'pending'): ?>
                                                         <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=approve" class="btn-icon" title="Approve"><i class="fas fa-check"></i></a>
+                                                        <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=deny" class="btn-icon" title="Deny"><i class="fas fa-ban"></i></a>
+                                                    <?php elseif ($comment['status'] === 'approved'): ?>
+                                                        <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=hide" class="btn-icon" title="Hide"><i class="fas fa-eye-slash"></i></a>
+                                                    <?php elseif ($comment['status'] === 'spam'): ?>
+                                                        <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=approve" class="btn-icon" title="Approve"><i class="fas fa-check"></i></a>
                                                     <?php endif; ?>
+                                                    <a href="../article.php?slug=<?php echo sanitize($comment['article_slug']); ?>" target="_blank" class="btn-icon" title="View Article"><i class="fas fa-external-link-alt"></i></a>
                                                     <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=delete" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this comment?"><i class="fas fa-trash"></i></a>
                                                 </td>
                                             </tr>

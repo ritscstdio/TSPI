@@ -3,6 +3,7 @@ $page_title = "Pages";
 $body_class = "admin-pages-page";
 require_once '../includes/config.php';
 require_login();
+require_role(['admin','editor']);
 
 // Delete page if requested
 if (isset($_GET['delete'])) {

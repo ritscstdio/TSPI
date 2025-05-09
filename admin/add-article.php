@@ -1,9 +1,9 @@
-
 <?php
 $page_title = "Add Article";
 $body_class = "admin-add-article-page";
 require_once '../includes/config.php';
 require_login();
+require_role(['admin','editor']);
 
 $current_user = get_logged_in_user();
 

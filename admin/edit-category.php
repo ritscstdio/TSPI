@@ -3,6 +3,7 @@ $page_title = "Edit Category";
 $body_class = "admin-edit-category-page";
 require_once '../includes/config.php';
 require_login();
+require_role(['admin','editor']);
 
 $category_id = isset($_GET['id']) ? (int) $_GET['id'] : null;
 if (!$category_id) {
