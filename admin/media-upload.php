@@ -19,16 +19,14 @@ if ($file['error'] !== UPLOAD_ERR_OK) {
 }
 
 $upload_dir = UPLOADS_DIR . '/media/';
-if (!is_dir($upload_dir)) {
-    mkdir($upload_dir, 0777, true);
-}
+if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
 $filename = uniqid() . '_' . basename($file['name']);
 $target_file = $upload_dir . $filename;
 
 $mime_type = mime_content_type($file['tmp_name']);
-$allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-if (!in_array($mime_type, $allowed_types)) {
+$allowed = ['image/jpeg', 'image/png', 'image/gif'];
+if (!in_array($mime_type, $allowed)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid file type']);
     exit;
@@ -47,7 +45,6 @@ if (!move_uploaded_file($file['tmp_name'], $target_file)) {
 }
 
 $file_path = 'uploads/media/' . $filename;
-// Insert into media table
 $stmt = $pdo->prepare("INSERT INTO media (file_path, mime_type, uploaded_by) VALUES (?, ?, ?)");
 $stmt->execute([$file_path, $mime_type, get_logged_in_user()['id']]);
 

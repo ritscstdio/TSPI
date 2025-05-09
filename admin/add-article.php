@@ -33,7 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Handle thumbnail upload
     $thumbnail = null;
-    if (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
+    // If user selected existing media, use that
+    $thumbnail_select = $_POST['thumbnail_select'] ?? '';
+    if ($thumbnail_select) {
+        $thumbnail = $thumbnail_select;
+    } elseif (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
         $upload_dir = UPLOADS_DIR . '/articles/';
         
         // Create upload directory if it doesn't exist
@@ -217,10 +221,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <div class="form-group">
-                            <label for="thumbnail">Thumbnail Image</label>
-                            <input type="file" id="thumbnail" name="thumbnail" data-preview="thumbnail-preview">
+                            <label for="thumbnail_select">Thumbnail Image</label>
+                            <div class="thumbnail-controls">
+                                <button type="button" id="thumbnail-select-btn" class="btn btn-secondary">Choose a thumbnail</button>
+                                <input type="hidden" id="thumbnail_select" name="thumbnail_select" value="<?php echo htmlspecialchars($_POST['thumbnail_select'] ?? ''); ?>">
+                            </div>
                             <div class="thumbnail-preview-container" style="margin-top: 1rem;">
-                                <img id="thumbnail-preview" src="../assets/placeholder-image.jpg" alt="Thumbnail Preview" style="max-width: 300px; border-radius: 4px;">
+                                <img id="thumbnail-preview" src="<?php echo isset($_POST['thumbnail_select']) ? SITE_URL . '/' . htmlspecialchars($_POST['thumbnail_select']) : '../assets/placeholder-image.jpg'; ?>" alt="Thumbnail Preview" style="max-width: 300px; border-radius: 4px;">
                             </div>
                         </div>
                         
@@ -240,6 +247,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <button type="button" class="toolbar-btn" data-command="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="unlink" title="Remove Link"><i class="fas fa-unlink"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="insertImage" title="Insert Image"><i class="fas fa-image"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="resizeImage" title="Resize Image"><i class="fas fa-expand-alt"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="insertVideo" title="Insert Video"><i class="fas fa-video"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H1" title="Heading 1">H1</button>
                                 <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H2" title="Heading 2">H2</button>
                                 <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H3" title="Heading 3">H3</button>
@@ -291,7 +300,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </main>
     </div>
-    
+
+    <?php include 'includes/media-modal.php'; ?>
+
     <script src="../assets/js/admin.js"></script>
 </body>
 </html>

@@ -29,41 +29,31 @@ $media_items = $stmt->fetchAll();
                     <h1>Media Library</h1>
                     <a href="add-media.php" class="btn btn-primary"><i class="fas fa-upload"></i> Upload Media</a>
                 </div>
-                <?php if ($message = get_flash_message()): ?>
-                    <div class="message"><?php echo $message; ?></div>
+                <?php if ($msg = get_flash_message()): ?>
+                    <div class="message"><?php echo $msg; ?></div>
                 <?php endif; ?>
                 <div class="table-responsive">
                     <table>
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Preview</th>
-                                <th>File</th>
-                                <th>Type</th>
-                                <th>Uploaded By</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
+                            <tr><th>ID</th><th>Preview</th><th>File</th><th>Type</th><th>Uploaded By</th><th>Date</th><th>Actions</th></tr>
                         </thead>
                         <tbody>
                             <?php if (empty($media_items)): ?>
                                 <tr><td colspan="7">No media found.</td></tr>
-                            <?php else: ?>
-                                <?php foreach ($media_items as $media): ?>
+                            <?php else: foreach ($media_items as $m): ?>
                                 <tr>
-                                    <td><?php echo $media['id']; ?></td>
-                                    <td><?php if (strpos($media['mime_type'], 'image/') === 0): ?><img src="<?php echo SITE_URL . '/' . $media['file_path']; ?>" alt="" style="width:50px; height:auto;" /><?php endif; ?></td>
-                                    <td><a href="<?php echo SITE_URL . '/' . $media['file_path']; ?>" target="_blank"><?php echo basename($media['file_path']); ?></a></td>
-                                    <td><?php echo $media['mime_type']; ?></td>
-                                    <td><?php echo sanitize($media['uploader_name']); ?></td>
-                                    <td><?php echo date('M j, Y', strtotime($media['uploaded_at'])); ?></td>
+                                    <td><?php echo $m['id']; ?></td>
+                                    <td><?php if (strpos($m['mime_type'],'image/')===0): ?><img src="<?php echo SITE_URL.'/'.$m['file_path']; ?>" alt="" style="width:50px;" /><?php endif; ?></td>
+                                    <td><a href="<?php echo SITE_URL.'/'.$m['file_path']; ?>" target="_blank"><?php echo basename($m['file_path']); ?></a></td>
+                                    <td><?php echo $m['mime_type']; ?></td>
+                                    <td><?php echo sanitize($m['uploader_name']); ?></td>
+                                    <td><?php echo date('M j, Y',strtotime($m['uploaded_at'])); ?></td>
                                     <td class="actions">
-                                        <a href="edit-media.php?id=<?php echo $media['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
-                                        <a href="edit-media.php?id=<?php echo $media['id']; ?>&action=delete" class="btn-icon delete-btn" data-confirm="Delete this media?"><i class="fas fa-trash"></i></a>
+                                        <a href="edit-media.php?id=<?php echo $m['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
+                                        <a href="edit-media.php?id=<?php echo $m['id']; ?>&action=delete" class="btn-icon delete-btn" data-confirm="Delete this media?"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                            <?php endforeach; endif; ?>
                         </tbody>
                     </table>
                 </div>

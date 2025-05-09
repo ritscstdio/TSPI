@@ -1,10 +1,10 @@
 <?php
-// Modal for selecting images from the media library
+// Modal for selecting or uploading images in the media library
 ?>
 <div id="media-modal" class="media-modal" data-upload-url="<?php echo SITE_URL; ?>/admin/media-upload.php" style="display:none;">
     <div class="media-modal-content">
         <span class="media-modal-close">&times;</span>
-        <h2>Select Image</h2>
+        <h2>Media Library</h2>
         <input type="file" id="media-upload-input" name="media_file" accept="image/*" style="margin:0.5rem 0;">
         <div class="media-items">
             <?php
@@ -12,7 +12,7 @@
             foreach ($media_images as $img):
                 $url = SITE_URL . '/' . $img['file_path'];
             ?>
-                <img src="<?php echo $url; ?>" alt="" data-url="<?php echo $url; ?>" class="media-thumb" style="width:100px; height:auto; margin:0.5rem; cursor:pointer; border:2px solid transparent;"/>
+                <img src="<?php echo $url; ?>" data-url="<?php echo $url; ?>" class="media-thumb" style="width:100px; height:auto; margin:0.5rem; cursor:pointer; border:2px solid transparent;" />
             <?php endforeach; ?>
         </div>
     </div>
