@@ -59,6 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Upload file if no errors
         if (empty($errors) && move_uploaded_file($_FILES['thumbnail']['tmp_name'], $target_file)) {
             $thumbnail = 'uploads/articles/' . $filename;
+            // Save uploaded thumbnail into media library
+            $mime_type = $_FILES['thumbnail']['type'];
+            $stmt = $pdo->prepare("INSERT INTO media (file_path, mime_type, uploaded_by) VALUES (?, ?, ?)");
+            $stmt->execute([$thumbnail, $mime_type, $current_user['id']]);
         } else {
             $errors[] = "Failed to upload the thumbnail.";
         }

@@ -1,0 +1,75 @@
+<?php
+$page_title = "Media Library";
+$body_class = "admin-media-library-page";
+require_once '../includes/config.php';
+require_login();
+require_role(['admin','editor']);
+
+$current_user = get_logged_in_user();
+
+$stmt = $pdo->query("SELECT m.*, u.name as uploader_name FROM media m JOIN users u ON m.uploaded_by = u.id ORDER BY m.uploaded_at DESC");
+$media_items = $stmt->fetchAll();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $page_title; ?> - TSPI CMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body class="<?php echo $body_class; ?>">
+    <div class="admin-container">
+        <?php include 'includes/sidebar.php'; ?>
+        <main class="admin-main">
+            <?php include 'includes/header.php'; ?>
+            <div class="dashboard-container">
+                <div class="page-header">
+                    <h1>Media Library</h1>
+                    <a href="add-media.php" class="btn btn-primary"><i class="fas fa-upload"></i> Upload Media</a>
+                </div>
+                <?php if ($message = get_flash_message()): ?>
+                    <div class="message"><?php echo $message; ?></div>
+                <?php endif; ?>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Preview</th>
+                                <th>File</th>
+                                <th>Type</th>
+                                <th>Uploaded By</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($media_items)): ?>
+                                <tr><td colspan="7">No media found.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($media_items as $media): ?>
+                                <tr>
+                                    <td><?php echo $media['id']; ?></td>
+                                    <td><?php if (strpos($media['mime_type'], 'image/') === 0): ?><img src="<?php echo SITE_URL . '/' . $media['file_path']; ?>" alt="" style="width:50px; height:auto;" /><?php endif; ?></td>
+                                    <td><a href="<?php echo SITE_URL . '/' . $media['file_path']; ?>" target="_blank"><?php echo basename($media['file_path']); ?></a></td>
+                                    <td><?php echo $media['mime_type']; ?></td>
+                                    <td><?php echo sanitize($media['uploader_name']); ?></td>
+                                    <td><?php echo date('M j, Y', strtotime($media['uploaded_at'])); ?></td>
+                                    <td class="actions">
+                                        <a href="edit-media.php?id=<?php echo $media['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
+                                        <a href="edit-media.php?id=<?php echo $media['id']; ?>&action=delete" class="btn-icon delete-btn" data-confirm="Delete this media?"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/js/admin.js"></script>
+</body>
+</html> 

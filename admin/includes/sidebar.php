@@ -41,6 +41,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <li class="<?php echo in_array($current_page, ['categories.php', 'add-category.php', 'edit-category.php']) ? 'active' : ''; ?>">
                     <a href="categories.php"><i class="fas fa-folder"></i> Categories</a>
                 </li>
+
+                <li class="<?php echo in_array($current_page, ['media.php', 'add-media.php', 'edit-media.php']) ? 'active' : ''; ?>">
+                    <a href="media.php"><i class="fas fa-photo-video"></i> Media</a>
+                </li>
             <?php endif; ?>
             
             <li class="<?php echo in_array($current_page, ['comments.php', 'edit-comment.php']) ? 'active' : ''; ?>">
