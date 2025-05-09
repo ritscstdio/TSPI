@@ -1,0 +1,273 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+
+:root {
+    --primary-blue: #1B3FAB;
+    --secondary-gold: #e6b54c;
+    --light-blue: #f0f5ff;
+    --ligher-blue: #fdfdff;
+    --dark-navy: #153084;
+    --text-gray: #4a4a4a;
+    --impact-green: #26a69a;
+    --white: #ffffff;
+    --black: #000000;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-gray);
+    background: var(--ligher-blue);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ... keep existing code for header, navigation, dropdowns, message sections */
+
+/* Article Template Styles */
+.article-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background-color: var(--white);
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    position: relative;
+    z-index: 2;
+}
+
+.article-header {
+    margin-bottom: 2rem;
+}
+
+.article-thumbnail {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(26, 61, 143, 0.15);
+}
+
+.article-thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.article-thumbnail img:hover {
+    transform: scale(1.02);
+}
+
+.article-title {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.article-meta {
+    display: flex;
+    gap: 1.5rem;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+}
+
+.article-body {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-gray);
+    margin-bottom: 2rem;
+}
+
+/* ... keep existing code for article tags, navigation, similar posts, comments */
+
+/* Article categories under title */
+.article-categories {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--secondary-gold);
+}
+.article-categories a {
+    color: var(--secondary-gold);
+    text-decoration: none;
+    margin-right: 0.5rem;
+}
+.article-categories a:hover {
+    text-decoration: underline;
+}
+
+/* ... keep existing code for overlap hero on desktop, article page specific styling */
+
+/* Article List Styles */
+.article-list {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.article-list-header {
+    margin-bottom: 2rem;
+}
+
+.article-list-header h1 {
+    color: var(--primary-blue);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.article-list-header p {
+    color: var(--text-gray);
+    font-size: 1.1rem;
+}
+
+.article-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.article-item {
+    background-color: var(--white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.article-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.article-item-thumbnail {
+    height: 200px;
+    overflow: hidden;
+}
+
+.article-item-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.article-item:hover .article-item-thumbnail img {
+    transform: scale(1.05);
+}
+
+.article-item-content {
+    padding: 1.5rem;
+}
+
+.article-item-categories {
+    margin-bottom: 0.5rem;
+}
+
+.article-item-categories a {
+    color: var(--secondary-gold);
+    font-size: 0.85rem;
+    text-decoration: none;
+    margin-right: 0.5rem;
+}
+
+.article-item-categories a:hover {
+    text-decoration: underline;
+}
+
+.article-item-title {
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.3;
+}
+
+.article-item-title a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.article-item-title a:hover {
+    color: var(--secondary-gold);
+}
+
+.article-item-excerpt {
+    color: var(--text-gray);
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.article-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.article-item-date {
+    color: var(--text-gray);
+}
+
+.article-item-more {
+    display: inline-block;
+    color: var(--primary-blue);
+    font-weight: 600;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.article-item-more:hover {
+    color: var(--secondary-gold);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+    gap: 0.5rem;
+}
+
+.pagination-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--text-gray);
+    text-decoration: none;
+    transition: background-color 0.2s, color 0.2s;
+    font-weight: 500;
+}
+
+.pagination-item:hover {
+    background-color: var(--light-blue);
+    color: var(--primary-blue);
+}
+
+.pagination-item.active {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+.pagination-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ... keep existing code for footer, responsive media queries, etc. */
