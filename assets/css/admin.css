@@ -1,4 +1,3 @@
-
 :root {
     --primary-blue: #1B3FAB;
     --secondary-gold: #e6b54c;
@@ -198,6 +197,8 @@ body {
     align-items: center;
     text-decoration: none;
     color: var(--white);
+    transition: opacity 0.3s, visibility 0.3s, width 0.3s, margin-right 0.3s;
+    overflow: hidden;
 }
 
 .sidebar-logo img {
@@ -209,12 +210,20 @@ body {
     font-weight: 600;
     font-size: 1.2rem;
     white-space: nowrap;
-    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.admin-sidebar.collapsed .sidebar-logo a {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    margin-right: 0;
 }
 
 .admin-sidebar.collapsed .sidebar-logo span {
     opacity: 0;
     visibility: hidden;
+    width: 0;
+    overflow: hidden;
 }
 
 .sidebar-toggle {
@@ -242,19 +251,22 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: opacity 0.3s, visibility 0.3s;
+    transition: opacity 0.3s, visibility 0.3s, width 0.3s;
 }
 
 .user-role {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.75);
-    transition: opacity 0.3s, visibility 0.3s;
+    transition: opacity 0.3s, visibility 0.3s, width 0.3s;
+    white-space: nowrap;
 }
 
 .admin-sidebar.collapsed .user-name,
 .admin-sidebar.collapsed .user-role {
     opacity: 0;
     visibility: hidden;
+    width: 0;
+    overflow: hidden;
 }
 
 .sidebar-nav ul {
@@ -269,7 +281,8 @@ body {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: opacity 0.3s, visibility 0.3s;
+    transition: opacity 0.3s, visibility 0.3s, padding 0.3s, height 0.3s;
+    white-space: nowrap;
 }
 
 .admin-sidebar.collapsed .nav-header {
@@ -277,6 +290,8 @@ body {
     visibility: hidden;
     height: 0;
     padding: 0;
+    overflow: hidden;
+    line-height: 0;
 }
 
 .sidebar-nav li:not(.nav-header) {
@@ -289,8 +304,15 @@ body {
     padding: 0.8rem 1.5rem;
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
-    transition: background-color 0.2s, color 0.2s;
+    transition: background-color 0.2s, color 0.2s, padding 0.2s;
     border-left: 3px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.admin-sidebar.collapsed .sidebar-nav a {
+    padding: 0.8rem 0;
+    justify-content: center;
 }
 
 .sidebar-nav a:hover,
@@ -308,6 +330,18 @@ body {
     width: 20px;
     text-align: center;
     font-size: 1rem;
+    transition: margin-right 0.3s;
+}
+
+.admin-sidebar.collapsed .sidebar-nav a i {
+    margin-right: 0;
+}
+
+.sidebar-nav a span {
+    transition: opacity 0.3s, visibility 0.3s, width 0.3s;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .admin-sidebar.collapsed .sidebar-nav a span {
