@@ -75,6 +75,7 @@ $articles = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?> - TSPI CMS</title>
+    <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
@@ -96,7 +97,7 @@ $articles = $stmt->fetchAll();
                 <?php endif; ?>
                 
                 <!-- Category Filter Form -->
-                <form method="get" class="filter-form" style="margin-bottom: 1rem;">
+                <form method="get" class="filter-form">
                     <label for="category-filter">Filter by Category:</label>
                     <select id="category-filter" name="category">
                         <option value="">All Categories</option>
