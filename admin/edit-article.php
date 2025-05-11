@@ -62,6 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('/admin/articles.php');
     }
 }
+
+// Prepare thumbnail URL for preview (handle absolute or relative paths)
+$thumbRaw = $article['thumbnail'] ?? '';
+if ($thumbRaw) {
+    if (preg_match('#^https?://#i', $thumbRaw)) {
+        $thumbnailUrl = htmlspecialchars($thumbRaw);
+    } else {
+        $thumbnailUrl = SITE_URL . '/' . htmlspecialchars($thumbRaw);
+    }
+} else {
+    $thumbnailUrl = '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -91,61 +103,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </ul>
                     </div>
                 <?php endif; ?>
-                <form action="" method="post" class="form">
-                    <div class="form-group">
-                        <label for="title">Title</label>
-                        <input type="text" id="title" name="title" value="<?php echo sanitize($article['title']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="excerpt">Excerpt</label>
-                        <textarea id="excerpt" name="excerpt" rows="3"><?php echo sanitize($article['excerpt']); ?></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="content">Content</label>
-                        <div class="editor-toolbar">
-                            <button type="button" class="toolbar-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="strikeThrough" title="Strike Through"><i class="fas fa-strikethrough"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="unlink" title="Remove Link"><i class="fas fa-unlink"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="insertImage" title="Insert Image"><i class="fas fa-image"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="resizeImage" title="Resize Image"><i class="fas fa-expand-alt"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="insertVideo" title="Insert Video"><i class="fas fa-video"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H1" title="Heading 1">H1</button>
-                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H2" title="Heading 2">H2</button>
-                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H3" title="Heading 3">H3</button>
-                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="P" title="Paragraph">P</button>
-                            <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List"><i class="fas fa-list-ul"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left"><i class="fas fa-align-left"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
-                            <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
+                <div class="admin-form-container">
+                    <form action="" method="post" enctype="multipart/form-data" class="admin-form">
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input type="text" id="title" name="title" value="<?php echo sanitize($article['title']); ?>" required>
                         </div>
-                        <div class="editor-content" id="article-content-editor" contenteditable="true"><?php echo htmlspecialchars($article['content']); ?></div>
-                        <input type="hidden" id="article-content" name="content" value="<?php echo htmlspecialchars($article['content']); ?>">
-                    </div>
-                    <div class="form-group">
-                        <label>Categories</label>
-                        <div class="checkbox-group-container">
-                            <?php foreach ($all_categories as $cat): ?>
-                                <div class="checkbox-group">
-                                    <input type="checkbox" id="category-<?php echo $cat['id']; ?>" name="categories[]" value="<?php echo $cat['id']; ?>" <?php echo in_array($cat['id'], $selected_categories) ? 'checked' : ''; ?>>
-                                    <label for="category-<?php echo $cat['id']; ?>"><?php echo sanitize($cat['name']); ?></label>
-                                </div>
-                            <?php endforeach; ?>
+
+                        <div class="form-group">
+                            <label for="thumbnail_select">Thumbnail Image</label>
+                            <div class="thumbnail-controls">
+                                <button type="button" id="thumbnail-select-btn" class="btn btn-secondary">Choose a thumbnail</button>
+                                <input type="hidden" id="thumbnail_select" name="thumbnail_select" value="<?php echo $thumbnailUrl; ?>">
+                            </div>
+                            <div class="thumbnail-preview-container" style="margin-top: 1rem;">
+                                <img id="thumbnail-preview" src="<?php echo $thumbnailUrl ? $thumbnailUrl : '../assets/placeholder-image.jpg'; ?>" alt="Thumbnail Preview" style="max-width: 300px; border-radius: 4px;">
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="status">Status</label>
-                        <select id="status" name="status">
-                            <option value="draft" <?php echo $article['status'] === 'draft' ? 'selected' : ''; ?>>Draft</option>
-                            <option value="published" <?php echo $article['status'] === 'published' ? 'selected' : ''; ?>>Published</option>
-                            <option value="archived" <?php echo $article['status'] === 'archived' ? 'selected' : ''; ?>>Archived</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update Article</button>
-                </form>
+
+                        <div class="form-group">
+                            <label for="excerpt">Excerpt (optional)</label>
+                            <textarea id="excerpt" name="excerpt" rows="3"><?php echo sanitize($article['excerpt']); ?></textarea>
+                            <p class="form-hint">A short summary of the article. If left empty, an excerpt will be generated from the content.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="article-content-editor">Content</label>
+                            <div class="editor-toolbar">
+                                <button type="button" class="toolbar-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="strikeThrough" title="Strike Through"><i class="fas fa-strikethrough"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="unlink" title="Remove Link"><i class="fas fa-unlink"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="insertImage" title="Insert Image"><i class="fas fa-image"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="resizeImage" title="Resize Image"><i class="fas fa-expand-alt"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="insertVideo" title="Insert Video"><i class="fas fa-video"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H1" title="Heading 1">H1</button>
+                                <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H2" title="Heading 2">H2</button>
+                                <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="H3" title="Heading 3">H3</button>
+                                <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="P" title="Paragraph">P</button>
+                                <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left"><i class="fas fa-align-left"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
+                                <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
+                            </div>
+                            <div class="editor-content" id="article-content-editor" contenteditable="true"><?php echo htmlspecialchars($article['content']); ?></div>
+                            <input type="hidden" id="article-content" name="content" value="<?php echo htmlspecialchars($article['content']); ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Categories</label>
+                            <div class="checkbox-group-container">
+                                <?php foreach ($all_categories as $cat): ?>
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="category-<?php echo $cat['id']; ?>" name="categories[]" value="<?php echo $cat['id']; ?>" <?php echo in_array($cat['id'], $selected_categories) ? 'checked' : ''; ?>>
+                                        <label for="category-<?php echo $cat['id']; ?>"><?php echo sanitize($cat['name']); ?></label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="form-group tag-input-container">
+                            <label for="tag-input">Tags</label>
+                            <input type="text" id="tag-input" placeholder="Add tags... (press Enter or comma after each tag)">
+                            <div id="tag-container" class="tag-container"></div>
+                            <input type="hidden" id="tags" name="tags" value="<?php echo isset($_POST['tags']) ? sanitize($_POST['tags']) : ''; ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status" name="status">
+                                <option value="draft" <?php echo $article['status'] === 'draft' ? 'selected' : ''; ?>>Draft</option>
+                                <option value="published" <?php echo $article['status'] === 'published' ? 'selected' : ''; ?>>Published</option>
+                                <option value="archived" <?php echo $article['status'] === 'archived' ? 'selected' : ''; ?>>Archived</option>
+                            </select>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary">Update Article</button>
+                            <a href="articles.php" class="btn btn-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     </div>

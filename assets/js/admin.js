@@ -271,6 +271,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Show existing thumbnail preview on page load (for edit-article page)
+    const thumbnailSelectInput = document.getElementById('thumbnail_select');
+    const thumbnailPreview = document.getElementById('thumbnail-preview');
+    if (thumbnailSelectInput && thumbnailSelectInput.value && thumbnailPreview) {
+        thumbnailPreview.src = thumbnailSelectInput.value;
+    }
+
     // Global media modal close binding
     const globalModal = document.getElementById('media-modal');
     if (globalModal) {
