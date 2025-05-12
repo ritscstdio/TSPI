@@ -10,6 +10,10 @@ if (!defined('DB_HOST')) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add cache control to prevent browser caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title><?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?></title>
     <meta name="description" content="<?php echo $page_description ?? 'Tulay sa Pag-unlad, Inc. | Blog and Article System'; ?>" />
     <meta name="author" content="TSPI" />
@@ -23,6 +27,60 @@ if (!defined('DB_HOST')) {
     <link rel="icon" type="image/png" href="<?php echo SITE_URL; ?>/src/assets/favicon.png">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/styles.css">
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/src/css/mainstyles.css">
+    <style>
+        /* Search results styling */
+        .search-results a.search-result-item {
+            display: block;
+            padding: 15px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: #fff;
+        }
+        .search-results a.search-result-item:last-child {
+            border-bottom: none;
+        }
+        .search-results a.search-result-item:hover {
+            background-color: #e9f5ff;
+            padding-left: 18px;
+            box-shadow: inset 4px 0 0 0 #0056b3;
+        }
+        .search-results .result-title {
+            font-weight: 700 !important;
+            margin-bottom: 6px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #000;
+            font-size: 1.05rem;
+        }
+        .search-results .result-meta {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 4px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .search-results p.no-results,
+        .search-results p.searching {
+            padding: 15px;
+            color: #666;
+            text-align: center;
+            margin: 0;
+            font-style: italic;
+        }
+        .search-results {
+            border-radius: 6px !important;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 
 <body class="<?php echo isset($body_class) ? $body_class : ''; ?>">
@@ -94,12 +152,14 @@ if (!defined('DB_HOST')) {
                 <a href="<?php echo SITE_URL; ?>/news.php" class="news-link">News</a>
             </div>
             <div class="search-bar" style="position: relative;">
-                <form action="<?php echo SITE_URL; ?>/search.php" method="get" onsubmit="return false;">
-                    <input type="text" id="liveSearchInput" name="q" placeholder="Search..." autocomplete="off">
-                    <button type="submit"><i class="fas fa-search"></i></button>
+                <form id="searchForm">
+                    <input type="text" id="liveSearchInput" placeholder="Search..." autocomplete="off" disabled>
+                    <button type="button"><i class="fas fa-search"></i></button>
                 </form>
-                <div id="searchResults" class="search-results" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1000; display: none; max-height: 300px; overflow-y: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div id="searchResults" class="search-results" style="display: none;">
                 </div>
             </div>
         </nav>
     </header>
+</body>
+</html>

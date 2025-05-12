@@ -112,7 +112,6 @@ include 'includes/header.php';
 
 </main>
 
-<script src="<?php echo SITE_URL; ?>/src/js/script.js"></script>
 <script>
 window.addEventListener('scroll', function() {
     const btn = document.getElementById('scrollToTopBtn');

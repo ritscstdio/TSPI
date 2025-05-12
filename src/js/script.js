@@ -298,7 +298,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             // Debounce
             searchTimeout = setTimeout(() => {
-                fetch(`${window.location.origin}/TSPI/search.php?q=${encodeURIComponent(query)}`)
+                // Relative fetch to search.php in current directory
+                fetch(`search.php?q=${encodeURIComponent(query)}`)
                     .then(res => res.json())
                     .then(data => {
                         resultsContainer.innerHTML = '';

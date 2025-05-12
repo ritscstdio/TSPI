@@ -53,5 +53,6 @@
     </footer>
 
     <script src="<?php echo SITE_URL; ?>/assets/js/main.js"></script>
+    <script src="<?php echo SITE_URL; ?>/src/js/script.js"></script>
 </body>
 </html>
