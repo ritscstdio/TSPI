@@ -1,7 +1,3 @@
-window.addEventListener('beforeunload', function () {
-    window.scrollTo(0, 0);
-});
-
 document.addEventListener('DOMContentLoaded', function() {
     // Fade-in animation for all main sections except header/footer using IntersectionObserver
     const fadeSections = document.querySelectorAll('main > section');

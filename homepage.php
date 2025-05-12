@@ -32,7 +32,7 @@ include 'includes/header.php';
         <h2 style="text-align: center; margin-top: 2rem;">Latest TSPI News!</h2>
         <?php
         // Fetch latest published articles
-        $stmt = $pdo->prepare("SELECT title, slug, thumbnail, content, published_at FROM articles WHERE status = 'published' ORDER BY published_at DESC LIMIT 6");
+        $stmt = $pdo->prepare("SELECT title, slug, thumbnail, content, published_at FROM articles WHERE status = 'published' ORDER BY published_at DESC LIMIT 3");
         $stmt->execute();
         $latest_articles = $stmt->fetchAll();
         ?>
