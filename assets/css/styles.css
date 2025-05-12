@@ -308,3 +308,20 @@ body {
 }
 
 /* ... keep existing code for footer, responsive media queries, etc. */
+
+/* Live Search Results */
+.search-results a {
+    display: block;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    color: var(--text-gray);
+    transition: background-color 0.2s;
+}
+.search-results a:hover {
+    background-color: var(--light-blue);
+}
+.search-results p.no-results {
+    padding: 0.5rem 1rem;
+    color: var(--text-gray);
+    font-style: italic;
+}

@@ -93,11 +93,13 @@ if (!defined('DB_HOST')) {
                 </details>
                 <a href="<?php echo SITE_URL; ?>/news.php" class="news-link">News</a>
             </div>
-            <div class="search-bar">
-                <form action="<?php echo SITE_URL; ?>/search.php" method="get">
-                    <input type="text" name="q" placeholder="Search...">
+            <div class="search-bar" style="position: relative;">
+                <form action="<?php echo SITE_URL; ?>/search.php" method="get" onsubmit="return false;">
+                    <input type="text" id="liveSearchInput" name="q" placeholder="Search..." autocomplete="off">
                     <button type="submit"><i class="fas fa-search"></i></button>
                 </form>
+                <div id="searchResults" class="search-results" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; z-index: 1000; display: none; max-height: 300px; overflow-y: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
             </div>
         </nav>
     </header>
