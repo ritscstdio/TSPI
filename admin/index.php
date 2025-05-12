@@ -20,6 +20,10 @@ $stats['published_articles'] = $stmt->fetchColumn();
 $stmt = $pdo->query("SELECT COUNT(*) FROM articles WHERE status = 'draft'");
 $stats['draft_articles'] = $stmt->fetchColumn();
 
+// Archived articles
+$stmt = $pdo->query("SELECT COUNT(*) FROM articles WHERE status = 'archived'");
+$stats['archived_articles'] = $stmt->fetchColumn();
+
 // Total comments
 $stmt = $pdo->query("SELECT COUNT(*) FROM comments");
 $stats['total_comments'] = $stmt->fetchColumn();
@@ -29,7 +33,7 @@ $stmt = $pdo->query("SELECT COUNT(*) FROM comments WHERE status = 'pending'");
 $stats['pending_comments'] = $stmt->fetchColumn();
 
 // Recent articles
-$stmt = $pdo->query("SELECT a.*, u.name as author_name 
+$stmt = $pdo->query("SELECT a.*, u.name as author_name, u.email as author_email, u.role as author_role 
                       FROM articles a 
                       JOIN users u ON a.author_id = u.id 
                       ORDER BY a.published_at DESC
@@ -70,7 +74,7 @@ $recent_comments = $stmt->fetchAll();
                 <?php endif; ?>
                 
                 <div class="stat-boxes">
-                    <div class="stat-box">
+                    <div class="stat-box" data-link="articles.php">
                         <div class="stat-icon"><i class="fas fa-newspaper"></i></div>
                         <div class="stat-info">
                             <h3>Total Articles</h3>
@@ -78,7 +82,7 @@ $recent_comments = $stmt->fetchAll();
                         </div>
                     </div>
                     
-                    <div class="stat-box">
+                    <div class="stat-box" data-link="articles.php?status_filter=published">
                         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                         <div class="stat-info">
                             <h3>Published Articles</h3>
@@ -86,15 +90,31 @@ $recent_comments = $stmt->fetchAll();
                         </div>
                     </div>
                     
-                    <div class="stat-box">
+                    <div class="stat-box" data-link="articles.php?status_filter=draft">
                         <div class="stat-icon"><i class="fas fa-edit"></i></div>
                         <div class="stat-info">
                             <h3>Draft Articles</h3>
                             <p class="stat-number"><?php echo $stats['draft_articles']; ?></p>
                         </div>
                     </div>
+
+                    <div class="stat-box" data-link="articles.php?status_filter=archived">
+                        <div class="stat-icon"><i class="fas fa-archive"></i></div>
+                        <div class="stat-info">
+                            <h3>Archived Articles</h3>
+                            <p class="stat-number"><?php echo $stats['archived_articles']; ?></p>
+                        </div>
+                    </div>
                     
-                    <div class="stat-box">
+                    <div class="stat-box" data-link="comments.php?status_filter=pending">
+                        <div class="stat-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div class="stat-info">
+                            <h3>Pending Comments</h3>
+                            <p class="stat-number"><?php echo $stats['pending_comments']; ?></p>
+                        </div>
+                    </div>
+
+                    <div class="stat-box" data-link="comments.php">
                         <div class="stat-icon"><i class="fas fa-comments"></i></div>
                         <div class="stat-info">
                             <h3>Total Comments</h3>
@@ -130,7 +150,13 @@ $recent_comments = $stmt->fetchAll();
                                         <?php foreach ($recent_articles as $article): ?>
                                             <tr>
                                                 <td><?php echo sanitize($article['title']); ?></td>
-                                                <td><?php echo sanitize($article['author_name']); ?></td>
+                                                <td class="article-author-name" 
+                                                    data-name="<?php echo sanitize($article['author_name']); ?>" 
+                                                    data-email="<?php echo sanitize($article['author_email'] ?? 'N/A'); ?>" 
+                                                    data-role="<?php echo sanitize(ucfirst($article['author_role'] ?? 'N/A')); ?>"
+                                                    style="cursor: pointer; text-decoration: underline; color: var(--primary-blue);">
+                                                    <?php echo sanitize($article['author_name']); ?>
+                                                </td>
                                                 <td>
                                                     <span class="status-badge status-<?php echo $article['status']; ?>">
                                                         <?php echo ucfirst($article['status']); ?>
@@ -175,8 +201,16 @@ $recent_comments = $stmt->fetchAll();
                                     <?php else: ?>
                                         <?php foreach ($recent_comments as $comment): ?>
                                             <tr>
-                                                <td><?php echo sanitize($comment['author_name']); ?></td>
-                                                <td class="comment-excerpt"><?php echo substr(sanitize($comment['content']), 0, 50) . '...'; ?></td>
+                                                <td class="comment-author-name" 
+                                                    data-name="<?php echo sanitize($comment['author_name']); ?>" 
+                                                    data-email="<?php echo sanitize($comment['author_email'] ?? 'N/A'); ?>" 
+                                                    data-website="<?php echo sanitize($comment['author_website'] ?? 'N/A'); ?>"
+                                                    style="cursor: pointer; text-decoration: underline; color: var(--primary-blue);">
+                                                    <?php echo sanitize($comment['author_name']); ?>
+                                                </td>
+                                                <td class="comment-text-preview" data-full-comment="<?php echo nl2br(sanitize($comment['content'])); ?>">
+                                                    <?php echo nl2br(sanitize(substr($comment['content'], 0, 50))) . (strlen($comment['content']) > 50 ? '...' : ''); ?>
+                                                </td>
                                                 <td><?php echo sanitize($comment['article_title']); ?></td>
                                                 <td>
                                                     <span class="status-badge status-<?php echo $comment['status']; ?>">
@@ -209,6 +243,6 @@ $recent_comments = $stmt->fetchAll();
         </main>
     </div>
     
-    <script src="../assets/js/admin.js"></script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html>

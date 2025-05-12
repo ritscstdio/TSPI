@@ -48,24 +48,88 @@ $offset = ($current_page - 1) * $items_per_page;
 $categories_list = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
 $filter_category = isset($_GET['category']) ? (int)$_GET['category'] : null;
 
-// Get total articles count
-if ($filter_category) {
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM articles a JOIN article_categories ac ON a.id = ac.article_id WHERE ac.category_id = ?");
-    $stmt->execute([$filter_category]);
-} else {
-    $stmt = $pdo->query("SELECT COUNT(*) FROM articles");
+// Define status filter options
+$status_filter_options = [
+    '' => 'All Statuses',
+    'draft' => 'Draft',
+    'published' => 'Published',
+    'archived' => 'Archived'
+];
+$filter_status = isset($_GET['status_filter']) && array_key_exists($_GET['status_filter'], $status_filter_options)
+                    ? $_GET['status_filter']
+                    : '';
+
+// Define sort options (status sorting removed)
+$sort_options = [
+    'published_at_desc' => 'Date (Newest First)',
+    'published_at_asc' => 'Date (Oldest First)',
+    'title_asc' => 'Title (A-Z)',
+    'title_desc' => 'Title (Z-A)',
+];
+$current_sort_order = isset($_GET['sort_order']) && array_key_exists($_GET['sort_order'], $sort_options) 
+                        ? $_GET['sort_order'] 
+                        : 'published_at_desc'; // Default sort order
+
+// Build ORDER BY clause (status cases removed)
+$order_by_clause = "ORDER BY ";
+switch ($current_sort_order) {
+    case 'published_at_asc':
+        $order_by_clause .= "a.published_at ASC";
+        break;
+    case 'title_asc':
+        $order_by_clause .= "a.title ASC";
+        break;
+    case 'title_desc':
+        $order_by_clause .= "a.title DESC";
+        break;
+    case 'published_at_desc':
+    default:
+        $order_by_clause .= "a.published_at DESC";
+        break;
 }
+
+// Build WHERE clauses
+$where_clauses = [];
+$params = [];
+
+if ($filter_category) {
+    $where_clauses[] = "ac.category_id = ?";
+    $params[] = $filter_category;
+}
+
+if ($filter_status) {
+    $where_clauses[] = "a.status = ?";
+    $params[] = $filter_status;
+}
+
+$where_sql = "";
+if (!empty($where_clauses)) {
+    $where_sql = " WHERE " . implode(" AND ", $where_clauses);
+}
+
+// Get total articles count
+$count_sql = "SELECT COUNT(DISTINCT a.id) FROM articles a";
+if ($filter_category) {
+    $count_sql .= " JOIN article_categories ac ON a.id = ac.article_id";
+}
+$count_sql .= $where_sql;
+$stmt = $pdo->prepare($count_sql);
+$stmt->execute($params);
 $total_articles = $stmt->fetchColumn();
 $total_pages = ceil($total_articles / $items_per_page);
 
 // Get articles for current page
+$articles_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role FROM articles a JOIN users u ON a.author_id = u.id";
 if ($filter_category) {
-    $stmt = $pdo->prepare("SELECT a.*, u.name as author_name FROM articles a JOIN users u ON a.author_id = u.id JOIN article_categories ac ON a.id = ac.article_id WHERE ac.category_id = ? ORDER BY a.published_at DESC LIMIT ? OFFSET ?");
-    $stmt->execute([$filter_category, $items_per_page, $offset]);
-} else {
-    $stmt = $pdo->prepare("SELECT a.*, u.name as author_name FROM articles a JOIN users u ON a.author_id = u.id ORDER BY a.published_at DESC LIMIT ? OFFSET ?");
-    $stmt->execute([$items_per_page, $offset]);
+    $articles_sql .= " JOIN article_categories ac ON a.id = ac.article_id";
 }
+$articles_sql .= $where_sql;
+$articles_sql .= " $order_by_clause LIMIT ? OFFSET ?";
+
+$current_page_params = array_merge($params, [$items_per_page, $offset]);
+
+$stmt = $pdo->prepare($articles_sql);
+$stmt->execute($current_page_params);
 $articles = $stmt->fetchAll();
 
 ?>
@@ -89,7 +153,9 @@ $articles = $stmt->fetchAll();
             <div class="dashboard-container">
                 <div class="page-header">
                     <h1>Articles</h1>
-                    <a href="add-article.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add Article</a>
+                    <div class="search-container" style="margin-left: auto;">
+                        <input type="search" id="liveSearchArticles" class="form-control" placeholder="Search by Title...">
+                    </div>
                 </div>
                 
                 <?php if ($message = get_flash_message()): ?>
@@ -105,12 +171,27 @@ $articles = $stmt->fetchAll();
                             <option value="<?php echo $cat['id']; ?>" <?php echo $filter_category == $cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <button type="submit" class="btn btn-light">Filter</button>
+                    
+                    <label for="status-filter" style="margin-left: 1rem;">Filter by Status:</label>
+                    <select id="status-filter" name="status_filter">
+                        <?php foreach ($status_filter_options as $key => $value): ?>
+                            <option value="<?php echo $key; ?>" <?php echo $filter_status == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    
+                    <label for="sort-order" style="margin-left: 1rem;">Sort by:</label>
+                    <select id="sort-order" name="sort_order">
+                        <?php foreach ($sort_options as $key => $value): ?>
+                            <option value="<?php echo $key; ?>" <?php echo $current_sort_order == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    
+                    <button type="submit" class="btn btn-light">Apply Filters</button>
                 </form>
-                
+
                 <div class="dashboard-section">
                     <div class="table-responsive">
-                        <table>
+                        <table id="articlesTable">
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -120,7 +201,7 @@ $articles = $stmt->fetchAll();
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="articlesTableBody">
                                 <?php if (empty($articles)): ?>
                                     <tr>
                                         <td colspan="5">No articles found.</td>
@@ -129,7 +210,13 @@ $articles = $stmt->fetchAll();
                                     <?php foreach ($articles as $article): ?>
                                         <tr>
                                             <td><?php echo sanitize($article['title']); ?></td>
-                                            <td><?php echo sanitize($article['author_name']); ?></td>
+                                            <td class="article-author-name" 
+                                                data-name="<?php echo sanitize($article['author_name']); ?>" 
+                                                data-email="<?php echo sanitize($article['author_email'] ?? 'N/A'); ?>" 
+                                                data-role="<?php echo sanitize(ucfirst($article['author_role'] ?? 'N/A')); ?>"
+                                                style="cursor: pointer; text-decoration: underline; color: var(--primary-blue);">
+                                                <?php echo sanitize($article['author_name']); ?>
+                                            </td>
                                             <td>
                                                 <span class="status-badge status-<?php echo $article['status']; ?>">
                                                     <?php echo ucfirst($article['status']); ?>
@@ -150,24 +237,36 @@ $articles = $stmt->fetchAll();
                     
                     <?php if ($total_pages > 1): ?>
                         <div class="pagination">
+                            <?php 
+                            $base_url = "?page=";
+                            $query_params = [];
+                            if ($filter_category) $query_params['category'] = $filter_category;
+                            if ($filter_status) $query_params['status_filter'] = $filter_status;
+                            if ($current_sort_order !== 'published_at_desc') $query_params['sort_order'] = $current_sort_order;
+                            $extra_params = http_build_query($query_params);
+                            ?>
+
                             <?php if ($current_page > 1): ?>
-                                <a href="?page=<?php echo $current_page - 1; ?>" class="pagination-item"><i class="fas fa-chevron-left"></i></a>
+                                <a href="<?php echo $base_url . ($current_page - 1) . ($extra_params ? '&' . $extra_params : ''); ?>" class="pagination-item"><i class="fas fa-chevron-left"></i></a>
                             <?php endif; ?>
                             
                             <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                <a href="?page=<?php echo $i; ?>" class="pagination-item <?php echo $i === $current_page ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                                <a href="<?php echo $base_url . $i . ($extra_params ? '&' . $extra_params : ''); ?>" class="pagination-item <?php echo $i === $current_page ? 'active' : ''; ?>"><?php echo $i; ?></a>
                             <?php endfor; ?>
                             
                             <?php if ($current_page < $total_pages): ?>
-                                <a href="?page=<?php echo $current_page + 1; ?>" class="pagination-item"><i class="fas fa-chevron-right"></i></a>
+                                <a href="<?php echo $base_url . ($current_page + 1) . ($extra_params ? '&' . $extra_params : ''); ?>" class="pagination-item"><i class="fas fa-chevron-right"></i></a>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
+            <a href="add-article.php" class="fab-add-button">
+                <i class="fas fa-plus"></i> Add Article
+            </a>
         </main>
     </div>
     
-    <script src="../assets/js/admin.js"></script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html>

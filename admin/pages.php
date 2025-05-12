@@ -47,14 +47,17 @@ $pages = $stmt->fetchAll();
             <div class="dashboard-container">
                 <div class="page-header">
                     <h1>Pages</h1>
-                    <a href="add-page.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add Page</a>
+                    <div class="search-container">
+                        <input type="search" id="liveSearchPages" class="form-control" placeholder="Search by Title in current view...">
+                    </div>
                 </div>
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>
                 <?php endif; ?>
+
                 <div class="dashboard-section">
                     <div class="table-responsive">
-                        <table>
+                        <table id="pagesTable">
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -64,7 +67,7 @@ $pages = $stmt->fetchAll();
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="pagesTableBody">
                                 <?php if (empty($pages)): ?>
                                     <tr><td colspan="5">No pages found.</td></tr>
                                 <?php else: ?>
@@ -100,8 +103,11 @@ $pages = $stmt->fetchAll();
                     <?php endif; ?>
                 </div>
             </div>
+            <a href="add-page.php" class="fab-add-button">
+                <i class="fas fa-plus"></i> Add Page
+            </a>
         </main>
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html> 

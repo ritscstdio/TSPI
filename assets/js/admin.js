@@ -288,4 +288,245 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    // Live search for tables
+    function setupLiveSearch(inputId, tableBodyId, searchableCellIndex) {
+        const searchInput = document.getElementById(inputId);
+        const tableBody = document.getElementById(tableBodyId);
+
+        if (searchInput && tableBody) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const rows = tableBody.getElementsByTagName('tr');
+
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    const cell = row.getElementsByTagName('td')[searchableCellIndex];
+                    if (cell) {
+                        const cellText = cell.textContent || cell.innerText;
+                        if (cellText.toLowerCase().includes(searchTerm)) {
+                            row.style.display = "";
+                        } else {
+                            row.style.display = "none";
+                        }
+                    } else {
+                         // If row doesn't have the target cell (e.g. colspan row), show it or decide based on context
+                         // For now, assume typical rows
+                    }
+                }
+            });
+        }
+    }
+
+    // Initialize live searches
+    setupLiveSearch('liveSearchArticles', 'articlesTableBody', 0); // Search by Title (index 0)
+    setupLiveSearch('liveSearchMedia', 'mediaTableBody', 2);    // Search by Filename (index 2)
+    setupLiveSearch('liveSearchPages', 'pagesTableBody', 0);     // Search by Title (index 0)
+
+    setupCommentPreview(); // Initialize comment preview
+
+    // Make stat boxes clickable
+    document.querySelectorAll('.stat-box[data-link]').forEach(box => {
+        box.addEventListener('click', function() {
+            const link = this.dataset.link;
+            if (link) {
+                window.location.href = link;
+            }
+        });
+    });
+
+    setupAuthorInfoPreview(); // Initialize author info preview
+    setupUserInfoPreview(); // Initialize user info preview for article authors
+    setupEditProfileModal(); // Initialize edit profile modal
 });
+
+function setupCommentPreview() {
+    const modal = document.getElementById('commentPreviewModal');
+    if (!modal) return; 
+
+    const modalText = document.getElementById('commentModalText');
+    const closeButton = modal.querySelector('.close-button');
+
+    document.querySelectorAll('.comment-text-preview').forEach(element => {
+        element.addEventListener('click', function() {
+            const fullComment = this.dataset.fullComment;
+            modalText.innerHTML = fullComment; 
+            modal.style.display = 'flex'; 
+        });
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none'; 
+        });
+    }
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none'; 
+        }
+    });
+}
+
+function setupAuthorInfoPreview() {
+    const modal = document.getElementById('authorInfoModal');
+    if (!modal) return;
+
+    const authorNameEl = document.getElementById('authorModalName');
+    const authorEmailEl = document.getElementById('authorModalEmail');
+    const authorWebsiteEl = document.getElementById('authorModalWebsite');
+    const closeButton = modal.querySelector('.close-button');
+
+    document.querySelectorAll('.comment-author-name').forEach(element => {
+        element.addEventListener('click', function(e) {
+            // Prevent click from propagating to parent elements if any other listeners are there
+            // e.stopPropagation(); // Optional: if needed
+            
+            authorNameEl.textContent = this.dataset.name || 'N/A';
+            authorEmailEl.textContent = this.dataset.email || 'N/A';
+            
+            const website = this.dataset.website;
+            if (website && website.trim() !== '' && website.toLowerCase() !== 'n/a') {
+                // Ensure website is a full URL
+                let fullWebsiteUrl = website;
+                if (!website.startsWith('http://') && !website.startsWith('https://')) {
+                    fullWebsiteUrl = 'http://' + website;
+                }
+                authorWebsiteEl.innerHTML = `<a href="${fullWebsiteUrl}" target="_blank" rel="noopener noreferrer">${website}</a>`;
+            } else {
+                authorWebsiteEl.textContent = 'N/A';
+            }
+            
+            modal.style.display = 'flex';
+        });
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+function setupUserInfoPreview() {
+    const modal = document.getElementById('userInfoModal');
+    if (!modal) return;
+
+    const userNameEl = document.getElementById('userModalName');
+    const userEmailEl = document.getElementById('userModalEmail');
+    const userRoleEl = document.getElementById('userModalRole');
+    const closeButton = modal.querySelector('.close-button');
+
+    document.querySelectorAll('.article-author-name').forEach(element => {
+        element.addEventListener('click', function() {
+            userNameEl.textContent = this.dataset.name || 'N/A';
+            userEmailEl.textContent = this.dataset.email || 'N/A';
+            userRoleEl.textContent = this.dataset.role || 'N/A';
+            modal.style.display = 'flex';
+        });
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+function setupEditProfileModal() {
+    const modal = document.getElementById('editProfileModal');
+    if (!modal) return;
+
+    const editProfileLink = document.getElementById('editProfileLink');
+    const editProfileForm = document.getElementById('editProfileForm');
+    const profileNameInput = document.getElementById('profile_name');
+    const profileEmailInput = document.getElementById('profile_email');
+    const currentPasswordInput = document.getElementById('profile_current_password');
+    const newPasswordInput = document.getElementById('profile_new_password');
+    const confirmPasswordInput = document.getElementById('profile_confirm_password');
+    const messageDiv = document.getElementById('editProfileMessage');
+    const closeButton = modal.querySelector('.close-button');
+
+    if (editProfileLink) {
+        editProfileLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Pre-fill form
+            profileNameInput.value = this.dataset.userName || '';
+            profileEmailInput.value = this.dataset.userEmail || '';
+            // Clear password fields and messages
+            currentPasswordInput.value = '';
+            newPasswordInput.value = '';
+            confirmPasswordInput.value = '';
+            messageDiv.style.display = 'none';
+            messageDiv.textContent = '';
+            messageDiv.className = 'message'; // Reset class
+            modal.style.display = 'flex';
+        });
+    }
+
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            messageDiv.style.display = 'none';
+
+            const formData = new FormData(this);
+            fetch('actions/update-profile.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                messageDiv.textContent = data.message;
+                messageDiv.className = 'message'; // Reset class first
+                if (data.success) {
+                    messageDiv.classList.add('success'); // Assuming a .success class for green messages
+                    // Optionally update name in header if changed
+                    if (data.new_name) {
+                        const headerUserName = document.querySelector('.header-user-btn span');
+                        if (headerUserName) headerUserName.textContent = data.new_name;
+                        // Update data attribute on link as well
+                        if(editProfileLink) editProfileLink.dataset.userName = data.new_name;
+                    }
+                     // Clear password fields on success if they were filled
+                    currentPasswordInput.value = '';
+                    newPasswordInput.value = '';
+                    confirmPasswordInput.value = '';
+                    // setTimeout(() => { modal.style.display = 'none'; }, 2000); // Optionally close modal
+                } else {
+                    messageDiv.classList.add('error');
+                }
+                messageDiv.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                messageDiv.textContent = 'An error occurred. Please try again.';
+                messageDiv.className = 'message error';
+                messageDiv.style.display = 'block';
+            });
+        });
+    }
+
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}

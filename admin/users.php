@@ -41,7 +41,6 @@ $users = $stmt->fetchAll();
             <div class="dashboard-container">
                 <div class="page-header">
                     <h1>Users</h1>
-                    <a href="add-user.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add User</a>
                 </div>
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>
@@ -82,8 +81,11 @@ $users = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
+            <a href="add-user.php" class="fab-add-button">
+                <i class="fas fa-user-plus"></i> Add User
+            </a>
         </main>
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html> 

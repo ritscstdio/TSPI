@@ -28,23 +28,26 @@ $media_items = $stmt->fetchAll();
             <div class="dashboard-container">
                 <div class="page-header">
                     <h1>Media Library</h1>
-                    <a href="add-media.php" class="btn btn-primary"><i class="fas fa-upload"></i> Upload Media</a>
+                    <div class="search-container">
+                        <input type="search" id="liveSearchMedia" class="form-control" placeholder="Search by Filename in current view...">
+                    </div>
                 </div>
                 <?php if ($msg = get_flash_message()): ?>
                     <div class="message"><?php echo $msg; ?></div>
                 <?php endif; ?>
+
                 <div class="table-responsive">
-                    <table>
+                    <table id="mediaTable">
                         <thead>
                             <tr><th>ID</th><th>Preview</th><th>File</th><th>Type</th><th>Uploaded By</th><th>Date</th><th>Actions</th></tr>
                         </thead>
-                        <tbody>
+                        <tbody id="mediaTableBody">
                             <?php if (empty($media_items)): ?>
                                 <tr><td colspan="7">No media found.</td></tr>
                             <?php else: foreach ($media_items as $m): ?>
                                 <tr>
                                     <td><?php echo $m['id']; ?></td>
-                                    <td><?php if (strpos($m['mime_type'],'image/')===0): ?><img src="<?php echo SITE_URL.'/'.$m['file_path']; ?>" alt="" style="width:50px;" /><?php endif; ?></td>
+                                    <td><?php if (strpos($m['mime_type'],'image/')===0): ?><img src="<?php echo SITE_URL.'/'.$m['file_path']; ?>" alt="Preview" class="media-preview-thumb" /><?php endif; ?></td>
                                     <td><a href="<?php echo SITE_URL.'/'.$m['file_path']; ?>" target="_blank"><?php echo basename($m['file_path']); ?></a></td>
                                     <td><?php echo $m['mime_type']; ?></td>
                                     <td><?php echo sanitize($m['uploader_name']); ?></td>
@@ -59,8 +62,11 @@ $media_items = $stmt->fetchAll();
                     </table>
                 </div>
             </div>
+            <a href="add-media.php" class="fab-add-button">
+                <i class="fas fa-upload"></i> Upload Media
+            </a>
         </main>
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html> 

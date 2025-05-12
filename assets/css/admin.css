@@ -478,6 +478,10 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+.stat-box[data-link] {
+    cursor: pointer;
+}
+
 .stat-icon {
     font-size: 2rem;
     color: var(--primary-blue);
@@ -556,6 +560,7 @@ th, td {
     padding: 0.8rem;
     text-align: left;
     border-bottom: 1px solid #eee;
+    vertical-align: middle;
 }
 
 th {
@@ -608,6 +613,7 @@ tbody tr:hover {
 .actions {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .btn-icon {
@@ -836,6 +842,15 @@ tbody tr:hover {
     background-color: var(--primary-blue);
 }
 
+/* Media Library Table Thumbnail */
+.media-preview-thumb {
+    width: 45px; /* Adjusted from 50px */
+    height: 30px; /* Reduced from 35px */
+    object-fit: cover;
+    border-radius: 3px;
+    vertical-align: middle; /* Added to help with alignment in table cell */
+}
+
 /* Responsive styles */
 @media (max-width: 992px) {
     .admin-sidebar {
@@ -858,6 +873,12 @@ tbody tr:hover {
     
     .dashboard-sections {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 768px) { /* Adjusted breakpoint for 3-column stat boxes */
+    .stat-boxes {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -896,15 +917,40 @@ tbody tr:hover {
 /* Page Header Styles */
 .page-header {
     display: flex;
+    flex-wrap: wrap; /* Allow wrapping for responsiveness */
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem; /* Consistent margin */
-    padding-bottom: 1rem; /* Optional: if you want a line or more space */
-    border-bottom: 1px solid #eee; /* Optional: consistent with section headers */
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    gap: 1rem; /* Add gap for spacing when wrapped */
 }
 
 .page-header h1 {
-    margin-bottom: 0; /* Remove default margin if any, as flex handles alignment */
+    margin-bottom: 0;
+    margin-right: auto; /* Push other items to the right */
+}
+
+/* Search container within page header */
+.page-header .search-container {
+    margin-bottom: 0; /* Remove original margin */
+    min-width: 250px; /* Give it some base width */
+    /* flex-grow: 1; Allow it to grow if needed, up to a max-width */
+    /* max-width: 400px; */
+}
+
+.page-header .search-container input[type="search"] {
+    width: 100%; /* Make input take full width of its container */
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.page-header .search-container input[type="search"]:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(27, 63, 171, 0.1);
+    outline: none;
 }
 
 /* Filter Form Styles */
@@ -940,4 +986,147 @@ tbody tr:hover {
 
 .filter-form .btn {
     padding: 0.5rem 1rem; /* Adjust button padding if needed */
+}
+
+/* Floating Action Button (FAB) for Add Pages */
+.fab-add-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    padding: 14px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    font-weight: 500;
+    opacity: 0; /* Start hidden */
+    animation: fabLoadAnimation 0.4s ease-out 0.2s forwards; /* 0.4s duration, 0.2s delay */
+    z-index: 1050;
+    transition: background-color 0.3s, transform 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.fab-add-button:hover {
+    background-color: var(--dark-navy);
+    transform: translateY(-2px);
+}
+
+.fab-add-button i {
+    font-size: 1.4rem; /* Increased icon size */
+}
+
+@keyframes fabLoadAnimation {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Responsive styles */
+@media (max-width: 767px) { /* Adjust breakpoint as needed */
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the start when stacked */
+    }
+
+    .page-header h1 {
+        margin-right: 0; /* Remove auto margin when stacked */
+        margin-bottom: 0.5rem; /* Add some space below title */
+    }
+
+    .page-header .search-container {
+        width: 100%; /* Make search take full width on small screens */
+        min-width: unset;
+    }
+
+    /* Other existing responsive rules */
+    .stat-boxes {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Comment Preview Modal */
+.modal {
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    border-radius: 5px;
+    position: relative;
+}
+
+.modal-content p {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 70vh; /* Prevent overly long comments from making modal too tall */
+    overflow-y: auto; /* Add scroll for long comments */
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Clickable comment text */
+.comment-text-preview {
+    cursor: pointer;
+}
+
+.comment-text-preview:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+@keyframes commentModalPopupAnimation {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Apply animation when modal is shown via inline style or a 'show' class */
+.modal[style*="display: flex;"] .modal-content,
+.modal.show .modal-content {
+    animation: commentModalPopupAnimation 0.2s ease-out;
 }

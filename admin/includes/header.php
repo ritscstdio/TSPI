@@ -14,7 +14,11 @@
                 <i class="fas fa-chevron-down"></i>
             </button>
             <div class="dropdown-menu">
-                <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
+                <a href="#" id="editProfileLink" 
+                   data-user-name="<?php echo $current_user ? sanitize($current_user['name']) : ''; ?>" 
+                   data-user-email="<?php echo $current_user ? sanitize($current_user['email']) : ''; ?>">
+                   <i class="fas fa-user-edit"></i> Edit Profile
+                </a>
                 <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>

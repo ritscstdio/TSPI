@@ -36,7 +36,6 @@ $categories = $stmt->fetchAll();
             <div class="dashboard-container">
                 <div class="page-header">
                     <h1>Categories</h1>
-                    <a href="add-category.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add Category</a>
                 </div>
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>
@@ -73,8 +72,11 @@ $categories = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
+            <a href="add-category.php" class="fab-add-button">
+                <i class="fas fa-plus"></i> Add Category
+            </a>
         </main>
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <?php include 'includes/footer.php'; ?>
 </body>
 </html> 

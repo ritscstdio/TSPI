@@ -14,12 +14,28 @@ if (!$slug) {
 $stmt = $pdo->prepare("SELECT a.*, u.name as author_name 
                       FROM articles a 
                       JOIN users u ON a.author_id = u.id 
-                      WHERE a.slug = ? AND a.status = 'published'");
+                      WHERE a.slug = ?");
 $stmt->execute([$slug]);
 $article = $stmt->fetch();
 
 if (!$article) {
-    // Article not found or not published
+    // Article not found at all
+    header("HTTP/1.0 404 Not Found");
+    include '404.php';
+    exit;
+} elseif ($article['status'] === 'archived') {
+    // Article is archived
+    $page_title = "Article Not Available";
+    include 'includes/header.php';
+    echo "<main><div class='container' style='padding: 2rem; text-align: center;'>";
+    echo "<h1>Article Not Available</h1>";
+    echo "<p>This article has been archived and is no longer available.</p>";
+    echo "<a href='" . SITE_URL . "/' class='btn'>Go to Homepage</a>";
+    echo "</div></main>";
+    include 'includes/footer.php';
+    exit;
+} elseif ($article['status'] !== 'published') {
+    // Article found but not published (e.g., draft)
     header("HTTP/1.0 404 Not Found");
     include '404.php';
     exit;
