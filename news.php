@@ -1,6 +1,7 @@
 <?php
 $page_title = "News";
 $page_description = "Latest TSPI Articles and Updates";
+$body_class = "news-page"; // Add specific body class for news page styling
 include 'includes/header.php';
 ?>
 <?php
@@ -18,7 +19,9 @@ $current_sort = isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_op
     ? $_GET['sort']
     : 'published_at_desc';
 // Build query
-$sql = "SELECT a.title, a.slug, a.thumbnail, a.content, a.published_at FROM articles a";
+$sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.author_id, u.name as author_name 
+        FROM articles a 
+        JOIN users u ON a.author_id = u.id";
 $params = [];
 if ($filter_category) {
     $sql .= " JOIN article_categories ac ON a.id = ac.article_id";
@@ -46,11 +49,23 @@ switch ($current_sort) {
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $news_articles = $stmt->fetchAll();
+
+// Determine the page title based on the filter
+$dynamic_page_title = "TSPI News"; // Default title
+if ($filter_category) {
+    foreach ($categories_list as $cat) {
+        if ($cat['id'] == $filter_category) {
+            $dynamic_page_title = sanitize($cat['name']); // Use category name as title
+            break;
+        }
+    }
+}
+
 ?>
 
 <main>
     <section class="news-grid-section">
-        <h2 style="text-align: center; margin-top: 2rem;">TSPI News</h2>
+        <h2 class="news-page-title"><?php echo $dynamic_page_title; ?></h2>
         <!-- Filter and Sort Controls -->
         <form method="get" class="news-filters">
             <label for="filter-category">Filter by Category:</label>
@@ -87,10 +102,20 @@ $news_articles = $stmt->fetchAll();
                 }
                 ?>
                 <a href="<?php echo SITE_URL; ?>/article.php?slug=<?php echo $art['slug']; ?>" class="similar-post-card">
-                    <img src="<?php echo $img; ?>" alt="<?php echo sanitize($art['title']); ?>" class="similar-post-thumbnail">
+                    <div class="similar-post-thumbnail-container">
+                        <img src="<?php echo $img; ?>" alt="<?php echo sanitize($art['title']); ?>" class="similar-post-thumbnail">
+                    </div>
                     <div class="similar-post-content">
                         <div class="similar-post-title"><?php echo sanitize($art['title']); ?></div>
-                        <div class="similar-post-meta"><?php echo date('M j, Y', strtotime($art['published_at'])); ?></div>
+                        <div class="similar-post-meta">
+                            <?php echo sanitize($art['author_name']); ?> | <?php echo date('M j, Y', strtotime($art['published_at'])); ?>
+                        </div>
+                    </div>
+                    <div class="similar-post-hover-content">
+                        <p class="similar-post-excerpt">
+                            <?php echo sanitize(substr(strip_tags($art['content']), 0, 120)); ?>...
+                        </p>
+                        <button class="cta-button read-this-btn">Read this!</button>
                     </div>
                 </a>
             <?php endforeach; ?>

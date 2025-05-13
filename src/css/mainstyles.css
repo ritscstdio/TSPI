@@ -1065,13 +1065,13 @@ body {
 /* Fade-in effect for all main sections except header/footer */
 main > section {
     opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 1s cubic-bezier(0.4,0,0.2,1), transform 2s cubic-bezier(0.4,0,0.2,1);
+    /* Removed transform to prevent potential scroll jump on load */
+    transition: opacity 1s cubic-bezier(0.4,0,0.2,1);
 }
 
 main > section.visible {
     opacity: 1;
-    transform: translateY(0);
+    /* Removed transform to prevent potential scroll jump on load */
 }
 
 .app-download-row {
@@ -1483,7 +1483,7 @@ html, body {
 main {
     flex: 1 0 auto;
     background-color: var(--light-blue); /* Light blue backdrop for the main area */
-   padding-bottom: 2rem; /* Add some padding at the bottom of main */
+    padding: 0 0 2rem; /* Removed general top padding, apply padding per-page via body class */
 }
 
 .footer {
@@ -1649,16 +1649,40 @@ main {
     display: flex;
     flex-direction: column;
     height: 100%;
+    transform: scale(1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    text-decoration: none;
+}
+
+.similar-post-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.similar-post-thumbnail-container {
+    overflow: hidden;
+    position: relative;
 }
 
 .similar-post-thumbnail {
     width: 100%;
-    height: 220px;
+    height: 264px;
     object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.similar-post-card:hover .similar-post-thumbnail {
+    transform: scale(1.1);
 }
 
 .similar-post-content {
     padding: 1rem;
+    flex-grow: 1;
+    background-color: var(--white);
+    z-index: 2;
+    position: relative;
 }
 
 .similar-post-title {
@@ -1666,11 +1690,68 @@ main {
     color: var(--dark-navy);
     margin-bottom: 0.5rem;
     line-height: 1.3;
+    font-weight: 600;
+    text-decoration: none;
 }
 
 .similar-post-meta {
     font-size: 0.85rem;
     color: var(--text-gray);
+    text-decoration: none;
+}
+
+.similar-post-hover-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(27, 63, 171, 0.9);
+    color: var(--white);
+    padding: 1.5rem 1rem 1rem;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.similar-post-card:hover .similar-post-hover-content {
+    transform: translateY(0);
+}
+
+.similar-post-excerpt {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.similar-post-hover-content .read-this-btn {
+    background-color: var(--secondary-gold);
+    color: var(--dark-navy);
+    border: none;
+    padding: 0.7rem 1.8rem;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.similar-post-hover-content .read-this-btn:hover {
+    background-color: var(--white);
+    color: var(--primary-blue);
+    transform: scale(1.05);
 }
 
 .carousel-arrow {
@@ -1999,6 +2080,10 @@ main {
     .article-page main {
         padding-top: 140px; /* Slightly less padding on mobile */
     }
+    /* Apply mobile padding for news page as well */
+    .news-page main {
+        padding-top: 140px; /* Match article page padding (mobile) */
+    }
 }
 
 /* Add support for thumbnail images in news cards */
@@ -2041,7 +2126,7 @@ main {
 /* Grid layout for news articles */
 .articles-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto 2rem;
@@ -2150,4 +2235,198 @@ main {
     text-align: center;
     margin: 0;
     font-size: 0.9rem;
+}
+
+.news-page-title {
+    text-align: left;
+    color: var(--primary-blue);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    max-width: 1200px;
+    margin-left: auto;  /* Keep centering the container for consistency */
+    margin-right: auto; /* Keep centering the container for consistency */
+    padding: 0 2rem;
+}
+
+/* News page specific styling */
+.news-page main {
+    padding-top: 160px; /* Match article page padding (desktop) */
+}
+
+.article-page .article-container {
+    margin-top: 2rem; /* Reset the negative margin we applied earlier for the article pages */
+}
+
+@media (max-width: 768px) {
+    .article-page main {
+        padding-top: 140px; /* Slightly less padding on mobile */
+    }
+    /* Apply mobile padding for news page as well */
+    .news-page main {
+        padding-top: 140px; /* Match article page padding (mobile) */
+    }
+}
+
+/* Add support for thumbnail images in news cards */
+.news-card-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* Styling for news page filter controls */
+.news-filters {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.news-filters label {
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+.news-filters select {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid rgba(26,61,143,0.2);
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+.news-filters select:focus {
+    border-color: var(--primary-blue);
+}
+
+/* Grid layout for news articles */
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    padding: 0 2rem;
+}
+@media (max-width: 992px) {
+    .articles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .articles-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Styling for the 'Read more?' link on homepage news section */
+.read-more-news-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--primary-blue);
+    text-decoration: none;
+    padding: 0.8rem 2.5rem;
+    border-radius: 30px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background-color: transparent;
+    box-shadow: none;
+    margin-top: 2rem;
+    font-weight: 600;
+    border: 2px solid var(--primary-blue);
+}
+
+.read-more-news-link:hover {
+    color: #fff !important;
+    background-color: var(--primary-blue);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(26, 61, 143, 0.18);
+    border-color: var(--primary-blue);
+}
+
+.read-more-news-link::after {
+    content: '→';
+    margin-left: 0.8rem;
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 1.2rem;
+    color: inherit;
+}
+
+.read-more-news-link:hover::after {
+    transform: translateX(6px);
+    color: inherit;
+}
+
+/* Search Results Styling */
+.search-results {
+    border-radius: 6px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ddd;
+}
+
+.search-results a.search-result-item {
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.search-results a.search-result-item:hover,
+.search-results a.search-result-item:focus {
+    background-color: #f0f5ff;
+    color: #0056b3;
+}
+
+.search-results a.search-result-item .result-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+    display: block;
+    font-size: 1rem;
+    color: var(--primary-blue);
+}
+
+.search-results a.search-result-item .result-excerpt {
+    font-size: 0.8rem;
+    color: #555;
+    display: block;
+    line-height: 1.3;
+}
+
+.search-results a.search-result-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 6px 6px;
+}
+
+.search-results p.no-results,
+.search-results p.searching {
+    padding: 15px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.news-page-title {
+    text-align: left;
+    color: var(--primary-blue);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    max-width: 1200px;
+    margin-left: auto;  /* Keep centering the container for consistency */
+    margin-right: auto; /* Keep centering the container for consistency */
+    padding: 0 2rem;
 } 

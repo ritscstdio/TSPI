@@ -108,7 +108,7 @@ if (!defined('DB_HOST')) {
         </div>
         <nav class="main-nav">
             <div class="logo">
-                <a href="<?php echo SITE_URL; ?>">
+                <a href="<?php echo SITE_URL; ?>/homepage.php">
                     <img src="<?php echo SITE_URL; ?>/src/assets/logo.jpg" alt="TSPI Logo">
                 </a>
                 <button class="mobile-menu-toggle">
@@ -120,7 +120,7 @@ if (!defined('DB_HOST')) {
                 </button>
             </div>
             <div class="nav-links">
-                <a href="<?php echo SITE_URL; ?>">Home</a>
+                <a href="<?php echo SITE_URL; ?>/homepage.php">Home</a>
                 <div class="dropdown">
                     <button class="dropdown-btn">Who We Are <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
@@ -141,7 +141,7 @@ if (!defined('DB_HOST')) {
                 <a href="<?php echo SITE_URL; ?>/news.php">News</a>
             </div>
             <div class="mobile-nav">
-                <a href="<?php echo SITE_URL; ?>" class="home-link">Home</a>
+                <a href="<?php echo SITE_URL; ?>/homepage.php" class="home-link">Home</a>
                 <details>
                     <summary>Who We Are</summary>
                     <a href="#about">About Us</a>
