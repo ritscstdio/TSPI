@@ -75,9 +75,15 @@ if (!defined('DB_HOST')) {
             font-style: italic;
         }
         .search-results {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
             border-radius: 6px !important;
             box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
-            overflow: hidden;
             border: 1px solid #ddd;
         }
     </style>
