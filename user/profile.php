@@ -1,0 +1,652 @@
+<?php
+$page_title = "My Profile";
+$body_class = "profile-page";
+require_once '../includes/config.php';
+
+// Require login
+if (!is_logged_in()) {
+    $_SESSION['redirect_after_login'] = '/user/profile.php';
+    redirect('/user/login.php');
+}
+
+// Get user data
+$user = get_logged_in_user();
+if (!$user) {
+    $_SESSION['message'] = "Error retrieving user profile";
+    redirect('/index.php');
+}
+
+// store original email for comparison
+$original_email = $user['email'];
+
+$errors = [];
+$info_success_message = '';
+$password_success_message = '';
+
+// Handle form submissions separately
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // --- Profile info & picture update ---
+    if (isset($_POST['update_info'])) {
+        $name  = trim($_POST['name']  ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $remove_picture = isset($_POST['remove_picture']);
+
+        // validate name
+        if (empty($name)) {
+            $errors[] = "Name is required";
+        }
+        // validate email
+        if (empty($email)) {
+            $errors[] = "Email is required";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "Please enter a valid email address";
+        } elseif ($email !== $original_email) {
+            // ensure uniqueness
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ? AND id != ?");
+            $stmt->execute([$email, $user['id']]);
+            if ($stmt->fetchColumn() > 0) {
+                $errors[] = "Email already exists";
+            }
+        }
+
+        // handle picture removal or upload
+        if ($remove_picture) {
+            // flag removal
+        } elseif (!empty($_FILES['profile_picture']['name'])) {
+            if ($_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
+                $allowed = ['image/jpeg','image/png','image/gif'];
+                if (!in_array($_FILES['profile_picture']['type'], $allowed)) {
+                    $errors[] = "Only JPG/PNG/GIF allowed for profile picture.";
+                } else {
+                    $ext = pathinfo($_FILES['profile_picture']['name'], PATHINFO_EXTENSION);
+                    $new_filename = 'user_'.$user['id'].'_'.time().'.'.$ext;
+                }
+            } else {
+                $errors[] = "Error uploading profile picture.";
+            }
+        }
+
+        if (empty($errors)) {
+            $pdo->beginTransaction();
+
+            // update name
+            $stmt = $pdo->prepare("UPDATE users SET name = ? WHERE id = ?");
+            $stmt->execute([$name, $user['id']]);
+
+            // remove old picture
+            if ($remove_picture && $user['profile_picture']) {
+                @unlink(PROFILE_PICS_DIR.'/'.$user['profile_picture']);
+                $stmt = $pdo->prepare("UPDATE users SET profile_picture = NULL WHERE id = ?");
+                $stmt->execute([$user['id']]);
+            }
+
+            // save new picture
+            if (isset($new_filename)) {
+                if ($user['profile_picture']) {
+                    @unlink(PROFILE_PICS_DIR.'/'.$user['profile_picture']);
+                }
+                move_uploaded_file(
+                    $_FILES['profile_picture']['tmp_name'],
+                    PROFILE_PICS_DIR.'/'.$new_filename
+                );
+                $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
+                $stmt->execute([$new_filename, $user['id']]);
+            }
+
+            // if email changed, insert a new verification record (don't update users.email yet)
+            if ($email !== $original_email) {
+                $vcode     = bin2hex(random_bytes(16));
+                $expires   = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                $stmt = $pdo->prepare("
+                    INSERT INTO email_verifications
+                      (user_id, verification_code, expires_at, new_email)
+                    VALUES (?,?,?,?)
+                ");
+                $stmt->execute([$user['id'], $vcode, $expires, $email]);
+
+                // send the verify-new-email mail
+                $verify_url = SITE_URL . "/user/verify.php?code=$vcode";
+                $to      = $email;
+                $subject = "Verify your new email address";
+                $body    = "Hello $name,\n\nClick to verify your new email:\n$verify_url\n\nRegards,\nTSPI Team";
+                $hdrs    = "From: " . ADMIN_EMAIL;
+                
+                // Send email via configured mailer
+                require_once __DIR__ . '/email_config.php';
+                if (function_exists('dev_send_email')) {
+                    dev_send_email($to, $subject, $body, $hdrs);
+                } else {
+                    send_email($to, $subject, $body, $hdrs);
+                }
+
+                $info_success_message = "Profile updated. Please check your new email to verify the change.";
+            } else {
+                $info_success_message = "Profile updated successfully.";
+            }
+
+            $pdo->commit();
+            // reload user
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$user['id']]);
+            $user = $stmt->fetch();
+        }
+    }
+
+    // --- Password change only ---
+    if (isset($_POST['change_password'])) {
+        $cp = $_POST['current_password'] ?? '';
+        $np = $_POST['new_password']     ?? '';
+        $cf = $_POST['confirm_password'] ?? '';
+
+        if (empty($cp) || !password_verify($cp, $user['password'])) {
+            $errors[] = "Current password is incorrect";
+        }
+        if (empty($np) || strlen($np) < 8
+            || !preg_match('/[A-Z]/',$np)
+            || !preg_match('/[a-z]/',$np)
+            || !preg_match('/[0-9]/',$np)
+            || !preg_match('/[^A-Za-z0-9]/',$np)
+        ) {
+            $errors[] = "New password does not meet requirements";
+        }
+        if ($np !== $cf) {
+            $errors[] = "New passwords do not match";
+        }
+
+        if (empty($errors)) {
+            $hash = password_hash($np, PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->execute([$hash, $user['id']]);
+            $password_success_message = "Password changed successfully.";
+        }
+    }
+}
+
+include '../includes/header.php';
+?>
+
+<main class="container profile-container">
+    <div class="profile-header">
+        <h1>My Profile</h1>
+    </div>
+    
+    <?php if (!empty($errors)): ?>
+        <div class="message error">
+            <ul>
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo $error; ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+    
+    <?php if (!empty($info_success_message)): ?>
+        <div class="message success">
+            <?php echo $info_success_message; ?>
+        </div>
+    <?php endif; ?>
+    <?php if (!empty($password_success_message)): ?>
+        <div class="message success">
+            <?php echo $password_success_message; ?>
+        </div>
+    <?php endif; ?>
+    
+    <div class="profile-content">
+        <div class="profile-card">
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <?php if ($user['profile_picture']): ?>
+                        <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($user['profile_picture']); ?>"
+                             alt="Profile Picture">
+                    <?php else: ?>
+                        <i class="fas fa-user-circle"></i>
+                    <?php endif; ?>
+                    <div class="user-role"><?php echo ucfirst(sanitize($user['role'])); ?></div>
+                </div>
+                <div class="profile-details">
+                    <h2><?php echo sanitize($user['name'] ?: $user['username']); ?></h2>
+                    <p class="username">@<?php echo sanitize($user['username']); ?></p>
+                    <p class="email"><?php echo sanitize($user['email']); ?></p>
+                    <p class="member-since">Member since: <?php echo date('F j, Y', strtotime($user['created_at'])); ?></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-edit-card">
+            <h2>Edit Profile</h2>
+            <!-- Profile Info & Picture Update -->
+            <form method="post" action="" enctype="multipart/form-data" id="profile-info-form">
+                <input type="hidden" name="update_info" value="1">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="<?php echo sanitize($user['name']); ?>">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="<?php echo sanitize($user['email']); ?>">
+                </div>
+                <div class="form-group">
+                    <label for="profile_picture">Profile Picture</label>
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                    <?php if ($user['profile_picture']): ?>
+                      <div>
+                        <label>
+                          <input type="checkbox" name="remove_picture" value="1">
+                          Remove current picture
+                        </label>
+                      </div>
+                    <?php endif; ?>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+
+            <!-- Password Change -->
+            <form method="post" action="" id="password-change-form">
+                <input type="hidden" name="change_password" value="1">
+                <h3>Change Password</h3>
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password">
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password">
+                    <div class="password-strength" id="password-strength"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password">
+                    <div id="password-match-status"></div>
+                </div>
+                <button type="submit" class="btn btn-secondary">Change Password</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('new_password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const passwordStrength = document.getElementById('password-strength');
+    const passwordMatchStatus = document.getElementById('password-match-status');
+    
+    // Password strength requirements
+    const lengthCheck = document.getElementById('length-check');
+    const uppercaseCheck = document.getElementById('uppercase-check');
+    const lowercaseCheck = document.getElementById('lowercase-check');
+    const numberCheck = document.getElementById('number-check');
+    const specialCheck = document.getElementById('special-check');
+    
+    // Check password requirements
+    passwordInput.addEventListener('input', function() {
+        const password = passwordInput.value;
+        
+        // If password is empty, reset strength
+        if (password === '') {
+            passwordStrength.style.width = '0%';
+            passwordStrength.className = 'password-strength';
+            lengthCheck.classList.remove('met');
+            uppercaseCheck.classList.remove('met');
+            lowercaseCheck.classList.remove('met');
+            numberCheck.classList.remove('met');
+            specialCheck.classList.remove('met');
+            return;
+        }
+        
+        // Check length
+        if (password.length >= 8) {
+            lengthCheck.classList.add('met');
+        } else {
+            lengthCheck.classList.remove('met');
+        }
+        
+        // Check uppercase
+        if (/[A-Z]/.test(password)) {
+            uppercaseCheck.classList.add('met');
+        } else {
+            uppercaseCheck.classList.remove('met');
+        }
+        
+        // Check lowercase
+        if (/[a-z]/.test(password)) {
+            lowercaseCheck.classList.add('met');
+        } else {
+            lowercaseCheck.classList.remove('met');
+        }
+        
+        // Check number
+        if (/[0-9]/.test(password)) {
+            numberCheck.classList.add('met');
+        } else {
+            numberCheck.classList.remove('met');
+        }
+        
+        // Check special character
+        if (/[^A-Za-z0-9]/.test(password)) {
+            specialCheck.classList.add('met');
+        } else {
+            specialCheck.classList.remove('met');
+        }
+        
+        // Calculate strength
+        let strength = 0;
+        if (password.length >= 8) strength += 20;
+        if (/[A-Z]/.test(password)) strength += 20;
+        if (/[a-z]/.test(password)) strength += 20;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 20;
+        
+        // Update strength indicator
+        passwordStrength.style.width = strength + '%';
+        
+        if (strength <= 20) {
+            passwordStrength.className = 'password-strength very-weak';
+        } else if (strength <= 40) {
+            passwordStrength.className = 'password-strength weak';
+        } else if (strength <= 60) {
+            passwordStrength.className = 'password-strength medium';
+        } else if (strength <= 80) {
+            passwordStrength.className = 'password-strength strong';
+        } else {
+            passwordStrength.className = 'password-strength very-strong';
+        }
+    });
+    
+    // Check password match
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (confirmPassword === '') {
+            passwordMatchStatus.textContent = '';
+            passwordMatchStatus.className = '';
+        } else if (password === confirmPassword) {
+            passwordMatchStatus.textContent = "Passwords match";
+            passwordMatchStatus.className = "password-match-success";
+        } else {
+            passwordMatchStatus.textContent = "Passwords do not match";
+            passwordMatchStatus.className = "password-match-error";
+        }
+    }
+    
+    passwordInput.addEventListener('input', checkPasswordMatch);
+    confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+});
+</script>
+
+<style>
+.profile-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    padding-top: 70px;
+}
+
+.profile-header {
+    margin-bottom: 1.5rem;
+}
+
+.profile-header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.profile-card, 
+.profile-edit-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-avatar {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.profile-avatar i {
+    width: 5rem;
+    height: 5rem;
+    font-size: 5rem;
+    color: #0056b3;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.profile-avatar img {
+    width: 5rem;
+    height: 5rem;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.profile-avatar:hover i,
+.profile-avatar:hover img {
+    transform: scale(1.05);
+    border-color: #0056b3;
+}
+
+.user-role {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #0056b3;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.profile-details {
+    text-align: center;
+}
+
+.profile-details h2 {
+    margin: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.profile-details .username {
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.profile-details .email {
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.profile-details .member-since {
+    color: #777;
+    font-size: 0.85rem;
+}
+
+.profile-edit-card h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.profile-edit-card h3 {
+    margin: 1.5rem 0 0.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.form-hint {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.password-requirements {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+.password-requirements li {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.password-requirements li.met {
+    color: #28a745;
+}
+
+.password-requirements li.met::before {
+    content: "✓ ";
+    color: #28a745;
+}
+
+.password-strength {
+    height: 5px;
+    margin-top: 0.5rem;
+    width: 0%;
+    background-color: #dc3545;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.password-strength.very-weak {
+    background-color: #dc3545;
+}
+
+.password-strength.weak {
+    background-color: #ffc107;
+}
+
+.password-strength.medium {
+    background-color: #fd7e14;
+}
+
+.password-strength.strong {
+    background-color: #20c997;
+}
+
+.password-strength.very-strong {
+    background-color: #28a745;
+}
+
+.password-match-success {
+    color: #28a745;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.password-match-error {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #0056b3;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #004494;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.message {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+</style>
+
+<?php
+include '../includes/footer.php';
+?> 

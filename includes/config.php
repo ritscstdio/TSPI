@@ -8,7 +8,7 @@ define('DB_NAME', 'tspi_blog');
 // Site configuration
 define('SITE_URL', 'http://localhost/TSPI'); // Project base URL
 define('SITE_NAME', 'TSPI Blog');
-define('ADMIN_EMAIL', 'admin@tspi.org');
+define('ADMIN_EMAIL', 'no-reply@tspi.site');
 define('UPLOADS_DIR', __DIR__ . '/../uploads');
 define('ITEMS_PER_PAGE', 10);
 
@@ -102,4 +102,17 @@ function require_role($allowed_roles) {
         $_SESSION['message'] = "You do not have permission to access that page.";
         redirect('/admin/index.php');
     }
+}
+
+// Change redirect after login/logout
+function redirect_after_auth() {
+    redirect('/homepage.php');
+}
+
+// After logout, also change to homepage.php
+
+// edit_1: enable a dedicated profile-pics folder
+define('PROFILE_PICS_DIR', UPLOADS_DIR . '/profile_pics');
+if (!is_dir(PROFILE_PICS_DIR)) {
+    mkdir(PROFILE_PICS_DIR, 0755, true);
 }

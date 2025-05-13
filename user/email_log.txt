@@ -1,0 +1,14 @@
+Time: 2025-05-14 00:18:51
+To: megumin.bakuretsu.osu@gmail.com
+Subject: Verify your new email address
+Headers: From: no-reply@tspi.site
+Message:
+Hello Rich Darien,
+
+Click to verify your new email:
+http://localhost/TSPI/user/verify.php?code=897337f2a7cc9ca2c883442fb4f305a0
+
+Regards,
+TSPI Team
+SMTP Send Attempt: SUCCESS
+

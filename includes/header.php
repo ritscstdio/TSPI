@@ -86,6 +86,88 @@ if (!defined('DB_HOST')) {
             box-shadow: 0 6px 16px rgba(0,0,0,0.2) !important;
             border: 1px solid #ddd;
         }
+        
+        /* User dropdown styles */
+        .user-dropdown {
+            position: relative;
+            margin-left: 10px;
+        }
+        
+        .user-btn {
+            display: flex;
+            align-items: center;
+            background-color: transparent;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #333;
+            transition: color 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .user-btn:hover {
+            color: #0056b3;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .user-btn i {
+            margin-right: 5px;
+        }
+        
+        .user-btn i:last-child {
+            margin-right: 0;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
+        .user-dropdown-content {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            min-width: 160px;
+            z-index: 1000;
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            border: 1px solid #ddd;
+            display: none;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+        
+        .user-dropdown:hover .user-dropdown-content {
+            display: block;
+        }
+        
+        .user-dropdown-content a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .user-dropdown-content a:last-child {
+            border-bottom: none;
+        }
+        
+        .user-dropdown-content a:hover {
+            background-color: #e9f5ff;
+            padding-left: 18px;
+        }
+        
+        /* Fix dropdown disappearing on hover */
+        .user-dropdown-content:before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            right: 0;
+            width: 100%;
+            height: 10px;
+            display: block;
+        }
     </style>
 </head>
 
@@ -163,6 +245,21 @@ if (!defined('DB_HOST')) {
                     <button type="button" id="searchButton"><i class="fas fa-search"></i></button>
                 </form>
                 <div id="searchResults" class="search-results" style="display: none;">
+                </div>
+            </div>
+            <div class="user-dropdown">
+                <button class="user-btn">
+                    <i class="fas fa-user"></i>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="user-dropdown-content">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <a href="<?php echo SITE_URL; ?>/user/profile.php">My Profile</a>
+                        <a href="<?php echo SITE_URL; ?>/user/logout.php">Logout</a>
+                    <?php else: ?>
+                        <a href="<?php echo SITE_URL; ?>/user/login.php">Login</a>
+                        <a href="<?php echo SITE_URL; ?>/user/signup.php">Sign Up</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>

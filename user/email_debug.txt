@@ -1,0 +1,416 @@
+Email Debug Log Created: 2025-05-14 00:15:06
+
+------------------------------
+Sending email at 2025-05-14 00:15:06
+To: ritscstdio@gmail.com
+Subject: TSPI Email Test
+DEBUG[3]: Connection: opening to smtp.sendgrid.net:587, timeout=300, options=array()
+DEBUG[3]: Connection: opened
+DEBUG[2]: SERVER -> CLIENT: 220 SG ESMTP service ready at geopod-ismtpd-12
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: STARTTLS
+
+DEBUG[2]: SERVER -> CLIENT: 220 Begin TLS negotiation now
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: AUTH LOGIN
+
+DEBUG[2]: SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 235 Authentication successful
+
+DEBUG[1]: CLIENT -> SERVER: MAIL FROM:<no-reply@tspi.site>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Sender address accepted
+
+DEBUG[1]: CLIENT -> SERVER: RCPT TO:<ritscstdio@gmail.com>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Recipient address accepted
+
+DEBUG[1]: CLIENT -> SERVER: DATA
+
+DEBUG[2]: SERVER -> CLIENT: 354 Continue
+
+DEBUG[1]: CLIENT -> SERVER: Date: Wed, 14 May 2025 00:15:06 +0200
+
+DEBUG[1]: CLIENT -> SERVER: To: ritscstdio@gmail.com
+
+DEBUG[1]: CLIENT -> SERVER: From: Ketano <no-reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Reply-To: Ketano <reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Subject: TSPI Email Test
+
+DEBUG[1]: CLIENT -> SERVER: Message-ID: <4dILgPebrwVYNaxaWE9eqDGsYvPLdtJIaEZII85TUo8@localhost>
+
+DEBUG[1]: CLIENT -> SERVER: X-Mailer: PHPMailer 6.10.0 (https://github.com/PHPMailer/PHPMailer)
+
+DEBUG[1]: CLIENT -> SERVER: MIME-Version: 1.0
+
+DEBUG[1]: CLIENT -> SERVER: Content-Type: text/plain; charset=iso-8859-1
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: This is a test email from your TSPI application to verify that email sending is working correctly.
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: If you received this email, your email configuration is working!
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Time sent: 2025-05-14 00:15:06
+
+DEBUG[1]: CLIENT -> SERVER: Regards,
+
+DEBUG[1]: CLIENT -> SERVER: TSPI Team
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: .
+
+DEBUG[2]: SERVER -> CLIENT: 250 Ok: queued as Xa2sWsRxQF-JNrqdM9NSnQ
+
+DEBUG[1]: CLIENT -> SERVER: QUIT
+
+DEBUG[2]: SERVER -> CLIENT: 221 See you later
+
+DEBUG[3]: Connection: closed
+RESULT: Email sent successfully
+------------------------------
+Sending email at 2025-05-14 00:15:13
+To: ritscstdio@gmail.com
+Subject: TSPI Email Test
+DEBUG[3]: Connection: opening to smtp.sendgrid.net:587, timeout=300, options=array()
+DEBUG[3]: Connection: opened
+DEBUG[2]: SERVER -> CLIENT: 220 SG ESMTP service ready at geopod-ismtpd-12
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: STARTTLS
+
+DEBUG[2]: SERVER -> CLIENT: 220 Begin TLS negotiation now
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: AUTH LOGIN
+
+DEBUG[2]: SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 235 Authentication successful
+
+DEBUG[1]: CLIENT -> SERVER: MAIL FROM:<no-reply@tspi.site>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Sender address accepted
+
+DEBUG[1]: CLIENT -> SERVER: RCPT TO:<ritscstdio@gmail.com>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Recipient address accepted
+
+DEBUG[1]: CLIENT -> SERVER: DATA
+
+DEBUG[2]: SERVER -> CLIENT: 354 Continue
+
+DEBUG[1]: CLIENT -> SERVER: Date: Wed, 14 May 2025 00:15:13 +0200
+
+DEBUG[1]: CLIENT -> SERVER: To: ritscstdio@gmail.com
+
+DEBUG[1]: CLIENT -> SERVER: From: Ketano <no-reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Reply-To: Ketano <reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Subject: TSPI Email Test
+
+DEBUG[1]: CLIENT -> SERVER: Message-ID: <Ft5KnmWVZsEUm2sOjFtoKslUkV4kBtxHykToTPglfs@localhost>
+
+DEBUG[1]: CLIENT -> SERVER: X-Mailer: PHPMailer 6.10.0 (https://github.com/PHPMailer/PHPMailer)
+
+DEBUG[1]: CLIENT -> SERVER: MIME-Version: 1.0
+
+DEBUG[1]: CLIENT -> SERVER: Content-Type: text/plain; charset=iso-8859-1
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: This is a test email from your TSPI application to verify that email sending is working correctly.
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: If you received this email, your email configuration is working!
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Time sent: 2025-05-14 00:15:13
+
+DEBUG[1]: CLIENT -> SERVER: Regards,
+
+DEBUG[1]: CLIENT -> SERVER: TSPI Team
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: .
+
+DEBUG[2]: SERVER -> CLIENT: 250 Ok: queued as FcKCszXYQr-As1adx2vgKQ
+
+DEBUG[1]: CLIENT -> SERVER: QUIT
+
+DEBUG[2]: SERVER -> CLIENT: 221 See you later
+
+DEBUG[3]: Connection: closed
+RESULT: Email sent successfully
+------------------------------
+Sending email at 2025-05-14 00:17:58
+To: ritscstdio@gmail.com
+Subject: Verify your email address
+DEBUG[3]: Connection: opening to smtp.sendgrid.net:587, timeout=300, options=array()
+DEBUG[3]: Connection: opened
+DEBUG[2]: SERVER -> CLIENT: 220 SG ESMTP service ready at geopod-ismtpd-13
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: STARTTLS
+
+DEBUG[2]: SERVER -> CLIENT: 220 Begin TLS negotiation now
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: AUTH LOGIN
+
+DEBUG[2]: SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 235 Authentication successful
+
+DEBUG[1]: CLIENT -> SERVER: MAIL FROM:<no-reply@tspi.site>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Sender address accepted
+
+DEBUG[1]: CLIENT -> SERVER: RCPT TO:<ritscstdio@gmail.com>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Recipient address accepted
+
+DEBUG[1]: CLIENT -> SERVER: DATA
+
+DEBUG[2]: SERVER -> CLIENT: 354 Continue
+
+DEBUG[1]: CLIENT -> SERVER: Date: Wed, 14 May 2025 00:17:58 +0200
+
+DEBUG[1]: CLIENT -> SERVER: To: ritscstdio@gmail.com
+
+DEBUG[1]: CLIENT -> SERVER: From: Ketano <no-reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Reply-To: Ketano <reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Subject: Verify your email address
+
+DEBUG[1]: CLIENT -> SERVER: Message-ID: <irZ13qococ0FVO52O5f6WC0GF2WAqn0BS8NbrD2peM@localhost>
+
+DEBUG[1]: CLIENT -> SERVER: X-Mailer: PHPMailer 6.10.0 (https://github.com/PHPMailer/PHPMailer)
+
+DEBUG[1]: CLIENT -> SERVER: MIME-Version: 1.0
+
+DEBUG[1]: CLIENT -> SERVER: Content-Type: text/plain; charset=iso-8859-1
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Hello ritch,
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Thank you for signing up. Please verify your email address by clicking the link below:
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: http://localhost/TSPI/user/verify.php?code=760e538a7d10e83102f67db409d09913
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: This link will expire in 24 hours.
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Regards,
+
+DEBUG[1]: CLIENT -> SERVER: TSPI Team
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: .
+
+DEBUG[2]: SERVER -> CLIENT: 250 Ok: queued as z_nvJ5IWSCO0L7AeCgQDUw
+
+DEBUG[1]: CLIENT -> SERVER: QUIT
+
+DEBUG[2]: SERVER -> CLIENT: 221 See you later
+
+DEBUG[3]: Connection: closed
+RESULT: Email sent successfully
+------------------------------
+Sending email at 2025-05-14 00:18:47
+To: megumin.bakuretsu.osu@gmail.com
+Subject: Verify your new email address
+DEBUG[3]: Connection: opening to smtp.sendgrid.net:587, timeout=300, options=array()
+DEBUG[3]: Connection: opened
+DEBUG[2]: SERVER -> CLIENT: 220 SG ESMTP service ready at geopod-ismtpd-9
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: STARTTLS
+
+DEBUG[2]: SERVER -> CLIENT: 220 Begin TLS negotiation now
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: AUTH LOGIN
+
+DEBUG[2]: SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 235 Authentication successful
+
+DEBUG[1]: CLIENT -> SERVER: MAIL FROM:<no-reply@tspi.site>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Sender address accepted
+
+DEBUG[1]: CLIENT -> SERVER: RCPT TO:<megumin.bakuretsu.osu@gmail.com>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Recipient address accepted
+
+DEBUG[1]: CLIENT -> SERVER: DATA
+
+DEBUG[2]: SERVER -> CLIENT: 354 Continue
+
+DEBUG[1]: CLIENT -> SERVER: Date: Wed, 14 May 2025 00:18:47 +0200
+
+DEBUG[1]: CLIENT -> SERVER: To: megumin.bakuretsu.osu@gmail.com
+
+DEBUG[1]: CLIENT -> SERVER: From: Ketano <no-reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Reply-To: Ketano <reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Subject: Verify your new email address
+
+DEBUG[1]: CLIENT -> SERVER: Message-ID: <7irUE1g5Ywu40vpLwfiU1dd4LRSb35LeLMuU46SHi4@localhost>
+
+DEBUG[1]: CLIENT -> SERVER: X-Mailer: PHPMailer 6.10.0 (https://github.com/PHPMailer/PHPMailer)
+
+DEBUG[1]: CLIENT -> SERVER: MIME-Version: 1.0
+
+DEBUG[1]: CLIENT -> SERVER: Content-Type: text/plain; charset=iso-8859-1
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Hello Rich Darien,
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Click to verify your new email:
+
+DEBUG[1]: CLIENT -> SERVER: http://localhost/TSPI/user/verify.php?code=897337f2a7cc9ca2c883442fb4f305a0
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Regards,
+
+DEBUG[1]: CLIENT -> SERVER: TSPI Team
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: .
+
+DEBUG[2]: SERVER -> CLIENT: 250 Ok: queued as FodoZYn5Q0anH7D4-nf4pw
+
+DEBUG[1]: CLIENT -> SERVER: QUIT
+
+DEBUG[2]: SERVER -> CLIENT: 221 See you later
+
+DEBUG[3]: Connection: closed
+RESULT: Email sent successfully
