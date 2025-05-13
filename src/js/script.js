@@ -283,52 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCarousel();
     }
 
-    // Search results live dropdown
-    const liveInput = document.getElementById('liveSearchInput');
-    const resultsContainer = document.getElementById('searchResults');
-    let searchTimeout;
-    if (liveInput && resultsContainer) {
-        liveInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            const query = this.value.trim();
-            if (!query) {
-                resultsContainer.style.display = 'none';
-                resultsContainer.innerHTML = '';
-                return;
-            }
-            // Debounce
-            searchTimeout = setTimeout(() => {
-                // Relative fetch to search.php in current directory
-                fetch(`search.php?q=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        resultsContainer.innerHTML = '';
-                        if (data.length > 0) {
-                            data.forEach(item => {
-                                const a = document.createElement('a');
-                                a.href = `${window.location.origin}/TSPI/article.php?slug=${item.slug}`;
-                                a.textContent = item.title;
-                                resultsContainer.appendChild(a);
-                            });
-                        } else {
-                            const p = document.createElement('p');
-                            p.className = 'no-results';
-                            p.textContent = 'No results found.';
-                            resultsContainer.appendChild(p);
-                        }
-                        resultsContainer.style.display = 'block';
-                    })
-                    .catch(err => {
-                        console.error('Search error', err);
-                        resultsContainer.style.display = 'none';
-                    });
-            }, 300);
-        });
-        // Hide results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!resultsContainer.contains(e.target) && e.target !== liveInput) {
-                resultsContainer.style.display = 'none';
-            }
-        });
-    }
+    // Removed the outdated live dropdown search code to avoid conflicts;
+    // search is now handled by the new AJAX implementation in header.php.
 }); 

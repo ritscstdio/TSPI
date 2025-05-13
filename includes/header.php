@@ -153,13 +153,112 @@ if (!defined('DB_HOST')) {
             </div>
             <div class="search-bar" style="position: relative;">
                 <form id="searchForm">
-                    <input type="text" id="liveSearchInput" placeholder="Search..." autocomplete="off" disabled>
-                    <button type="button"><i class="fas fa-search"></i></button>
+                    <input type="text" id="liveSearchInput" placeholder="Search..." autocomplete="off">
+                    <button type="button" id="searchButton"><i class="fas fa-search"></i></button>
                 </form>
                 <div id="searchResults" class="search-results" style="display: none;">
                 </div>
             </div>
         </nav>
     </header>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Live search functionality
+        const searchInput = document.getElementById('liveSearchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchResults = document.getElementById('searchResults');
+        
+        let searchTimeout = null;
+        
+        // Function to perform search
+        function performSearch() {
+            const query = searchInput.value.trim();
+            
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            // Show searching indicator
+            searchResults.style.display = 'block';
+            searchResults.innerHTML = '<p class="searching">Searching...</p>';
+            
+            // Make AJAX request
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '<?php echo SITE_URL; ?>/includes/search_articles.php?q=' + encodeURIComponent(query), true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        
+                        if (response.status === 'success') {
+                            if (response.count > 0) {
+                                let html = '';
+                                
+                                response.results.forEach(function(article) {
+                                    const date = new Date(article.published_at);
+                                    const formattedDate = date.toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+                                    
+                                    html += `<a href="<?php echo SITE_URL; ?>/article.php?slug=${article.slug}" class="search-result-item">
+                                        <span class="result-title">${article.title}</span>
+                                        <span class="result-meta">${article.author} | ${formattedDate}</span>
+                                    </a>`;
+                                });
+                                
+                                searchResults.innerHTML = html;
+                            } else {
+                                searchResults.innerHTML = '<p class="no-results">No articles found</p>';
+                            }
+                        } else {
+                            searchResults.innerHTML = '<p class="no-results">Error: ' + response.message + '</p>';
+                        }
+                    } catch (e) {
+                        searchResults.innerHTML = '<p class="no-results">Error processing results</p>';
+                    }
+                } else {
+                    searchResults.innerHTML = '<p class="no-results">Error connecting to server</p>';
+                }
+            };
+            
+            xhr.onerror = function() {
+                searchResults.innerHTML = '<p class="no-results">Network error</p>';
+            };
+            
+            xhr.send();
+        }
+        
+        // Set up event listeners
+        searchInput.addEventListener('input', function() {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            searchTimeout = setTimeout(performSearch, 300);
+        });
+        
+        searchButton.addEventListener('click', performSearch);
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+        
+        // Close search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchButton.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    });
+    </script>
 </body>
 </html>
