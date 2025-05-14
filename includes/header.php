@@ -168,6 +168,81 @@ if (!defined('DB_HOST')) {
             height: 10px;
             display: block;
         }
+
+        /* Basic Sub-dropdown styling for desktop */
+        .dropdown-content .sub-dropdown-trigger {
+            position: relative;
+        }
+
+        .dropdown-content .sub-dropdown-trigger .sub-dropdown-content {
+            display: none;
+            position: absolute;
+            left: 100%; /* Position to the right of the parent */
+            top: -1px;     /* Align with the top of the parent, adjusted for border */
+            background-color: #fff; /* Match main dropdown */
+            min-width: 200px; /* Adjusted width */
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2); /* Match main dropdown */
+            border: 1px solid #ddd; /* Match main dropdown */
+            border-radius: 6px; /* Match main dropdown */
+            padding-top: 5px;
+            padding-bottom: 5px;
+            z-index: 1001; /* Ensure it's above parent */
+        }
+
+        .dropdown-content .sub-dropdown-trigger:hover > .sub-dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content .sub-dropdown-trigger > a {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dropdown-content .sub-dropdown-trigger > a i {
+            margin-left: auto; /* Pushes icon to the right */
+            font-size: 0.8em;
+        }
+        
+        /* Mobile nav adjustments for nested details */
+        .mobile-nav details summary {
+            /* padding: 10px 15px; Re-evaluate this if issues*/
+            display: block;
+            cursor: pointer;
+            /* font-weight: bold; Re-evaluate */
+            /* background-color: #f9f9f9; Re-evaluate */
+            /* border-bottom: 1px solid #eee; Re-evaluate */
+        }
+        .mobile-nav details.sub-dropdown-details summary {
+            padding-left: 15px; /* Indent sub-summary trigger */
+            font-weight: normal; /* Sub-summary trigger less bold */
+        }
+
+        .mobile-nav details a, 
+        .mobile-nav details details a {
+            /* padding: 10px 15px 10px 30px; */ /* Base padding for links under details */
+            /* display: block; Already there from previous general rules */
+            /* text-decoration: none; Already there */
+            /* color: #333; Already there */
+            /* border-bottom: 1px solid #eee; Already there */
+        }
+
+        .mobile-nav details.sub-dropdown-details a {
+            padding-left: 30px; /* Further indent links under sub-summary */
+        }
+
+        /* Style for the link within a summary tag */
+        .summary-link-mobile {
+            text-decoration: none;
+            color: inherit; /* Inherit color from summary */
+            display: inline; /* Allow it to flow with summary text */
+            padding: 0; /* Reset padding for the link itself */
+            border-bottom: none; /* Remove border from link inside summary */
+            background-color: transparent; /* Ensure no background */
+        }
+        .mobile-nav details.sub-dropdown-details summary .summary-link-mobile {
+             font-weight: bold; /* Make the About Us link bold in mobile */
+        }
+
     </style>
 </head>
 
@@ -206,10 +281,16 @@ if (!defined('DB_HOST')) {
                 <div class="dropdown">
                     <button class="dropdown-btn">Who We Are <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="#about">About Us</a>
-                        <a href="#mission-vision">Mission & Vision</a>
-                        <a href="#board-of-trustees">Board of Trustees</a>
-                        <a href="#management-team">Management Team</a>
+                        <div class="sub-dropdown-trigger">
+                            <a href="<?php echo SITE_URL; ?>/AboutUs.php">About Us <i class="fas fa-chevron-right"></i></a>
+                            <div class="sub-dropdown-content">
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
+                            </div>
+                        </div>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Board of Trustees</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Management Team</a>
                     </div>
                 </div>
                 <a href="#what-we-offer">What We Offer</a>
@@ -224,12 +305,16 @@ if (!defined('DB_HOST')) {
             </div>
             <div class="mobile-nav">
                 <a href="<?php echo SITE_URL; ?>/homepage.php" class="home-link">Home</a>
-                <details>
+                <details class="main-dropdown-details">
                     <summary>Who We Are</summary>
-                    <a href="#about">About Us</a>
-                    <a href="#mission-vision">Mission & Vision</a>
-                    <a href="#board-of-trustees">Board of Trustees</a>
-                    <a href="#management-team">Management Team</a>
+                    <details class="sub-dropdown-details">
+                        <summary><a href="<?php echo SITE_URL; ?>/AboutUs.php" class="summary-link-mobile">About Us</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
+                    </details>
+                    <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
+                    <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Board of Trustees</a>
+                    <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Management Team</a>
                 </details>
                 <a href="#what-we-offer" class="what-we-offer-link">What We Offer</a>
                 <details>

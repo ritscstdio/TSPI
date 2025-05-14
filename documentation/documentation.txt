@@ -29,39 +29,37 @@ A cookie consent banner is implemented to inform users about cookie usage and to
 
 This ensures users are informed about cookie usage and can provide consent, which is stored for a year.
 
-## About Us Page (`AboutUs.php`)
+## About Us Page (AboutUs.php)
 
-A comprehensive "About Us" page (`AboutUs.php`) has been created to provide visitors with detailed information about TSPI, its leadership, and its subsidiary, TSPI-MBAI.
+### Structure:
+- Main container: `<main><div class="about-us-container">`
+- Sections:
+    - "About TSPI (Tulay Sa Pag-unlad Inc.) - NGO": Contains intro text, embedded YouTube video, Vision, Mission, and Core Values.
+        - Vision & Mission are in a flex container with ID `vision-mission`.
+        - Core Values are in a grid.
+        - Icons (Font Awesome) added to Vision, Mission, and Core Value titles.
+    - "Our Leaders": Displays Board of Trustees and Senior Management Team.
+        - Each leader is in a `.leader-card` which is clickable to toggle a bio.
+        - Images are dynamically loaded from `assets/images/leaders/` via a PHP mapping.
+    - "About TSPI Mutual Benefit Association, Inc. (MBAI)": Contains information about MBAI and a link to its website.
+        - Section ID: `about-tspi-mbai`.
 
-### Page Structure and Content:
+### Styling:
+- Page-specific styles are included in `<style>` tags within `AboutUs.php`.
+- General section styling comes from `.about-section`.
+- Leader cards have specific styling for layout, images, and bio toggle (including a CSS-generated dropdown arrow).
 
-1.  **Standard Includes:** The page uses the common `includes/header.php` and `includes/footer.php`.
-2.  **Page-Specific CSS:** Styles for layout, typography, and individual sections are included within a `<style>` block in `AboutUs.php` to ensure a modern and responsive design.
+### Functionality:
+- Leader bios are toggled via JavaScript by clicking anywhere on the `.leader-card`.
 
-### Sections:
+## Header Navigation (includes/header.php)
 
-1.  **About TSPI - NGO (`#about-tspi-ngo`):**
-    *   **Video Embed:** Features an embedded YouTube video showcasing TSPI.
-    *   **Description:** Detailed information about TSPI's history, mission, and approach.
-    *   **Vision & Mission:** Clearly stated organizational vision and mission.
-    *   **Core Values:** Lists and describes TSPI's core values (Servanthood, Stewardship, Integrity, Excellence) and their foundational principles.
-
-2.  **Our Leaders (`#our-leaders`):**
-    *   **Board of Trustees:**
-        *   Each trustee is presented in a card format with a placeholder image, their name, position, and a relevant quote.
-        *   An interactive dropdown/accordion reveals a detailed biography for each trustee, implemented with JavaScript.
-    *   **Senior Management Team:**
-        *   Each member of the senior management team is also presented in a card format with a placeholder image, name, and position/group.
-        *   An interactive dropdown/accordion displays their credentials and affiliations.
-    *   **JavaScript for Toggles:** Custom JavaScript is included at the end of the page to manage the show/hide functionality of the leader biographies.
-
-3.  **About TSPI Mutual Benefit Association, Inc. (MBAI) (`#about-tspi-mbai`):**
-    *   **Description:** Provides an overview of TSPI-MBAI, its vision, mission, and registration details.
-    *   **TSPI-MBAI Pledge:** Includes the official pledge of the MBAI.
-    *   **External Link:** A button links directly to the TSPI-MBAI website (`https://mbai.tspi.org/`).
-
-### Design and Functionality:
-*   The page is designed to be modern and clean, using flexbox and grid for layout where appropriate.
-*   Responsive design ensures usability across different screen sizes.
-*   The leader biographies use an accordion-style toggle for a better user experience, preventing the page from being overly long by default.
-*   Placeholder images (`assets/images/placeholder_leader.png`) are used for leaders and should be replaced with actual images.
+- The "Who We Are" dropdown has been restructured:
+    - "About Us" is now a primary link to `AboutUs.php` and also serves as a parent for a sub-dropdown.
+    - The sub-dropdown under "About Us" includes:
+        - "Our Leaders" (links to `AboutUs.php#our-leaders`)
+        - "Our Partner (MBAI)" (links to `AboutUs.php#about-tspi-mbai`)
+    - "Mission & Vision" links to `AboutUs.php#vision-mission`.
+    - "Board of Trustees" and "Management Team" link to `AboutUs.php#our-leaders`.
+- This structure is implemented for both desktop (hover-based dropdowns) and mobile (details/summary elements) navigation.
+- CSS for sub-dropdowns has been added directly in `includes/header.php`.
