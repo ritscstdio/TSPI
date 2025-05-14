@@ -1,4 +1,3 @@
-
     <button class="scroll-to-top-btn" id="scrollToTopBtn" aria-label="Scroll to top">
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -52,7 +51,56 @@
         </div>
     </footer>
 
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="cookie-consent-banner">
+        <p>This website uses cookies to enhance user experience, analyze site traffic, and for other purposes. By clicking "Accept", you consent to the use of all cookies. For more information, please visit our <a href="<?php echo SITE_URL; ?>/privacy.php" style="color: #e6b54c; text-decoration: underline;">Privacy Policy</a>.</p>
+        <div class="cookie-actions">
+            <a href="<?php echo SITE_URL; ?>/privacy.php" class="btn-privacy">Privacy Policy</a>
+            <button id="cookie-accept-btn">Accept</button>
+        </div>
+    </div>
+
     <script src="<?php echo SITE_URL; ?>/assets/js/main.js"></script>
     <script src="<?php echo SITE_URL; ?>/src/js/script.js"></script>
+    <script>
+    // Cookie Consent Banner JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        const banner = document.getElementById('cookie-consent-banner');
+        const acceptBtn = document.getElementById('cookie-accept-btn');
+        const consentCookieName = 'tspi_cookie_consent';
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+
+        if (!getCookie(consentCookieName)) {
+            if (banner) {
+                banner.style.display = 'block';
+            }
+        }
+
+        if (acceptBtn) {
+            acceptBtn.addEventListener('click', function() {
+                setCookie(consentCookieName, 'true', 365); // Consent for 1 year
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>

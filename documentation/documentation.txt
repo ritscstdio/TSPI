@@ -11,3 +11,57 @@ To achieve this:
 3. A CSS rule `body.homepage-body main { padding-top: 0; }` in `src/css/mainstyles.css` overrides the global `padding-top` for the main content area of the homepage, allowing the hero section (the first child of `<main>`) to extend to the top of the viewport.
 
 This setup ensures that new pages created will automatically have their main content start below the navbar, while the homepage maintains its specific hero section layout.
+
+## Cookie Consent Banner
+
+A cookie consent banner is implemented to inform users about cookie usage and to obtain consent. It appears on all pages if the user has not previously accepted the cookie policy.
+
+### Components:
+1.  **HTML (in `includes/footer.php`):** Defines the structure of the banner, including a message, a link to the Privacy Policy page (`privacy.php`), and an "Accept" button.
+2.  **CSS (in `src/css/mainstyles.css`):** Styles for `.cookie-consent-banner` and its child elements, ensuring it is fixed at the bottom right with a dark theme, consistent with company standards.
+3.  **JavaScript (in `includes/footer.php`):
+    *   Checks for a cookie named `tspi_cookie_consent` on page load.
+    *   If the cookie is not found (new visitor or cookie expired), the banner is displayed (`banner.style.display = 'block';`).
+    *   When the "Accept" button is clicked:
+        *   A cookie named `tspi_cookie_consent` is set with the value `true` and an expiration of 365 days.
+        *   The banner is hidden (`banner.style.display = 'none';`).
+4.  **Privacy Policy Page (`privacy.php`):** A new page created with placeholder privacy policy content. It links from the cookie banner and the main site footer.
+
+This ensures users are informed about cookie usage and can provide consent, which is stored for a year.
+
+## About Us Page (`AboutUs.php`)
+
+A comprehensive "About Us" page (`AboutUs.php`) has been created to provide visitors with detailed information about TSPI, its leadership, and its subsidiary, TSPI-MBAI.
+
+### Page Structure and Content:
+
+1.  **Standard Includes:** The page uses the common `includes/header.php` and `includes/footer.php`.
+2.  **Page-Specific CSS:** Styles for layout, typography, and individual sections are included within a `<style>` block in `AboutUs.php` to ensure a modern and responsive design.
+
+### Sections:
+
+1.  **About TSPI - NGO (`#about-tspi-ngo`):**
+    *   **Video Embed:** Features an embedded YouTube video showcasing TSPI.
+    *   **Description:** Detailed information about TSPI's history, mission, and approach.
+    *   **Vision & Mission:** Clearly stated organizational vision and mission.
+    *   **Core Values:** Lists and describes TSPI's core values (Servanthood, Stewardship, Integrity, Excellence) and their foundational principles.
+
+2.  **Our Leaders (`#our-leaders`):**
+    *   **Board of Trustees:**
+        *   Each trustee is presented in a card format with a placeholder image, their name, position, and a relevant quote.
+        *   An interactive dropdown/accordion reveals a detailed biography for each trustee, implemented with JavaScript.
+    *   **Senior Management Team:**
+        *   Each member of the senior management team is also presented in a card format with a placeholder image, name, and position/group.
+        *   An interactive dropdown/accordion displays their credentials and affiliations.
+    *   **JavaScript for Toggles:** Custom JavaScript is included at the end of the page to manage the show/hide functionality of the leader biographies.
+
+3.  **About TSPI Mutual Benefit Association, Inc. (MBAI) (`#about-tspi-mbai`):**
+    *   **Description:** Provides an overview of TSPI-MBAI, its vision, mission, and registration details.
+    *   **TSPI-MBAI Pledge:** Includes the official pledge of the MBAI.
+    *   **External Link:** A button links directly to the TSPI-MBAI website (`https://mbai.tspi.org/`).
+
+### Design and Functionality:
+*   The page is designed to be modern and clean, using flexbox and grid for layout where appropriate.
+*   Responsive design ensures usability across different screen sizes.
+*   The leader biographies use an accordion-style toggle for a better user experience, preventing the page from being overly long by default.
+*   Placeholder images (`assets/images/placeholder_leader.png`) are used for leaders and should be replaced with actual images.
