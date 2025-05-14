@@ -284,13 +284,11 @@ if (!defined('DB_HOST')) {
                         <div class="sub-dropdown-trigger">
                             <a href="<?php echo SITE_URL; ?>/AboutUs.php">About Us <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
                                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
                                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                             </div>
                         </div>
-                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
-                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Board of Trustees</a>
-                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Management Team</a>
                     </div>
                 </div>
                 <a href="#what-we-offer">What We Offer</a>
@@ -309,12 +307,10 @@ if (!defined('DB_HOST')) {
                     <summary>Who We Are</summary>
                     <details class="sub-dropdown-details">
                         <summary><a href="<?php echo SITE_URL; ?>/AboutUs.php" class="summary-link-mobile">About Us</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                     </details>
-                    <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
-                    <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Board of Trustees</a>
-                    <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Management Team</a>
                 </details>
                 <a href="#what-we-offer" class="what-we-offer-link">What We Offer</a>
                 <details>
@@ -446,6 +442,28 @@ if (!defined('DB_HOST')) {
                 searchResults.style.display = 'none';
             }
         });
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileNav = document.querySelector('.mobile-nav');
+        const hamburgerIcon = document.querySelector('.hamburger-icon'); // For X animation
+
+        if (mobileMenuToggle && mobileNav && hamburgerIcon) {
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileNav.classList.toggle('mobile-nav-active');
+                hamburgerIcon.classList.toggle('active'); // Toggle class for X animation
+                // Optional: Toggle aria-expanded for accessibility
+                const isExpanded = mobileNav.classList.contains('mobile-nav-active');
+                mobileMenuToggle.setAttribute('aria-expanded', isExpanded);
+                if (isExpanded) {
+                    hamburgerIcon.setAttribute('aria-label', 'Close menu');
+                    hamburgerIcon.setAttribute('aria-hidden', 'true'); // Hide spans if they are visually replaced by X
+                } else {
+                    hamburgerIcon.setAttribute('aria-label', 'Open menu');
+                    hamburgerIcon.setAttribute('aria-hidden', 'false');
+                }
+            });
+        }
     });
     </script>
 </body>

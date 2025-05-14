@@ -11,4 +11,30 @@ If there are major systems that require a separate documentation make another .t
 
 As for the setup of the project from git cloning or pulling update the README.md for the user as a guide in setting up the project
 
+<new_project_instruction>
+**Fixed Navbar Offset Rule:**
 
+1.  **Identify Navigation Targets:** Whenever an HTML element is given an `id` attribute for the primary purpose of being an in-page navigation target (i.e., linked via an anchor like `#some-id`), that element MUST have `scroll-margin-top` applied.
+
+2.  **Use CSS Custom Properties:**
+    *   Define the primary navbar's height as a CSS custom property in a global stylesheet (e.g., `src/css/mainstyles.css`):
+        ```css
+        :root {
+            --navbar-height: 166px; /* Or the actual current height */
+            --navbar-scroll-offset: calc(var(--navbar-height) + 24px); /* Base height + buffer */
+        }
+        ```
+    *   Use `var(--navbar-scroll-offset)` for the `scroll-margin-top` value on all navigation target elements.
+    *   Use `var(--navbar-height)` for the global `padding-top` on the `<main>` element (or equivalent main content wrapper).
+
+3.  **Implementation:**
+    *   For new sections/pages: Proactively apply the `id` and the `scroll-margin-top: var(--navbar-scroll-offset);` style to elements that will be linked to.
+    *   For existing pages: If new anchor links are added, audit the target elements to ensure this rule is applied.
+
+**Example:**
+In HTML: `<section id="my-section">...</section>`
+In CSS: `#my-section { scroll-margin-top: var(--navbar-scroll-offset); }`
+
+By consistently applying this, we ensure that content isn't hidden behind the fixed navbar when navigating via anchor links.
+
+</new_project_instruction>

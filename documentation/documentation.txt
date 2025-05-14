@@ -48,18 +48,22 @@ This ensures users are informed about cookie usage and can provide consent, whic
 - Page-specific styles are included in `<style>` tags within `AboutUs.php`.
 - General section styling comes from `.about-section`.
 - Leader cards have specific styling for layout, images, and bio toggle (including a CSS-generated dropdown arrow).
+    - The bio toggle animation uses `ease-in-out` timing for a smoother feel.
 
 ### Functionality:
 - Leader bios are toggled via JavaScript by clicking anywhere on the `.leader-card`.
+- A sticky side navigation panel allows users to easily jump between sections of the page.
+    - The panel is styled with `position: sticky` and a calculated `top` value to sit below the main site navbar.
+    - It includes links to all major sections and sub-sections, which have corresponding `id` attributes.
 
 ## Header Navigation (includes/header.php)
 
 - The "Who We Are" dropdown has been restructured:
     - "About Us" is now a primary link to `AboutUs.php` and also serves as a parent for a sub-dropdown.
     - The sub-dropdown under "About Us" includes:
+        - "Mission & Vision" (links to `AboutUs.php#vision-mission`)
         - "Our Leaders" (links to `AboutUs.php#our-leaders`)
         - "Our Partner (MBAI)" (links to `AboutUs.php#about-tspi-mbai`)
-    - "Mission & Vision" links to `AboutUs.php#vision-mission`.
-    - "Board of Trustees" and "Management Team" link to `AboutUs.php#our-leaders`.
+    - "Board of Trustees" and "Management Team" items were removed from the main dropdown as they are covered under "Our Leaders".
 - This structure is implemented for both desktop (hover-based dropdowns) and mobile (details/summary elements) navigation.
 - CSS for sub-dropdowns has been added directly in `includes/header.php`.

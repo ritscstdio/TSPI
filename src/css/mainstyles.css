@@ -1,13 +1,20 @@
 :root {
     --primary-blue: #1B3FAB;
     --secondary-gold: #e6b54c;
-    --light-blue: #f0f5ff;
-    --ligher-blue: #fdfdff;
-    --dark-navy: #153084;
-    --text-gray: #4a4a4a;
-    --impact-green: #26a69a;
+    --light-blue: #f0f8ff; /* AliceBlue, a very light blue */
+    --ligher-blue: #e6f3ff; /* A slightly different light blue */
+    --dark-navy: #002366; /* A dark navy blue */
+    --text-gray: #555;
+    --light-gray: #f4f4f4;
     --white: #ffffff;
     --black: #000000;
+    --navbar-height: 166px;
+    --navbar-scroll-offset: calc(var(--navbar-height) + 24px); /* 166px + 24px buffer = 190px */
+}
+
+html {
+    scroll-behavior: smooth;
+    font-family: 'Open Sans', sans-serif;
 }
 
 * {
@@ -928,6 +935,133 @@ body {
         align-items: center !important;
         text-align: center !important;
     }
+
+    .nav-links {
+        display: none; /* Hide desktop links */
+    }
+
+    .mobile-menu-toggle {
+        display: block; /* Show hamburger toggle */
+        /* Ensure other styles like background, border, cursor, z-index are appropriate */
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem; /* Adjust as needed */
+        z-index: 1010; /* Above .mobile-nav if it slides over */
+    }
+
+    .hamburger-icon {
+        display: block;
+        width: 24px; /* Adjust as needed */
+        height: 20px; /* Adjust as needed */
+        position: relative;
+    }
+
+    .hamburger-icon span {
+        display: block;
+        width: 100%;
+        height: 2px; /* Thickness of hamburger lines */
+        background-color: var(--primary-blue); /* Color of lines */
+        border-radius: 1px;
+        position: absolute;
+        left: 0;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .hamburger-icon span:nth-child(1) {
+        top: 0;
+    }
+
+    .hamburger-icon span:nth-child(2) {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .hamburger-icon span:nth-child(3) {
+        bottom: 0;
+    }
+
+    .hamburger-icon.active span:nth-child(1) {
+        top: 50%;
+        transform: translateY(-50%) rotate(45deg);
+    }
+
+    .hamburger-icon.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-icon.active span:nth-child(3) {
+        bottom: 50%;
+        transform: translateY(50%) rotate(-45deg);
+    }
+
+    .mobile-nav {
+        /* display: none; */ /* Controlled by .mobile-nav-active via JS */
+        flex-direction: column;
+        position: absolute; /* Or fixed, depending on desired scroll behavior */
+        top: var(--navbar-height); /* Position below the entire header block */
+        left: 0;
+        width: 100%;
+        background-color: var(--white);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        padding: 0; /* Reset padding, links will have their own */
+        z-index: 999; 
+        max-height: calc(100vh - var(--navbar-height));
+        overflow-y: auto;
+        transform: translateX(-100%); /* Start off-screen */
+        transition: transform 0.3s ease-in-out;
+        visibility: hidden; /* Hide for accessibility until active */
+    }
+
+    .mobile-nav.mobile-nav-active {
+        /* display: flex; */ /* Not needed if using transform for animation */
+        transform: translateX(0); /* Slide in */
+        visibility: visible;
+    }
+
+    .mobile-nav a, .mobile-nav details summary {
+        padding: 1rem 1.5rem;
+        display: block;
+        text-decoration: none;
+        color: var(--dark-navy);
+        border-bottom: 1px solid var(--light-gray);
+        font-weight: 500;
+    }
+    .mobile-nav details details summary,
+    .mobile-nav details details a {
+        padding-left: 2.5rem; /* Indent sub-items more */
+        background-color: var(--ligher-blue); /* Slight background for sub-items */
+    }
+    .mobile-nav details details details a {
+        padding-left: 3.5rem;
+        background-color: var(--light-blue); /* Even lighter for deeper items */
+    }
+
+    .mobile-nav a:hover, .mobile-nav details summary:hover {
+        background-color: var(--secondary-gold);
+        color: var(--white);
+    }
+
+    .mobile-nav details[open] > summary {
+        background-color: var(--primary-blue);
+        color: var(--white);
+    }
+
+    .mobile-nav .summary-link-mobile {
+        display: inline; /* Keep it inline with summary text */
+        padding: 0;
+        border-bottom: none;
+        background-color: transparent;
+        font-weight: inherit; /* Inherit from summary */
+        color: inherit; /* Inherit from summary */
+    }
+    .mobile-nav .summary-link-mobile:hover {
+        background-color: transparent; /* Don't change bg on hover for this link */
+        color: inherit; /* Keep color from summary */
+    }
+
+
+    /* ... other mobile styles ... */
 }
 
 .hero {
@@ -1484,8 +1618,8 @@ main {
     flex-grow: 1; 
     width: 100%; 
     background-color: transparent; /* Changed from var(--light-blue) */
-    padding-top: 166px; /* For fixed header */
-    padding-bottom: 4rem; /* Increased for more space before footer */
+    padding-top: var(--navbar-height);
+    padding-bottom: 4rem; /* Increased padding for footer */
     /* Other paddings (left/right) will be default or set by other rules */
 }
 
