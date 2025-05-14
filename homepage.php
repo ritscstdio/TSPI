@@ -1,4 +1,5 @@
 <?php
+$body_class = 'homepage-body';
 $page_title = "Homepage";
 $page_description = "Tulay sa Pag-unlad, Inc. | Empowering communities through financial inclusion and sustainable development.";
 include 'includes/header.php';

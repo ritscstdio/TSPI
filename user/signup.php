@@ -127,7 +127,7 @@ include '../includes/header.php';
 ?>
 
 <main class="container signup-container">
-    <div class="auth-box">
+    <div class="auth-box fade-up-on-load">
         <h1>Create an Account</h1>
         
         <?php if ($success): ?>
@@ -320,14 +320,15 @@ document.addEventListener('DOMContentLoaded', function() {
 .signup-container {
     max-width: 600px;
     margin: 2rem auto;
-    padding: 0 1rem;
-    padding-top: 100px;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .auth-box {
-    background-color: #fff;
+    background-color: #fff; /* Added back white background */
+    /* background-color: #fff; */ /* Removed as per user request */
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Kept for dropshadow */
     padding: 2rem;
 }
 

@@ -193,7 +193,7 @@ include '../includes/header.php';
     <?php endif; ?>
     
     <div class="profile-content">
-        <div class="profile-card">
+        <div class="profile-card fade-up-on-load">
             <div class="profile-info">
                 <div class="profile-avatar">
                     <?php if ($user['profile_picture']): ?>
@@ -213,7 +213,7 @@ include '../includes/header.php';
             </div>
         </div>
         
-        <div class="profile-edit-card">
+        <div class="profile-edit-card fade-up-on-load">
             <h2>Edit Profile</h2>
             <!-- Profile Info & Picture Update -->
             <form method="post" action="" enctype="multipart/form-data" id="profile-info-form">
@@ -380,8 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
 .profile-container {
     max-width: 900px;
     margin: 2rem auto;
-    padding: 0 1rem;
-    padding-top: 70px;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .profile-header {

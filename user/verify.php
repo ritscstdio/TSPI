@@ -123,7 +123,7 @@ include '../includes/header.php';
 ?>
 
 <main class="container verify-container">
-    <div class="auth-box">
+    <div class="auth-box fade-up-on-load">
         <?php if ($verified): ?>
             <div class="message success">
                 <h1><i class="fas fa-check-circle"></i> Email Verified</h1>
@@ -197,8 +197,8 @@ include '../includes/header.php';
 .verify-container {
     max-width: 600px;
     margin: 2rem auto;
-    padding: 0 1rem;
-    padding-top: 70px;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .auth-box {

@@ -1,0 +1,13 @@
+## Global Page Layout and Navbar
+
+The website uses a fixed header/navbar at the top of the page. To ensure page content is not obscured by this fixed navbar, a global CSS rule applies `padding-top: 166px;` (calculated based on the navbar's height) to the main HTML5 `<main>` element of all pages.
+
+### Homepage Exception:
+
+The homepage (`homepage.php`) is an exception. Its hero section is designed to appear directly under the navbar, with the navbar potentially overlaying the top portion of the hero's background video/image.
+To achieve this:
+1. `homepage.php` sets a PHP variable `$body_class = 'homepage-body';`.
+2. This adds a class `homepage-body` to the `<body>` tag via `includes/header.php`.
+3. A CSS rule `body.homepage-body main { padding-top: 0; }` in `src/css/mainstyles.css` overrides the global `padding-top` for the main content area of the homepage, allowing the hero section (the first child of `<main>`) to extend to the top of the viewport.
+
+This setup ensures that new pages created will automatically have their main content start below the navbar, while the homepage maintains its specific hero section layout.

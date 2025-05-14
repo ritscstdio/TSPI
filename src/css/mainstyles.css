@@ -1481,9 +1481,12 @@ html, body {
 }
 
 main {
-    flex: 1 0 auto;
-    background-color: var(--light-blue); /* Light blue backdrop for the main area */
-    padding: 0 0 2rem; /* Removed general top padding, apply padding per-page via body class */
+    flex-grow: 1; 
+    width: 100%; 
+    background-color: transparent; /* Changed from var(--light-blue) */
+    padding-top: 166px; /* For fixed header */
+    padding-bottom: 4rem; /* Increased for more space before footer */
+    /* Other paddings (left/right) will be default or set by other rules */
 }
 
 .footer {
@@ -2429,4 +2432,22 @@ main {
     margin-left: auto;  /* Keep centering the container for consistency */
     margin-right: auto; /* Keep centering the container for consistency */
     padding: 0 2rem;
+}
+
+/* Override margin-top for hero section specifically on the homepage */
+body.homepage-body .hero {
+    margin-top: 0;
+}
+
+/* Fade-up animation for user auth boxes and similar elements */
+.fade-up-on-load {
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeUpHero 1.1s cubic-bezier(0.4,0,0.2,1) 0.2s forwards;
+}
+@keyframes fadeUpHero {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 } 
