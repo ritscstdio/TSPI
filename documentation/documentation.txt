@@ -56,6 +56,56 @@ This ensures users are informed about cookie usage and can provide consent, whic
     - The panel is styled with `position: sticky` and a calculated `top` value to sit below the main site navbar.
     - It includes links to all major sections and sub-sections, which have corresponding `id` attributes.
 
+### Recent Major Features/Changes:
+*   **"Our Branches" Section Added (October 2023):**
+    *   A new section displaying TSPI branch information, including Head Office details and regional/provincial branches.
+    *   Branch information is structured with regions, provinces, branch names, addresses, and contact numbers.
+    *   Styling: Implemented a 3-column grid layout for branch items within each province for better readability on larger screens, responsive to 2 columns and then 1 column on smaller screens.
+    *   Interactivity: Branch contact numbers are clickable and will copy the number to the user's clipboard. A visual confirmation ("Copied!") is briefly displayed.
+    *   Navigation: 
+        *   Added to the sticky side navigation on the About Us page.
+        *   (Pending) To be added to the main site navigation under "Who We Are" > "About Us" > "Our Branches" (after Mission & Vision).
+*   **Fixed Navbar Offset:** Applied `scroll-margin-top: var(--navbar-scroll-offset);` to all section IDs (`#about-tspi-ngo`, `#our-leaders`, `#about-tspi-mbai`, `#vision-mission`, `#core-values`, `#board-of-trustees`, `#senior-management-team`, `#our-branches`) to prevent content from being hidden behind the fixed navbar during in-page navigation.
+*   **"Our Leaders" Section:** This section was temporarily removed during an edit but has been restored. It displays information about the Board of Trustees and Senior Management Team.
+
+**Structure of "Our Branches":**
+```html
+<section id="our-branches">
+  <h2>Our Branches</h2>
+  <p class="branch-section-intro">...</p>
+  <div class="head-office-details">...</div>
+  <h3 class="branches-main-header">TSPI BRANCHES</h3>
+  <div class="region-group" id="region-X">
+    <h4>REGION NAME</h4>
+    <div class="province-group" id="regionX-provinceY">
+      <h5>PROVINCE NAME</h5>
+      <div class="branch-items-grid"> <!-- This div enables the 3-column layout -->
+        <div class="branch-item">
+          <p class="branch-name">BRANCH NAME</p>
+          <p class="branch-address">ADDRESS</p>
+          <p class="branch-contact">CONTACT INFO (Click to copy)</p>
+        </div>
+        <!-- ... more branch-items ... -->
+      </div>
+    </div>
+    <!-- ... more province-groups ... -->
+  </div>
+  <!-- ... more region-groups ... -->
+</section>
+```
+
+**Key CSS for "Our Branches":**
+*   `.branch-items-grid`: Uses `display: grid; grid-template-columns: repeat(3, 1fr);` for the 3-column layout.
+*   Media queries adjust `grid-template-columns` for tablet and mobile views.
+*   `.branch-contact`: Styled for interactivity (cursor, color change on copy).
+
+**JavaScript for Copy-to-Clipboard (`AboutUs.php`):**
+*   Selects all `.branch-contact` elements within the `#our-branches` section.
+*   Adds a click event listener to each.
+*   On click, copies the element's `innerText` to the clipboard using `navigator.clipboard.writeText()`.
+*   Provides visual feedback by temporarily changing the text to "Copied!" and then reverting.
+*   Includes basic error handling.
+
 ## Header Navigation (includes/header.php)
 
 - The "Who We Are" dropdown has been restructured:

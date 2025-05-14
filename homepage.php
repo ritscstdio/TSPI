@@ -77,7 +77,7 @@ include 'includes/header.php';
                 <h2>THE TRANSFORMING POWER OF GOD'S LOVE</h2>
                 <h3>CHAIRMAN | ATTY. LAMBERTO L. MEER</h3>
                 <p>We are called by God for a purpose, to serve as responsible stewards of His work because He loves us. Reflecting back many years ago, I had a vague picture of God's love. Until one day in January, 1981, my wife and I joined around a dozen other couples for a "Marriage Encounter Weekend" in Tagaytay. It was during that weekend that I had a deeply personal and life-changing encounter with my God and felt the transforming power of His love. Since then, I have allowed God to take control of my life and have become increasingly aware of His work in all aspects of my life – family, career and civic work, and I have seen how God has started to use me in His vineyard...</p>
-                <a href="#chairman-message" class="read-more">Read More <span class="read-more-arrow">&#8594;</span></a>
+                <a href="<?php echo SITE_URL; ?>/AboutUs.php#leader-atty-lamberto-l-meer" class="read-more">Read More <span class="read-more-arrow">→</span></a>
             </div>
         </div>
     </section>
@@ -88,7 +88,7 @@ include 'includes/header.php';
                 <h2>KEEPING THE SAMBAYANIHAN SPIRIT ALIVE</h2>
                 <h3>PRESIDENT | RENE E. CRISTOBAL</h3>
                 <p>The Bible speaks of "40" as a symbol of new life, growth, transformation and transition from completing a great task to gearing up for a greater task. In 2021, TSPI celebrated its 40th Anniversary, which marked the unchanging mission of bringing Good News to the less privileged and hope to the communities. We believe that God's faithfulness for the last 40 years allowed TSPI to build on its firm foundation that enabled it to rise and withstand all tests. As we prepare for greater tasks ahead and for reaching new milestones, we are confident that our plans and programs have evolved and aligned to the changes and challenges of time. Furthermore, our strategic alliances and innovative digitization programs usher us to see the brighter future where we can serve more as good stewards and faithful servants...</p>
-                <a href="#president-message" class="read-more">Read More <span class="read-more-arrow">&#8594;</span></a>
+                <a href="<?php echo SITE_URL; ?>/AboutUs.php#leader-rene-e-cristobal" class="read-more">Read More <span class="read-more-arrow">→</span></a>
             </div>
             <div class="message-image">
                 <img src="<?php echo SITE_URL; ?>/src/assets/president.jpg" alt="President">

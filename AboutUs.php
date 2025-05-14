@@ -127,7 +127,7 @@ include 'includes/header.php';
 }
 
 #about-tspi-ngo, #our-leaders, #about-tspi-mbai, 
-#vision-mission, #core-values, #board-of-trustees, #senior-management-team {
+#vision-mission, #core-values, #board-of-trustees, #senior-management-team, #our-branches { /* Added #our-branches */
     /* scroll-margin-top: 190px; */ /* Replaced by CSS variable */
     scroll-margin-top: var(--navbar-scroll-offset);
 }
@@ -232,7 +232,7 @@ include 'includes/header.php';
         width: 100%; /* Ensure main content takes full width */
     }
     #about-tspi-ngo, #our-leaders, #about-tspi-mbai, 
-    #vision-mission, #core-values, #board-of-trustees, #senior-management-team {
+    #vision-mission, #core-values, #board-of-trustees, #senior-management-team, #our-branches {
         /* Ensure scroll margin is still respected on mobile if jumped to from an external link or future top-of-page nav */
         scroll-margin-top: var(--navbar-scroll-offset);
     }
@@ -439,6 +439,283 @@ include 'includes/header.php';
     vertical-align: middle;
 }
 
+/* Branch Section Styles */
+.branch-section-intro {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-gray);
+    text-align: center;
+}
+
+.head-office-details {
+    background-color: var(--light-blue);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.head-office-details h3 {
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+#our-branches > h3.branches-main-header { /* For "TSPI BRANCHES" heading */
+    font-size: 1.8rem;
+    color: var(--dark-navy);
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.region-group {
+    margin-bottom: 0.75rem; /* Reduced from 2.5rem */
+    padding-bottom: 0rem; /* Reduced from 1.5rem, especially as border is off */
+    /* border-bottom: 1px dashed #ddd; */
+}
+.region-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.region-group > h4 { /* Region Name e.g., REGION I - (Ilocos Region) */
+    font-size: 1.6rem;
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--light-gold);
+}
+
+.province-group {
+    margin-bottom: 1.5rem;
+    padding-left: 1rem; /* Indent provinces slightly */
+}
+
+.province-group > h5 { /* Province Name e.g., ILOCOS NORTE */
+    font-size: 1.3rem;
+    color: var(--dark-navy);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.branch-item {
+    background-color: #fdfdfd; 
+    padding: 0.75rem; /* Reduced padding */
+    border-radius: 6px;
+    margin-bottom: 0.5rem; /* Reduced margin-bottom */
+    border: 1px solid #eee;
+    /* box-shadow: 0 1px 3px rgba(0,0,0,0.04); */
+}
+
+.branch-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+    margin-bottom: 0.25rem;
+}
+
+.branch-address {
+    font-size: 0.95rem;
+    color: var(--text-gray);
+    margin-bottom: 0.25rem;
+    line-height: 1.5;
+}
+
+.branch-contact {
+    font-size: 0.9rem;
+    color: var(--primary-blue); 
+    font-weight: 500;
+    cursor: pointer; /* Add cursor pointer for clickable effect */
+}
+
+.province-group > .branch-items-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* This was previously changed from 3 to 2 */
+    gap: 0.5rem; /* Reduced gap */
+}
+
+@media (max-width: 992px) { /* Adjust for medium screens */
+    /* This rule can be removed if 2 columns is acceptable down to 768px, 
+       or adjusted if a different breakpoint for 2 columns is needed.
+       For now, let's assume 2 columns is fine until the 768px breakpoint for 1 column.
+    */
+    /* .province-group > .branch-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    } */
+}
+
+@media (max-width: 768px) {
+    .region-group > h4 {
+        font-size: 1.4rem;
+    }
+    .province-group > h5 {
+        font-size: 1.2rem;
+    }
+    .branch-item {
+        padding: 0.75rem; /* Ensured padding matches for consistency */
+        /* margin-bottom will be 0.5rem from the base rule, consider if 1fr needs more spacing */
+    }
+    .branch-name {
+        font-size: 1rem;
+    }
+    .province-group > .branch-items-grid {
+        grid-template-columns: 1fr; /* Stack on smaller screens */
+        gap: 0.5rem; /* Ensure gap is also reduced here */
+    }
+}
+
+/* Styles for collapsible sections */
+.collapsible-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem; /* Increased padding for better touch targets */
+    background-color: #f8f9fa; /* Light background for the header */
+    border-radius: 5px; /* Slightly rounded corners */
+    margin-bottom: 0.25rem; /* Small space before content or next header */
+    transition: background-color 0.2s ease;
+}
+
+.collapsible-header:hover {
+    background-color: #e9ecef; /* Darker on hover */
+}
+
+/* Remove default heading margins if they are part of .region-group > h4 or .province-group > h5 */
+.region-group > h4.collapsible-header,
+.province-group > h5.collapsible-header {
+    margin-top: 0.5rem; /* Adjusted margin specifically for collapsible headers */
+    margin-bottom: 0.25rem; /* Override general h4/h5 margins */
+    padding-bottom: 0.75rem; /* Ensure padding is consistent */
+    padding-left: 1rem; 
+    padding-right: 1rem;
+    border-bottom: none; /* Remove the border-bottom, style is now on the header itself */
+}
+
+/* Specific styling for region and province headers if needed to override their base h4/h5 styles */
+.region-group > h4.collapsible-header {
+    font-size: 1.4rem; /* Adjusted to be slightly smaller if too large with background */
+    color: var(--primary-blue);
+}
+
+.province-group > h5.collapsible-header {
+    font-size: 1.2rem; /* Adjusted to be slightly smaller */
+    color: var(--dark-navy);
+    background-color: #ffffff; /* Different background for province level if desired */
+    border: 1px solid #e9ecef;
+}
+.province-group > h5.collapsible-header:hover {
+    background-color: #f8f9fa;
+}
+
+
+.collapsible-header i.toggle-icon {
+    transition: transform 0.3s ease;
+    font-size: 1em; /* Icon size relative to text */
+    color: var(--primary-blue);
+}
+
+.collapsible-header .toggle-icon.fa-chevron-up {
+    /* Optional: different color when open, if desired */
+    /* color: var(--secondary-gold); */
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    border-radius: 0 0 5px 5px;
+    margin-bottom: 0.5rem;
+}
+
+.collapsible-content.open {
+    max-height: 5000px;
+    opacity: 1;
+    padding: 1rem 1.5rem;
+    border: 1px solid #e9ecef;
+    border-top: none;
+    background-color: #fff;
+}
+
+/* Remove the original border-bottom from region group headers as it's now part of the collapsible style */
+/* .region-group > h4.collapsible-header { */
+    /* border-bottom: 1px solid var(--light-gold); */ /* This is now removed */
+/* } */
+
+/* End of styles for collapsible sections */
+
+.province-group > .branch-items-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* This was previously changed from 3 to 2 */
+    gap: 0.5rem; /* Reduced gap */
+}
+
+@media (max-width: 992px) { /* Adjust for medium screens */
+    /* This rule can be removed if 2 columns is acceptable down to 768px, 
+       or adjusted if a different breakpoint for 2 columns is needed.
+       For now, let's assume 2 columns is fine until the 768px breakpoint for 1 column.
+    */
+    /* .province-group > .branch-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    } */
+}
+
+@media (max-width: 768px) {
+    .region-group > h4 {
+        font-size: 1.4rem;
+    }
+    .province-group > h5 {
+        font-size: 1.2rem;
+    }
+    .branch-item {
+        padding: 0.75rem; /* Ensured padding matches for consistency */
+        /* margin-bottom will be 0.5rem from the base rule, consider if 1fr needs more spacing */
+    }
+    .branch-name {
+        font-size: 1rem;
+    }
+    .province-group > .branch-items-grid {
+        grid-template-columns: 1fr; /* Stack on smaller screens */
+        gap: 0.5rem; /* Ensure gap is also reduced here */
+    }
+}
+
+/* Carousel Styles for Head Office */
+.head-office-carousel-container {
+    width: 100%;
+    max-width: 800px; /* Or your desired max width */
+    margin: 0 auto 2rem auto; /* Centered, with margin below */
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.head-office-carousel {
+    display: flex;
+    width: 400%; /* 100% * number of slides */
+    animation: carousel-slide 20s infinite; /* 5s per image */
+}
+
+.head-office-carousel img {
+    width: 25%; /* 100% / number of slides */
+    flex-shrink: 0;
+    object-fit: cover; /* Ensures images cover the area nicely */
+    height: 400px; /* Or your desired fixed height */
+}
+
+@keyframes carousel-slide {
+    0%, 20% { margin-left: 0; }       /* Image 1 (0 to 4s) + 1s pause = 5s total */
+    25%, 45% { margin-left: -100%; }  /* Image 2 (5s to 9s) + 1s pause */
+    50%, 70% { margin-left: -200%; }  /* Image 3 (10s to 14s) + 1s pause */
+    75%, 95% { margin-left: -300%; }  /* Image 4 (15s to 19s) + 1s pause */
+    100% { margin-left: 0; }         /* Loop back to Image 1 */
+}
+
+/* End Carousel Styles */
+
 </style>
 
 <main>
@@ -459,6 +736,10 @@ include 'includes/header.php';
                         <li><a href="#board-of-trustees">Board of Trustees</a></li>
                         <li><a href="#senior-management-team">Senior Management Team</a></li>
                     </ul>
+                </li>
+                <li>
+                    <a href="#our-branches">Our Branches</a>
+                    <!-- Region sub-links were removed in a previous step -->
                 </li>
                 <li><a href="#about-tspi-mbai">About TSPI - MBAI</a></li>
             </ul>
@@ -488,7 +769,7 @@ include 'includes/header.php';
                     </div>
                     <div class="mission">
                         <h3><i class="fas fa-bullseye"></i>Our Mission</h3>
-                        <p>To provide individuals, families and communities the opportunities to experience fullness of life in Christ through Christian microenterprise development.</p>
+                        <p>To provide individuals, families, and communities the opportunities to experience fullness of life in Christ through Christian microenterprise development.</p>
                     </div>
                 </div>
 
@@ -544,7 +825,7 @@ include 'includes/header.php';
                     </div>
 
                     <!-- Atty. Lamberto L. Meer -->
-                    <div class="leader-card">
+                    <div class="leader-card" id="leader-atty-lamberto-l-meer">
                         <div class="leader-card-image">
                             <img src="<?php echo get_leader_image_src('Atty. Lamberto L. Meer', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Atty. Lamberto L. Meer">
                         </div>
@@ -579,7 +860,7 @@ include 'includes/header.php';
                     </div>
 
                     <!-- Rene E. Cristobal -->
-                    <div class="leader-card">
+                    <div class="leader-card" id="leader-rene-e-cristobal">
                         <div class="leader-card-image">
                             <img src="<?php echo get_leader_image_src('Rene E. Cristobal', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Rene E. Cristobal">
                         </div>
@@ -694,10 +975,9 @@ include 'includes/header.php';
                         <div class="leader-card-info">
                             <p class="leader-name">Luz A. Planas</p>
                             <p class="leader-position">Trustee</p>
-                            <p class="leader-quote">"When you work for an institution like TSPI, it is nothing about you. It is about working for an institution in reaching out to more clients so they can have better life and eventually enjoy fullness of life."</p>
                             <div class="leader-bio-content">
                                 <p>Ms. Planas joined TSPI Board of Trustees in October 2000. She is the Chair of BOT Audit and Compliance Committee. She is the current Chairperson of the Board of Trustees of TSPI Mutual Benefit Association, Inc. (TSPI MBAI).</p>
-                                <p>Ms. Planas is the Chairperson of VA Alvarez Realty Corp., where she formerly served as the Treasurer (1995- 2006). She is currently a Board Member to the BF West Homeowners Association.</p>
+                                <p>She is the Chairperson of VA Alvarez Realty Corp., where she formerly served as the Treasurer (1995- 2006). She is currently a Board Member to the BF West Homeowners Association.</p>
                                 <p>She was previously with the Bank of the Philippine Islands (BPI). She became President and CEO of BPI Forex Corporation from 1999 to 2004. She is actively involved in various civic and religious organizations as a Board Member. Her noteworthy contributions in community development include the renovation of the Resurrection of our Lord Parish Church in BF Parañaque and the greening of BF West Executive Village also in Parañaque City. She also partnered with a local community at her hometown in Roxas City to build the new Pueblo de Panay. She is a passionate professional dancer joining competitions locally and abroad.</p>
                                 <p>Ms. Planas obtained degrees are Bachelor of Arts (A.B.), Major in Humanity and Bachelor of Business, Major in Accounting.</p>
                             </div>
@@ -712,115 +992,12 @@ include 'includes/header.php';
                         <div class="leader-card-info">
                             <p class="leader-name">Florencia G. Tarriela</p>
                             <p class="leader-position">Trustee</p>
-                            <p class="leader-quote">"Know Jesus Christ, know Him as our Lord and Savior. Jesus is all we need. Because He is the answer to all our needs."</p>
                             <div class="leader-bio-content">
-                                <p>Ms. Tarriela's service with TSPI as Member of the Board of Trustees started in October 2003. She is the Chair of the BOT Investment Committee and the Vice Chair of the BOT Governance Committee. Presently, she is the Treasurer, Board of Trustees, of Tulay sa Pag-unlad Mutual Benefit Association, Inc. (TSPI MBAI).</p>
+                                <p>Ms. Tarriela joined the TSPI Board of Trustees in October 2003. She is the Chair of the BOT Investment Committee and the Vice Chair of the BOT Governance Committee. Presently, she is the Treasurer, Board of Trustees, of Tulay sa Pag-unlad Mutual Benefit Association, Inc. (TSPI MBAI).</p>
                                 <p>She holds the distinction for being the first woman chairperson of the Philippine National Bank (PNB) and the first Filipina Vice President of Citibank N.A. She was a former Undersecretary of the Department of Finance and was an Alternate Monetary Board Member of Bangko Sentral ng Pilipinas (BSP), Land Bank of the Philippines (LBP) and the Philippine Deposit Insurance Corporation (PDIC). She also held several key positions as President of Bank Administration of the Philippines, Independent Director of PNB Life Insurance, Inc. and Director of Bankers Association of the Philippines.</p>
                                 <p>Her other current undertakings include: Adviser of the Philippine National Bank (PNB); Independent Director of LT Group, Inc.; Director of PNB Capital and Investment Corporation; Independent Director of PNB International Investments Corporation; Columnist of "Business Options" of the Manila Bulletin and "Financial Executives Institute of the Philippines (FINEX) Folio" of Business World; Director/Vice President of Tarriela Management Company; Director/Vice President/Assistant Treasurer of Gozon Development Corporation; Life Sustaining Member of Bankers Institute of the Philippines and FINEX; Fellow at the Institute of Corporate Directors (ICD), Trustee of FINEX; President of Flor's Garden and Natural Haven's Inc., and Director of Makati Garden Club.</p>
                                 <p>As a banker, entrepreneur and an environmentalist, she has been recognized as the Go Negosyo 2018 Woman Intrapreneur Awardee, Most Outstanding Citibank Philippines Alumni Awardee for Community Involvement (2014), and Distinguished Lady Banker awarded by the Bank Administration Institute of the Philippines. She is also a co-author of several inspirational and gardening books.</p>
                                 <p>Ms. Tarriela obtained her Bachelor of Science in Business Administration, major in Economics from the University of the Philippines and a Master's in Economics from the University of California, Los Angeles.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Terence R. Winters -->
-                    <div class="leader-card">
-                        <div class="leader-card-image">
-                            <img src="<?php echo get_leader_image_src('Terence R. Winters', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Terence R. Winters">
-                        </div>
-                        <div class="leader-card-info">
-                            <p class="leader-name">Terence R. Winters</p>
-                            <p class="leader-position">Trustee</p>
-                            <p class="leader-quote">"Our dream is that by helping a parent to build a small business, their children will grow up with a future that's full of hope."</p>
-                            <div class="leader-bio-content">
-                                <p>Mr. Winters serves as the Chairman and Non-Executive Director of several Australian private companies and charities. He is currently Chairman of Converge International Pty Ltd. He also serves as a Director of Many Rivers Microfinance Limited, and was immediate past Chairman or a Director of Seeing Machines Limited, TasmaNet Pty Ltd, Intelledox Pty Ltd and Redflex Holdings Limited. After working for Motorola for 10 years, he founded Link Telecommunications Pty Ltd. in 1983 and was CEO and/or Chairman of Link at different times until 1999 when he sold his interest in the company. He led the creation of Optus Communications Pty Ltd from 1989-1992 and remained on the Optus board until 1995. Mr. Winters spent over 17 years on various boards within the Opportunity International Network before ending his term as global Chairman in 2010.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Richard Dagelet, Jr. -->
-                    <div class="leader-card">
-                        <div class="leader-card-image">
-                            <img src="<?php echo get_leader_image_src('Richard Dagelet, Jr.', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Richard Dagelet, Jr.">
-                        </div>
-                        <div class="leader-card-info">
-                            <p class="leader-name">Richard Dagelet, Jr.</p>
-                            <p class="leader-position">Trustee</p>
-                            <p class="leader-quote">"What sets TSPI apart is not just the work we do, but the profound ripple effect it generates in the communities we serve. Rooted in Christian values, we instill empowerment, and foster an environment defined by prosperity, dignity, and sustainable progress."</p>
-                            <div class="leader-bio-content">
-                                <p>Mr. Dagelet is a new member of the TSPI Board of Trustees, joining in September 2022. He is also a member of the Advisory Council of TSPI Mutual Benefit Association, Inc. (MBAI).</p>
-                                <p>He is the founder, Chairman and CEO of eScience, an IT company providing mobile solutions to over 70 companies dealing with health care, consumer goods and logistics. He also founded several companies that launched pioneering and innovative services for mobile customers, among them Smart Solutions, E-Store Exchange, and Secure Payment Networks. He has been in the IT industry since 1999. He founded the first e-commerce service in the Philippines, allowing the purchase of goods and services via mobile phone and the internet. He also created the patent for location-based services for traffic monitoring in 2005. In 1997-1998, he was CEO of Danka Philippines, the leading vendor of Kodak Digital office products. He worked in sales, marketing, and general management at Kodak Philippines from 1987 to 1996.</p>
-                                <p>He is a coordinator at Ang Ligaya ng Panginoon Community (ALNP), a Resource Speaker in the Marriage and Parenting course of ANLP, Director of Sandiwaan Learning Center in Tondo, Manila, and Founder/Director of Internet of Things.</p>
-                                <p>Mr. Dagelet is a graduate of Bachelor of Science in Industrial Management Engineering at the De La Salle University.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Carlos Rheal B. Cervantes -->
-                    <div class="leader-card">
-                        <div class="leader-card-image">
-                            <img src="<?php echo get_leader_image_src('Carlos Rheal B. Cervantes', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Carlos Rheal B. Cervantes">
-                        </div>
-                        <div class="leader-card-info">
-                            <p class="leader-name">Carlos Rheal B. Cervantes</p>
-                            <p class="leader-position">Trustee</p>
-                            <p class="leader-quote">"The road to financial freedom usually feels long and winding, unless you have someone working to keep you in their wings to nurture and form you until you can go head straight."</p>
-                            <div class="leader-bio-content">
-                                <p>Mr. Cervantes joined the TSPI Board of Trustees in 2022. He is an investment banker who specializes in the securitization of receivables, fund raising and financial management, with over 29 years of experience in finance and banking. He is a trust professional, a financial management instructor and a former certified SEC representative for both fixed-income securities and investment company products. He has extensive experience in financial and credit arrangement advisory, marketing bank products, branch management and financial analysis.</p>
-                                <p>He is Treasurer and Chief Financial Officer/Chief Operating Officer of PowerSource Group Holdings Corp. and its subsidiaries; President and Chairman of Accessus Lending Company, Inc.; Executive Vice President and COO of Argosy Finance Corp. and Home Funding (SPC), Inc. Argosy has invested in, advised on, and raised significant funds in various investment transactions in the Philippines and internationally since 1999. Mr. Cervantes previously served as First Vice President of Philippine Veterans Bank; Senior Manager, Land Bank of the Philippines; and Branch OIC of Mindanao Development Bank.</p>
-                                <p>Mr. Cervantes is a graduate of B.S. Agriculture Production and Management from the University of the Philippines, Los Baños (UPLB) and holder of a Master's in Management degree from the Asian Institute of Management.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Raymond Daniel H. Cruz Jr. -->
-                    <div class="leader-card">
-                        <div class="leader-card-image">
-                            <img src="<?php echo get_leader_image_src('Raymond Daniel H. Cruz Jr.', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Raymond Daniel H. Cruz Jr.">
-                        </div>
-                        <div class="leader-card-info">
-                            <p class="leader-name">Raymond Daniel H. Cruz Jr.</p>
-                            <p class="leader-position">Trustee</p>
-                            <p class="leader-quote">"In any circumstance that we are in, always consult God. This is called "Discernment". God is delighted when you asked Him. When you ask, learn to listen. Wait for a while for Him to speak to you or to the people you are with. When we listen, we become confident that He is leading us and we learn to accept God's message even if it sometimes hurts."</p>
-                            <div class="leader-bio-content">
-                                <p>Mr. Cruz joined the TSPI Board of Trustees in 2022. He is Director of WeGen Laudato Si, an energy company that helps Catholic dioceses transition to renewable energy, in response to the challenge of Pope Francis in his "Laudato Si" encyclical.</p>
-                                <p>He is national president of the Catholic Bishops Conference of the Philippines-Episcopal Commission of the Laity-Sangguniang Laiko ng Pilipinas. He is also Executive Director of Philippine Catholic Charismatic Renewal Services (PhilCCRS); Director of Leadership Development and Mission at Ligaya ng Panginoon Community; and Catholic Coordinator of Purpose Driven Ministries Southeast Asia.</p>
-                                <p>A former theology teacher at University of Sto. Tomas High School, Mr. Cruz previously served as Executive Director of the Pilipino Movement for Transformational Leadership and the Ligaya ng Panginoon Foundation, Inc; Youth Coordinator of PhilCCRS National Service Committee; and Director for youth and family life at Ligaya ng Panginoon Community.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Anna Isabel C. Sobrepeña -->
-                    <div class="leader-card">
-                        <div class="leader-card-image">
-                            <img src="<?php echo get_leader_image_src('Anna Isabel C. Sobrepeña', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Anna Isabel C. Sobrepeña">
-                        </div>
-                        <div class="leader-card-info">
-                            <p class="leader-name">Anna Isabel C. Sobrepeña</p>
-                            <p class="leader-position">Trustee</p>
-                            <div class="leader-bio-content">
-                                <p>Ms. Sobrepeña joined the TSPI Board of Trustees in 2022. She is an award-winning writer and editor, and seasoned public speaker. She was named 2019 Most Influential Filipina Thought Leader and Innovator by the Foundation for Filipina Women's Network (FWN) in Paris; and 2018 Asia Leaders Awards Editor of the Year.</p>
-                                <p>She was editor in chief of Lifestyle Asia from 2007 to 2018, during which she collaborated with various sectors, companies, and groups such as Philippine Business for Education, Caritas Manila, Make-A-Wish Foundation, to promote meaningful luxury through shared advocacies (e.g. tree-planting, scholarships, teacher training and children's welfare).</p>
-                                <p>She previously edited True North, a Christian lifestyle magazine, nominated for best community magazine in the Catholic Mass Media Awards. Books she edited include "Wives are Lovers, Too" and the "Ang Ligaya ng Panginoon 40th Anniversary Commemorative Book". She published eight coffee table books of significant lives, Philippine homes and tablescapes which presented the good in our country and in our people.</p>
-                                <p>Ms. Sobrepeña has given talks on personality development, social graces, and the Philippines as a tourist destination. She is also a well sought speaker on Christian seminars such as Christian living and improving communication in marriages.</p>
-                                <p>Ms. Sobrepeña is a graduate of Bachelor of Arts, English at the University of the Philippines. She earned units in Masters of Science in Literature at the Ateneo de Manila University and Certificate of Completion for Managing the Arts Program from the Asian Institute of Management.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Alice Z. Cordero -->
-                    <div class="leader-card">
-                        <div class="leader-card-image">
-                            <img src="<?php echo get_leader_image_src('Alice Z. Cordero', $leader_images_map, $leader_image_base_path, $default_leader_image); ?>" alt="Alice Z. Cordero">
-                        </div>
-                        <div class="leader-card-info">
-                            <p class="leader-name">Alice Z. Cordero</p>
-                            <p class="leader-position">Ex-Officio; Executive Director</p>
-                            <p class="leader-quote">"What has been consistent in TSPI is our commitment of bringing God to everyone. The transformation framework that we have adopted in TSPI was proven overtime. As long as you are God-centered, you believe in what God has given you and you use the resources the right way, then you will succeed whatever comes to you."</p>
-                            <div class="leader-bio-content">
-                                <p>Ms. Cordero joined TSPI in May 2019. She serves concurrent positions as the Executive Director of TSPI and as President and Chief Executive Officer of TSPI Mutual Benefit Association, Inc. (TSPI MBAI) – the microinsurance arm of TSPI.</p>
-                                <p>Ms. Cordero gained her management and leadership expertise through her solid career in banking. She was Philippine National Bank's First Senior Vice President (FSVP) until April 2019 and was appointed as the Chief Compliance Officer (CCO) of the Bank on June 2010 with oversight of the Parent Bank, including all the subsidiaries, affiliate and foreign branches. She also served as the Corporate Governance Executive of the Bank. From 2008-2019, she served as Director and presently as Adviser of the Association of Bank Compliance Officers (ABCOMP). She obtained her Bachelor of Science in Business Economics from the University of the Philippines, and earned units in Masters in Business Administration from the Ateneo Graduate School of Business.</p>
-                                <p>Prior to joining PNB, she was the CCO of Allied Banking Corporation (ABC) from 2007 to 2010. She worked with Citibank N.A. – Manila Branch for almost 20 years, from 1988 to 2007, and held various senior positions in the Consumer Banking Group, including Compliance and Control Director from 1999 to 2005 and concurrent Regional Compliance and Control Director for the Philippines and Guam in 2004. Her 40 years of banking experience include working for Philippine National Bank (PNB) from 2010 to 2019, ABC (1979-1983; 2007-2010, First National Bank of Chicago-Manila Branch (1983-1986), Far East Bank and Trust Company (1986-1988) and Citibank N.A.-Manila Branch (1988-2007), where she held department head positions in Credit Policy, Credit and Research Management, Financial Control, Corporate Regulatory Reporting, Asset Strategy, Business Deve lopment, Risk Management, and Compliance.</p>
                             </div>
                         </div>
                     </div>
@@ -910,6 +1087,726 @@ include 'includes/header.php';
                 </div> 
             </section>
 
+            <!-- Our Branches Section -->
+            <section class="about-section" id="our-branches">
+                <h2>Our Branches</h2>
+                <p class="branch-section-intro">TSPI spreads its operations in 22 provinces in the regions of Ilocos Region, Cordillera Administrative Region, Central Luzon, National Capital Region, Southern Tagalog and Bicol Region.</p>
+
+              
+
+                <div class="head-office-details">
+                  <!-- Head Office Carousel -->
+                <div class="head-office-carousel-container">
+                    <div class="head-office-carousel">
+                        <img src="src\assets\mainbranch\basement1.png" alt="TSPI Head Office Image 1">
+                        <img src="src\assets\mainbranch\board-room-1.png" alt="TSPI Head Office Image 2">
+                        <img src="src\assets\mainbranch\lobby.png" alt="TSPI Head Office Image 3">
+                        <img src="src\assets\mainbranch\tspi-client-products.png" alt="TSPI Head Office Image 4">
+                    </div>
+                </div>
+                    <h3>TSPI HEAD OFFICE</h3>
+                    <p class="branch-address">2363 Antipolo St. Guadalupe Nuevo Makati City, Philippines</p>
+                </div>
+
+                <h3 class="branches-main-header">TSPI BRANCHES</h3>
+
+                <!-- REGION I -->
+                <div class="region-group" id="region-1">
+                    <h4 class="collapsible-header">REGION I - (Ilocos Region) <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="region1-ilocos-norte">
+                            <h5 class="collapsible-header">ILOCOS NORTE <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">BATAC</p>
+                                        <p class="branch-address">City Pearl Complex, National Hi-way #7 Caunayan, Batac City</p>
+                                        <p class="branch-contact">(0915)123-3381 / (077) 670-2290</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">PINILI</p>
+                                        <p class="branch-address">National Highway, Brgy. Darat, Pinili, Ilocos Norte</p>
+                                        <p class="branch-contact">09773086322</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">LAOAG</p>
+                                        <p class="branch-address">Jomel 2 Bldg., P. Gomez St., Brgy. 23, Laoag City</p>
+                                        <p class="branch-contact">(0949)700-6154 / (0918)-7492894 / (077) 670-4194</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">DINGRAS</p>
+                                        <p class="branch-address">Castro St., Brgy. Albano, Dingras, Ilocos Norte</p>
+                                        <p class="branch-contact">(0948) 107-9574 / (0977)365-8289</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region1-ilocos-sur">
+                            <h5 class="collapsible-header">ILOCOS SUR <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">CANDON</p>
+                                        <p class="branch-address">Cassy and J Real State, National Highway, Tablac Candon City, Ilocos Sur</p>
+                                        <p class="branch-contact">(0995)772-7107 / (077) 644-0516 / (077)604-4473</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MAGSINGAL</p>
+                                        <p class="branch-address">2nd Floor Retreta Bldg., Brgy.Vacunero, Sto.Domingo, I. Sur</p>
+                                        <p class="branch-contact">(0915) 273-2796 / (0917)623-4817</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">NARVACAN</p>
+                                        <p class="branch-address">2nd Floor Soliven Building Brgy Sta.Lucia, Narvacan, Ilocos Sur</p>
+                                        <p class="branch-contact">(0995) 454-0399 / (077) 604-0304</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">STA CRUZ ILOCOS</p>
+                                        <p class="branch-address">MAJVV Building, Poblacion Este Sta Cruz, Ilocos Sur</p>
+                                        <p class="branch-contact">(0915)101-0837</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">VIGAN</p>
+                                        <p class="branch-address">Galleria De Vigan Bldg., 3rd Floor Florentino St. corner Governor Reyes,Vigan City</p>
+                                        <p class="branch-contact">(0915) 101-0692 / (077) 674-1755</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">CABUGAO</p>
+                                        <p class="branch-address">National Highway, Brgy. Bonifacio Cabugao,Rebibis Bldg. Ilocos Sur</p>
+                                        <p class="branch-contact">(0916) 1163901 / (077) 604-0082</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region1-la-union">
+                            <h5 class="collapsible-header">LA UNION <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">AGOO</p>
+                                        <p class="branch-address">2nd Floor RMAE Bldg., San Jose Norte, Agoo, La Union</p>
+                                        <p class="branch-contact">(0917) 862-1933 / (072) 607-2582</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">ROSARIO</p>
+                                        <p class="branch-address">Ordońa St., Poblacion East, Rosario, La Union</p>
+                                        <p class="branch-contact">(0915)084-3415 / (072) 619- 52-83</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">TUBAO</p>
+                                        <p class="branch-address">2nd Floor YRQ Building, Poblacion, Tubao, La Union</p>
+                                        <p class="branch-contact">(0915)101-0091 / (072)687-0047</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BACNOTAN</p>
+                                        <p class="branch-address">2nd Floor Yamaha Building, Poblacion, Bacnotan</p>
+                                        <p class="branch-contact">(0915)102-5475 / (072) 607-2710</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BALAOAN</p>
+                                        <p class="branch-address">National Highway, Brgy. San Pablo, Balaoan, La Union</p>
+                                        <p class="branch-contact">(0915)101-0381 / (072) 607-0215</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BANGAR</p>
+                                        <p class="branch-address">2nd Floor LFLP Bldg ( LOLA FRIDA and LOLO PETER), San Pedro St., Central West, Bangar, La Union</p>
+                                        <p class="branch-contact">(0936)636-0356 / (072) 607-2036</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BAUANG</p>
+                                        <p class="branch-address">Corner Florendo St., Central East, Bauang, La Union</p>
+                                        <p class="branch-contact">(0915)102-5003 / (072) 607-2583</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">NAGUILIAN</p>
+                                        <p class="branch-address">Sobrepeña Bldg., Brgy. Ortiz, Naguilian, La Union</p>
+                                        <p class="branch-contact">(0915)102-5004 / (072) 609-1478</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN FERNANDO</p>
+                                        <p class="branch-address">Purok 2 Pagdaroan, Saan Fernando City La Union</p>
+                                        <p class="branch-contact">(0936)908-6341 / (072) 607-2394</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region1-pangasinan">
+                            <h5 class="collapsible-header">PANGASINAN <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">URDANETA</p>
+                                        <p class="branch-address">Apartment 3, UDH Site, Dilan Paurido, Urdaneta City, Pangasinan</p>
+                                        <p class="branch-contact">(0927)231-7576 / (075) 656-0226</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">UMINGAN</p>
+                                        <p class="branch-address">2nd fl Delos Santos Bldg., Casadores St., Pob East, Umingan, Pangasinan</p>
+                                        <p class="branch-contact">(0917)704-1289 /</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">TAYUG</p>
+                                        <p class="branch-address">2nd Flr Magic 8 Bldg Rizal St. Brgy C, Tayug Pangasinan</p>
+                                        <p class="branch-contact">(0947) 871-5221 /</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">POZZORUBIO</p>
+                                        <p class="branch-address">2nd Floor Lamsen Bldg., Caballero St., Pozzorubio, Pangasinan</p>
+                                        <p class="branch-contact">(0921) 865-4325 / (075) 6322097</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN FABIAN</p>
+                                        <p class="branch-address">Mc Arthur Hi-way, Cayanga, San Fabian, Pangasinan</p>
+                                        <p class="branch-contact">0963-994-6260 /</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MANAOAG</p>
+                                        <p class="branch-address">1B Tower Tabayoyong St.Poblacion Manaoag Pangasinan</p>
+                                        <p class="branch-contact">09672879757/09090988576 /</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MANGALDAN</p>
+                                        <p class="branch-address">2nd flr RBCP Bldg.Rizal St. Poblacion,Mangaldan Pangasinan</p>
+                                        <p class="branch-contact">(0915)101-0510/09503135365</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">DAGUPAN</p>
+                                        <p class="branch-address">2nd floor A & G Bldng. Caranglaan District Dagupan City</p>
+                                        <p class="branch-contact">(0915) 101-0741/ 09128709000 /</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BUGALLON</p>
+                                        <p class="branch-address">Samson Bldg., Romulo Hi-way, Poblacion, Bugallon, Pangasinan</p>
+                                        <p class="branch-contact">(0915)101-2697 /09368855455 / (075) 632-0405</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">LINGAYEN</p>
+                                        <p class="branch-address">2nd Floor 52 William Gabriel Bldg. Avenida Rizal East, Poblacion Lingayen, Pangasinan</p>
+                                        <p class="branch-contact">09508826993 /09453100283 / (075) 529-6804</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">ALAMINOS</p>
+                                        <p class="branch-address">#34 De Guzman St. Brgy Palamis Alaminos City, Pangasinan</p>
+                                        <p class="branch-contact">(0930) 244-4933 /</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BOLINAO</p>
+                                        <p class="branch-address">2nd Floor Casas Blgd. P Deperio St., Germinal, Poblacion Bolinao, Pangasinan (beside town market and basketball court)</p>
+                                        <p class="branch-contact">(0967) 429-0015 / (075) 636-0264</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">DASOL</p>
+                                        <p class="branch-address">Casolming St. Poblacion Dasol, Pangasinan (beside Dasol Municipal Hall)</p>
+                                        <p class="branch-contact">09475671687</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MANGATAREM</p>
+                                        <p class="branch-address">2nd Floor Tagorda Bldg., Lone Palm Aqua Center, Plaza Rizal,Poblacion, Mangatarem, Pangasinan</p>
+                                        <p class="branch-contact">(0956)759-1339, (0912) 515-1527 / (075) 633-0194</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">CALASIAO</p>
+                                        <p class="branch-address">S & R Bldg Nalsian, Calasiao, Pangasinan</p>
+                                        <p class="branch-contact">0995-663-0313 / (075) 615-23-06</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MALASIQUI</p>
+                                        <p class="branch-address">2/F JPAS Commercial Bldg., Magsaysay Street, Poblacion, Malasiqui,Pangasinan.</p>
+                                        <p class="branch-contact">0938-690-3436 / (075) 632-3252</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN CARLOS</p>
+                                        <p class="branch-address">Caranto Bldg., Burgos-Posadas Street, San Carlos, Pangasinan</p>
+                                        <p class="branch-contact">0915-1025-422/09708317315 / (075) 634-1590</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BAYAMBANG</p>
+                                        <p class="branch-address">Mayo Bldg., Magsaysay St., Bayambang, Pangasinan</p>
+                                        <p class="branch-contact">(0995-336-6257) / (075) 568-6185</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGION II -->
+                <div class="region-group" id="region-2">
+                    <h4 class="collapsible-header">REGION II – (CAGAYAN VALLEY) <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="region2-nueva-vizcaya">
+                            <h5 class="collapsible-header">NUEVA VIZCAYA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">SOLANO</p>
+                                        <p class="branch-address">Fugaban Bldg.Binacao Street, Brgy. Roxas Solano Nueva Vizcaya (beside house of Mayor Dacayo)</p>
+                                        <p class="branch-contact">(0926) 861-0473 (0935)184 1826</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region2-isabela">
+                            <h5 class="collapsible-header">ISABELA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">SANTIAGO</p>
+                                        <p class="branch-address">3rd flr. Villarica Bldg. City Road Centro West, Santiago City</p>
+                                        <p class="branch-contact">(0917) 702-6946 / (078) 682-7085</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">ALICIA</p>
+                                        <p class="branch-address">2nd floor Adenas Bldg., Maharlika Hi-way, Antonino, Alicia, Isabela</p>
+                                        <p class="branch-contact">09066682791 / (078) 323-0362</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">CABATUAN</p>
+                                        <p class="branch-address"># 67 Zamora St. Purok 3 San Andres, Cabatuan Isabela</p>
+                                        <p class="branch-contact">(0975)445-7653 / (078) 652-5032</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">ILAGAN</p>
+                                        <p class="branch-address">2nd Floor JBR Bldg., Calamagui 1st, Ilagan, Isabela</p>
+                                        <p class="branch-contact">09174194094 / (078) 624-0047</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">CAUAYAN</p>
+                                        <p class="branch-address">1st floor OH. Bldg. Cabatuan Road San Fermin Cauayan City</p>
+                                        <p class="branch-contact">(0956) 126-1611 / (078) 6521151</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">ROXAS (SATELITE OFFICE)</p>
+                                        <p class="branch-address">Purok 5 Brgy Vira, Roxas Isabela</p>
+                                        <p class="branch-contact">(0915)104-1990 / (078) 664-2754</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region2-cagayan">
+                            <h5 class="collapsible-header">CAGAYAN <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">TUGUEGARAO</p>
+                                        <p class="branch-address">3/F NP Baccay Bldg. 118 Balzain Road, Balzain West, Tuguegarao City</p>
+                                        <p class="branch-contact">(0975) 328-0565 / (078) 844-1441</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region2-quirino">
+                            <h5 class="collapsible-header">QUIRINO <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">CABARROGUIS</p>
+                                        <p class="branch-address">Brgy. Mangandinay, Cabarroguis, Quirino Province</p>
+                                        <p class="branch-contact">(0997) 652-3890 (0907)939-4319</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAR -->
+                <div class="region-group" id="region-car">
+                    <h4 class="collapsible-header">CAR (CORDILLERA ADMINISTRATIVE REGION) <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="car-benguet">
+                            <h5 class="collapsible-header">BENGUET <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">BAGUIO</p>
+                                        <p class="branch-address">3rd Floor Luy Wing Building, Magsaysay Avenue, Baguio City</p>
+                                        <p class="branch-contact">(0915) 101-2360 / (074) 665-4504</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGION III -->
+                <div class="region-group" id="region-3">
+                    <h4 class="collapsible-header">REGION III – (CENTRAL LUZON) <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="region3-bulacan">
+                            <h5 class="collapsible-header">BULACAN <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN JOSE DEL MONTE</p>
+                                        <p class="branch-address">#1262 Blk. 6 Lt. 41 Farmview Subd., Brgy. Tungkong Mangga City of San Jose Del Monte</p>
+                                        <p class="branch-contact">(0915) 1010297 / 9124084087</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">STA MARIA</p>
+                                        <p class="branch-address">6035 ME DR. F. Santiago Laguerta Str. Poblacion Sta. Maria Bulacan</p>
+                                        <p class="branch-contact">(0915 102 5766 / (044)8 7691250</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BALAGTAS</p>
+                                        <p class="branch-address">2/F 3A's Bldg. 209 Borol 1st, Balagtas Bulacan</p>
+                                        <p class="branch-contact">(0915)1012652 / (044) 8158210</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MALOLOS</p>
+                                        <p class="branch-address">2nd Floor, APB Bldg. #5630 Paseo del Congreso St., Liang, Malolos City Bulacan</p>
+                                        <p class="branch-contact">(0915)1012648 / (044) 7946124</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">BALIUAG</p>
+                                        <p class="branch-address">2nd Floor Alexandra Bldg., #790 Col. Tomacruz St., Poblacion, Baliuag, Bulacan</p>
+                                        <p class="branch-contact">(0906)690-2754 / (044) 7677072</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region3-tarlac">
+                            <h5 class="collapsible-header">TARLAC <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">CAMILING</p>
+                                        <p class="branch-address">Bonifacio St. Poblacion H, Camiling, Tarlac</p>
+                                        <p class="branch-contact">(0915) 101-0879 / (045) 491-0601</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">GERONA</p>
+                                        <p class="branch-address">NJ Bldg., Unit 1,2,3 Poblacion 3, Gerona, Tarlac</p>
+                                        <p class="branch-contact">(0906) 397-5021 / (0907) 452-1131 / (0997)354-5089 / (045) 931-3323</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">PANIQUI</p>
+                                        <p class="branch-address">Unit 5 Jemare Plaza, Magallanes St. Poblacion Sur Paniqui Tarlac</p>
+                                        <p class="branch-contact">09956213220</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">MONCADA</p>
+                                        <p class="branch-address">2nd Floor BDO Bldg., Mc Arthur Hi-way Poblacion 1, Moncada, Tarlac</p>
+                                        <p class="branch-contact">09167000446 / (045) 606-0224</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">TARLAC</p>
+                                        <p class="branch-address">Clinica Pascual Bldg Zamora St.San Roque Tarlac City</p>
+                                        <p class="branch-contact">(0915) 101-2189 / (0977) 204-0166 / 0995-5904493 / (045) 982-6141</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">CAPAS</p>
+                                        <p class="branch-address">2nd Floor/Manny Lo Building, Mc Arthur Hi Way, Barangay Cut Cut 1st, Capas, Tarlac</p>
+                                        <p class="branch-contact">(0950) 811-6922 / 045-491-6244</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region3-pampanga">
+                            <h5 class="collapsible-header">PAMPANGA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">APALIT</p>
+                                        <p class="branch-address">3rd Floor St. Jude Bldg., San Vicente Apalit Pampanga</p>
+                                        <p class="branch-contact">0915-881-3172 / (045) 6520141</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN FERNANDO</p>
+                                        <p class="branch-address">Block 9, Lot 1, Dolores Homesite, Dolores CSFP</p>
+                                        <p class="branch-contact">0915-101-1183 / (045) 4093543</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region3-nueva-ecija">
+                            <h5 class="collapsible-header">NUEVA ECIJA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">GAPAN</p>
+                                        <p class="branch-address">2nd Flr. Magbitang Apartment, San Vicente Gapan City Nueva Ecija</p>
+                                        <p class="branch-contact">09959048226 / (044)958-5623</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">PALAYAN</p>
+                                        <p class="branch-address">Unit 2, Santos Building, Barangay Malate, Palayan City</p>
+                                        <p class="branch-contact">0995-663-2805 / (044) 940-1627</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">CABANATUAN</p>
+                                        <p class="branch-address">Unit 1, BRR Building, H. Concepcion Cabanatuan City</p>
+                                        <p class="branch-contact">0915-102-5089 / (044) 9600687</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN JOSE</p>
+                                        <p class="branch-address">Sanchez Building, San Roque St. Rafael Rueda, San Jose City, Nueva Ecija</p>
+                                        <p class="branch-contact">(0906) 654 8658 / (044) 940-7233</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">GUIMBA</p>
+                                        <p class="branch-address">2nd Floor CCN Bldg., Ongiangco St. corner Sarmiento St. Guimba, Nueva Ecija</p>
+                                        <p class="branch-contact">09956220832 / (044)335-0422</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">TALAVERA/STO DOMINGO</p>
+                                        <p class="branch-address">Maharlika Highway, Calipahan,T alavera Nueva Ecija ( Beside Ridez Lumber)</p>
+                                        <p class="branch-contact">(0995) 622-0833 / (044) 958-3340</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGION IV-A -->
+                <div class="region-group" id="region-4a">
+                    <h4 class="collapsible-header">REGION IV-A (CALABARZON) <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="region4a-cavite">
+                            <h5 class="collapsible-header">CAVITE <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">DBB</p>
+                                        <p class="branch-address">Stall # 23&24 Navjar Complex, Don P. Campos Avenue, Dasmariñas, Cavite</p>
+                                        <p class="branch-contact">(0915) 1543625 / (046) 4320685</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">INDANG</p>
+                                        <p class="branch-address">Miguel Tan, San Gregorio St., Poblacion 1, Indang, Cavite</p>
+                                        <p class="branch-contact">(0915) 1024868 / (046) 4432354</p>
+                                    </div>
+                                    <div class="branch-item">
+                                        <p class="branch-name">GMA (Gen. Mariano Alvarez)</p>
+                                        <p class="branch-address">Blk 3 lot 35 Congressional road, Brgy San Gabriel GMA Cavite. (In front of BDO Office)</p>
+                                        <p class="branch-contact">0915(1012200) / (046) 4604332</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region4a-laguna">
+                            <h5 class="collapsible-header">LAGUNA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">BIÑAN</p>
+                                        <p class="branch-address">Simpeys Bldg. 3rd floor Brgy. San Antonio Binan Laguna</p>
+                                        <p class="branch-contact">(0977) 3123288 / (049) 5211643</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region4a-batangas">
+                            <h5 class="collapsible-header">BATANGAS <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">BALAYAN</p>
+                                        <p class="branch-address">Brgy. 7, Paz St. Balayan Batangas</p>
+                                        <p class="branch-contact">(0950)2781793 / (043) 7236960</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region4a-rizal">
+                            <h5 class="collapsible-header">RIZAL <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">ANTIPOLO</p>
+                                        <p class="branch-address">4th Flr. FBM Bldg.San Roque Antipolo City</p>
+                                        <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region4a-quezon">
+                            <h5 class="collapsible-header">QUEZON <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">CANDELARIA</p>
+                                        <p class="branch-address">2nd Floor Tocy Bldg., Rizal Avenue corner Ona St. Candelaria, Quezon</p>
+                                        <p class="branch-contact">(0929)-742-4981</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Region V -->
+                <div class="region-group" id="region-5">
+                    <h4 class="collapsible-header">Region V – (Bicol Region) <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="region5-albay">
+                            <h5 class="collapsible-header">ALBAY <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">POLANGUI</p>
+                                        <p class="branch-address">Ground Floor Valentin Bldg., Basud, Polangui, Albay</p>
+                                        <p class="branch-contact">(0915) 101-1005 / (0951) 952-9220</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region5-camarines-norte">
+                            <h5 class="collapsible-header">CAMARINES NORTE <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">STA. ELENA</p>
+                                        <p class="branch-address">Purok 12, Brgy. Poblacion, Sta. Elena, Camarines Norte</p>
+                                        <p class="branch-contact">(0908) 818-9163 / (0915) 102-5497</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region5-camarines-sur">
+                            <h5 class="collapsible-header">CAMARINES SUR <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">SAN FERNANDO</p>
+                                        <p class="branch-address">Zone 3 Bonifacio, San Fernando, Camarines Sur</p>
+                                        <p class="branch-contact">(0909) 508-3931 / (0956) 467-6611</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="region5-sorsogon">
+                            <h5 class="collapsible-header">SORSOGON <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">BACACAY</p>
+                                        <p class="branch-address">Purok 8 Bonga Bacacay, Albay</p>
+                                        <p class="branch-contact">(0917)622-0585 / (0915) 102-5680</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NATIONAL CAPITAL REGION -->
+                <div class="region-group" id="region-ncr">
+                    <h4 class="collapsible-header">NATIONAL CAPITAL REGION <i class="fas fa-chevron-down toggle-icon"></i></h4>
+                    <div class="collapsible-content">
+                        <div class="province-group" id="ncr-las-pinas">
+                            <h5 class="collapsible-header">LAS PINAS <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">LAS PINAS</p>
+                                        <p class="branch-address">Rm. 8, 3rd floor Luis Bldg. 379 Real St. Talon1 Las pinas City</p>
+                                        <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-paranaque">
+                            <h5 class="collapsible-header">PARAÑAQUE <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">PARAÑAQUE</p>
+                                        <p class="branch-address">Jackley BldgLot 2, Block 17, Press Drive Street Corner Dr. A Santos Avenue Fourth Estate Subdivision Paranaque City</p>
+                                        <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-taguig">
+                            <h5 class="collapsible-header">TAGUIG <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">TAGUIG</p>
+                                        <p class="branch-address">#302 Bravo Cor.Salazar St., Signal Village Taguig</p>
+                                        <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-makati">
+                             <h5 class="collapsible-header">MAKATI <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">TSPI CORPORATE CENTER BRANCH (FORMERLY MAKATI BRANCH)</p>
+                                        <p class="branch-address">2363 Antipolo street Guadalupe Nuevo Makati City</p>
+                                        <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-quezon-city">
+                            <h5 class="collapsible-header">QUEZON CITY <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">QUEZON CITY</p>
+                                        <p class="branch-address">3/F Room 311, F&L Center Bldg., 2211 Commonwealth Avenue, Brgy Holy Spirit QC</p>
+                                        <p class="branch-contact">(0929)-742-4981</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-caloocan">
+                            <h5 class="collapsible-header">CALOOCAN CITY <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">BAGONG SILANG</p>
+                                        <p class="branch-address">Phase 4 Package 8-A, Block 66 Lot 25 and 27 Bagong Silang Caloocan City</p>
+                                        <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-manila">
+                            <h5 class="collapsible-header">MANILA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">TONDO</p>
+                                        <p class="branch-address">2408 General Lucban Gagalangin Tondo Manila</p>
+                                        <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-malabon">
+                            <h5 class="collapsible-header">MALABON <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">MALABON</p>
+                                        <p class="branch-address">#93 Bronze Street Lybaert Apartelle 2nd Flr Tugatog Malabon City</p>
+                                        <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="province-group" id="ncr-valenzuela">
+                            <h5 class="collapsible-header">VALENZUELA <i class="fas fa-chevron-down toggle-icon"></i></h5>
+                            <div class="collapsible-content">
+                                <div class="branch-items-grid">
+                                    <div class="branch-item">
+                                        <p class="branch-name">VALENZUELA</p>
+                                        <p class="branch-address">11 Gov. Santiago St., Malinta Valenzuela City</p>
+                                        <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- About TSPI - MBAI Section - Commented out as per user request to revert -->
             
             <section class="about-section mbai-section" id="about-tspi-mbai">
@@ -935,19 +1832,111 @@ document.addEventListener('DOMContentLoaded', function () {
     const leaderCards = document.querySelectorAll('.leader-card');
 
     leaderCards.forEach(card => {
-        // Ensure the card itself is clickable, not just specific parts
         card.style.cursor = 'pointer'; 
-
         card.addEventListener('click', function (event) {
-            // Prevent clicks on links within the card from triggering the toggle
             if (event.target.tagName === 'A' || event.target.closest('A')) {
                 return;
             }
-
             const content = this.querySelector('.leader-bio-content');
             if (content) {
                 this.classList.toggle('active');
                 content.classList.toggle('show');
+            }
+        });
+    });
+
+    // Check for URL hash to open a specific leader card
+    if (window.location.hash) {
+        const hash = window.location.hash;
+        if (hash.startsWith('#leader-')) {
+            try {
+                const leaderCardToShow = document.querySelector(hash);
+                if (leaderCardToShow && leaderCardToShow.classList.contains('leader-card')) {
+                    const content = leaderCardToShow.querySelector('.leader-bio-content');
+                    if (content) {
+                        // Only add classes if not already open, to prevent re-triggering animation if already open
+                        if (!leaderCardToShow.classList.contains('active')) {
+                            leaderCardToShow.classList.add('active');
+                            content.classList.add('show');
+                        }
+                        
+                        // Enhanced scroll to view logic
+                        setTimeout(() => { // Use a short timeout to ensure styles are applied and DOM is ready
+                            let navbarOffsetValue = 190; // Default fallback
+                            try {
+                                const scrollOffsetVar = getComputedStyle(document.documentElement).getPropertyValue('--navbar-scroll-offset').trim();
+                                if (scrollOffsetVar) {
+                                    navbarOffsetValue = parseInt(scrollOffsetVar, 10) || navbarOffsetValue;
+                                }
+                            } catch (e) {
+                                console.warn('Could not parse --navbar-scroll-offset, using fallback.', e);
+                            }
+
+                            const elementRect = leaderCardToShow.getBoundingClientRect();
+                            const absoluteElementTop = elementRect.top + window.pageYOffset;
+                            const scrollToPosition = absoluteElementTop - navbarOffsetValue;
+
+                            window.scrollTo({
+                                top: scrollToPosition,
+                                behavior: 'smooth'
+                            });
+                        }, 100); // 100ms timeout
+                    }
+                }
+            } catch (e) {
+                console.error('Error finding or opening leader card from hash:', e);
+            }
+        }
+    }
+});
+</script>
+
+<script>
+// Copy Branch Address only
+document.addEventListener('DOMContentLoaded', function () {
+    const addressElements = document.querySelectorAll('#our-branches .branch-address');
+    addressElements.forEach(el => {
+        el.style.cursor = 'pointer';
+        el.title = 'Click to copy address';
+        el.addEventListener('click', function () {
+            const textToCopy = this.innerText.trim();
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = 'Address Copied!';
+                const originalColor = this.style.color;
+                this.style.color = 'var(--secondary-gold)';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.color = originalColor || 'var(--text-gray)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy address: ', err);
+                alert('Failed to copy address. Please copy manually.');
+            });
+        });
+    });
+});
+</script>
+
+<script>
+// Script for collapsible sections in "Our Branches"
+document.addEventListener('DOMContentLoaded', function () {
+    const collapsibleHeaders = document.querySelectorAll('#our-branches .collapsible-header');
+    collapsibleHeaders.forEach(header => {
+        const icon = header.querySelector('.toggle-icon');
+        if (icon) {
+            icon.classList.add('fa-chevron-down');
+        }
+        header.addEventListener('click', function () {
+            const content = this.nextElementSibling;
+            const icon = this.querySelector('.toggle-icon');
+            if (content && content.classList.contains('collapsible-content')) {
+                content.classList.toggle('open');
+                if (content.classList.contains('open')) {
+                    if(icon) icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                } else {
+                    if(icon) icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                }
             }
         });
     });

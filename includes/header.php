@@ -286,6 +286,7 @@ if (!defined('DB_HOST')) {
                             <div class="sub-dropdown-content">
                                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
                                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-branches">Our Branches</a>
                                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                             </div>
                         </div>
@@ -309,6 +310,7 @@ if (!defined('DB_HOST')) {
                         <summary><a href="<?php echo SITE_URL; ?>/AboutUs.php" class="summary-link-mobile">About Us</a></summary>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-branches">Our Branches</a>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                     </details>
                 </details>

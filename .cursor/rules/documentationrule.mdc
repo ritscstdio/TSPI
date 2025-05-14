@@ -3,13 +3,14 @@ description:
 globs: 
 alwaysApply: true
 ---
-Whenever major changes or features are being added update or add information to developer documentation if there is no developer documentation create one
+Whenever major changes or features are being added update or add information to developer documentation 
 
 For the general flow of the project put it to [documentation.txt](mdc:documentation/documentation.txt)
 
-If there are major systems that require a separate documentation make another .txt file in the same folder as [documentation.txt](mdc:documentation/documentation.txt)
+If there are major systems that require a separate documentation make another .txt file in the same folder as [documentation.txt](mdc:documentation/documentation.txt), like database transfer queries and other such
 
-As for the setup of the project from git cloning or pulling update the README.md for the user as a guide in setting up the project
+Update the [README.md](mdc:README.md) and input there information to guide the user how to install the project
+
 
 <new_project_instruction>
 **Fixed Navbar Offset Rule:**
