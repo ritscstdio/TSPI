@@ -189,12 +189,13 @@ $stmt->execute([$article['published_at']]);
 $next_article = $stmt->fetch();
 
 // Get similar articles based on categories
-$stmt = $pdo->prepare("SELECT a.* 
+$stmt = $pdo->prepare("SELECT a.*, u.name as author_name
                       FROM articles a 
+                      JOIN users u ON a.author_id = u.id
                       JOIN article_categories ac1 ON a.id = ac1.article_id 
                       JOIN article_categories ac2 ON ac2.category_id = ac1.category_id 
                       WHERE ac2.article_id = ? AND a.id != ? AND a.status = 'published' 
-                      GROUP BY a.id 
+                      GROUP BY a.id, u.name 
                       ORDER BY COUNT(a.id) DESC, a.published_at DESC 
                       LIMIT 4");
 $stmt->execute([$article['id'], $article['id']]);
@@ -282,54 +283,60 @@ include 'includes/header.php';
     height: 40px;
     object-fit: cover;
     border-radius: 50%;
-    margin-right: 1rem;
-    float: left;
+    margin-right: 0.5rem; /* Reduced from 1rem */
+    /* float: left; */ /* Removed */
 }
 .comment-avatar-icon {
     width: 40px;
     height: 40px;
     font-size: 40px;
     color: #ccc;
-    margin-right: 1rem;
-    float: left;
+    margin-right: 0.5rem; /* Reduced from 1rem */
+    /* float: left; */ /* Removed */
+    display: flex; /* Added for better icon centering */
+    align-items: center; /* Added */
+    justify-content: center; /* Added */
 }
 .comment {
-    overflow: auto;
+    overflow: auto; 
+    margin-bottom: 1.5rem; 
 }
-.comment .comment-content {
-    margin-left: 5px;
+.comment > .comment-content {
+    margin-left: 0; /* Changed from user's 1rem to 0 as avatar is now inside header */
 }
-.comment.comment-reply .comment-content {
-    margin-left: 0;
+.comment-reply { 
+    margin-top: 1rem; 
+    margin-left: 1rem; /* User's existing value for reply block indent */
 }
+
+/* Added for avatar within header */
+.comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem; 
+}
+
+/* Ensure no float or bottom margin for avatars within the header */
+.comment-header .comment-avatar,
+.comment-header .comment-avatar-icon {
+    float: none;
+    margin-bottom: 0;
+}
+
 .reply-form-container {
     margin-left: 0;
     margin-top: 1rem;
     padding-left: 0;
     width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out; /* Smooth transition */
+    opacity: 0;
 }
-.login-required-box {
-    border: 1px solid #eee;
-    background: #fafbfc;
-    padding: 2rem 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-    margin: 2rem 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-.login-required-box i {
-    font-size: 2.5rem;
-    color: #888;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-.login-required-box .btn {
-    margin: 1rem 0 0.5rem 0;
-    display: inline-block;
-}
-.login-required-box .signup-link {
-    margin-top: 0.5rem;
-    font-size: 1rem;
+
+.reply-form-container.visible {
+    max-height: 500px; /* Adjust as needed, should be larger than the form's content */
+    opacity: 1;
 }
 
 /* Vote Button Styling */
@@ -434,17 +441,18 @@ include 'includes/header.php';
 .similar-posts-carousel-container {
     position: relative;
     width: 100%;
-    overflow: hidden;
+    overflow: hidden; /* Can be here or on .similar-posts-carousel */
 }
 
 .similar-posts-carousel {
-    display: flex;
-    overflow-x: auto; /* Allows horizontal scrolling if needed, good for responsiveness */
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    /* display: flex; */ /* Removed if .carousel-slides is the flex container being transformed */
+    overflow: hidden; /* Changed from auto */
+    position: relative; /* Added for potential arrow positioning */
+    /* scroll-snap-type: x mandatory; */ /* Removed or set to none */
+    -webkit-overflow-scrolling: touch; 
+    scrollbar-width: none; 
 }
-.similar-posts-carousel::-webkit-scrollbar { /* Hide scrollbar for Chrome, Safari, Edge */
+.similar-posts-carousel::-webkit-scrollbar { 
     display: none;
 }
 
@@ -454,14 +462,33 @@ include 'includes/header.php';
 }
 
 .carousel-slide {
-    flex: 0 0 calc(100% / 3 - 20px); /* Show 3 cards, account for margin */
+    /* flex: 0 0 calc(100% / 3 - 20px); /* Original */
+    flex: 0 0 calc((100% - 40px) / 3); /* Default: 3 slides, 2 gaps of 20px */
     margin-right: 20px;
-    scroll-snap-align: start;
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    /* scroll-snap-align: start; */ /* Keep if native scroll is ever re-enabled */
+    box-sizing: border-box; 
 }
 
 .carousel-slide:last-child {
     margin-right: 0;
+}
+
+/* Responsive adjustments for carousel slides */
+@media (max-width: 992px) { /* Tablets and wider phones, show 2 slides */
+    .carousel-slide {
+        flex: 0 0 calc((100% - 20px) / 2); /* 2 slides, 1 gap of 20px */
+        margin-right: 20px;
+    }
+    .carousel-slide:nth-child(2n) { /* If two slides are shown, the second one might need its margin adjusted depending on container */
+      /* Covered by last-child if it's the end of the whole list, or if JS correctly pages. */
+    }
+}
+
+@media (max-width: 767px) { /* Narrower tablets and phones, show 1 slide */
+    .carousel-slide {
+        flex: 0 0 100%; /* 1 slide, 0 gap within the slide's own definition */
+        margin-right: 0;
+    }
 }
 
 .similar-post-card {
@@ -557,6 +584,27 @@ include 'includes/header.php';
 
 .reply-form-container.visible {
     max-height: 500px; /* Adjust as needed, should be larger than the form's content */
+    opacity: 1;
+}
+
+/* Toast notification */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+.toast {
+    background-color: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+.toast.show {
     opacity: 1;
 }
 
@@ -668,7 +716,7 @@ include 'includes/header.php';
                                             <a href="article.php?slug=<?php echo $similar['slug']; ?>"><?php echo sanitize($similar['title']); ?></a>
                                         </h3>
                                         <p class="similar-post-meta">
-                                            <?php echo date('F j, Y', strtotime($similar['published_at'])); ?>
+                                            Published by <?php echo sanitize($similar['author_name']); ?> | <?php echo date('F j, Y', strtotime($similar['published_at'])); ?>
                                         </p>
                                     </div>
                                 </div>
@@ -694,13 +742,13 @@ include 'includes/header.php';
                 <div class="comments-list">
                     <?php foreach ($comments as $comment): ?>
                         <div class="comment">
-                            <?php if ($comment['profile_picture']): ?>
-                                <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($comment['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
-                            <?php else: ?>
-                                <i class="fas fa-user-circle comment-avatar-icon"></i>
-                            <?php endif; ?>
                             <div class="comment-content">
                                 <div class="comment-header">
+                                    <?php if ($comment['profile_picture']): ?>
+                                        <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($comment['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
+                                    <?php else: ?>
+                                        <i class="fas fa-user-circle comment-avatar-icon"></i>
+                                    <?php endif; ?>
                                     <h4 class="comment-author"><?php echo sanitize($comment['author_name']); ?></h4>
                                     <span class="comment-date"><?php echo date('F j, Y \a\t g:i a', strtotime($comment['posted_at'])); ?></span>
                                 </div>
@@ -740,30 +788,36 @@ include 'includes/header.php';
                                         </form>
                                     </div>
                                 <?php endif; ?>
-                            </div>
-                            
-                            <!-- Comment replies -->
-                            <?php 
-                            $replies = get_comment_replies($comment['id'], $pdo);
-                            foreach ($replies as $reply): 
-                            ?>
-                                <div class="comment comment-reply">
-                                    <?php if ($reply['profile_picture']): ?>
-                                        <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($reply['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
-                                    <?php else: ?>
-                                        <i class="fas fa-user-circle comment-avatar-icon"></i>
-                                    <?php endif; ?>
-                                    <div class="comment-content">
-                                        <div class="comment-header">
-                                            <h4 class="comment-author"><?php echo sanitize($reply['author_name']); ?></h4>
-                                            <span class="comment-date"><?php echo date('F j, Y \a\t g:i a', strtotime($reply['posted_at'])); ?></span>
-                                        </div>
-                                        <div class="comment-body">
-                                            <p><?php echo nl2br(sanitize($reply['content'])); ?></p>
+
+                                <!-- Comment replies will be moved here -->
+                                <?php 
+                                $replies = get_comment_replies($comment['id'], $pdo);
+                                if (!empty($replies)) { // Check if there are replies before starting the container
+                                    echo '<div class="comment-replies-container">'; // Optional: a container for all replies if needed for specific styling
+                                    foreach ($replies as $reply): 
+                                ?>
+                                    <div class="comment comment-reply">
+                                        <div class="comment-content">
+                                            <div class="comment-header">
+                                                <?php if ($reply['profile_picture']): ?>
+                                                    <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($reply['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
+                                                <?php else: ?>
+                                                    <i class="fas fa-user-circle comment-avatar-icon"></i>
+                                                <?php endif; ?>
+                                                <h4 class="comment-author"><?php echo sanitize($reply['author_name']); ?></h4>
+                                                <span class="comment-date"><?php echo date('F j, Y \a\t g:i a', strtotime($reply['posted_at'])); ?></span>
+                                            </div>
+                                            <div class="comment-body">
+                                                <p><?php echo nl2br(sanitize($reply['content'])); ?></p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            <?php endforeach; ?>
+                                <?php 
+                                    endforeach; 
+                                    echo '</div>'; // Close optional container
+                                }
+                                ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -833,33 +887,43 @@ include 'includes/header.php';
         const carouselContainer = document.querySelector('.similar-posts-carousel-container');
         if (carouselContainer) {
             const carousel = carouselContainer.querySelector('.carousel-slides');
-            const slides = carouselContainer.querySelectorAll('.carousel-slide');
+            const slides = Array.from(carouselContainer.querySelectorAll('.carousel-slide')); // Ensure it's an array
             const prevButton = carouselContainer.querySelector('.prev-arrow');
             const nextButton = carouselContainer.querySelector('.next-arrow');
             const paginationContainer = carouselContainer.querySelector('.carousel-pagination');
             
-            const slidesPerView = 3;
-            let currentIndex = 0;
+            let slidesPerView = 3; // Will be updated
+            let currentPageIndex = 0;
             const totalSlides = slides.length;
-            const totalPages = Math.ceil(totalSlides / slidesPerView);
+            let totalPages = 0; // Will be calculated
 
-            function updateCarousel() {
-                const offset = -currentIndex * (100 / slidesPerView) * slidesPerView; // This logic might need adjustment based on exact layout
-                // Correcting the transform logic for a 3-slide view
-                // Each slide is (100/3)% width. We want to move by one slide's width at a time.
-                // The offset needs to consider the margin-right on slides if not using gap.
-                // The .carousel-slide CSS has: flex: 0 0 calc(100% / 3 - 20px); margin-right: 20px;
-                // So, each "group" of 3 slides effectively takes up 100% of the carousel-slides container width.
-                // We need to calculate the width of a single slide including its margin for accurate translation.
-                
-                // Let's simplify by moving one full "page" (slidesPerView) at a time.
-                const pageOffset = -currentIndex * 100; // Move by 100% of the container width for each page
+            function getSlidesPerView() {
+                if (window.innerWidth <= 767) {
+                    return 1;
+                } else if (window.innerWidth <= 992) {
+                    return 2;
+                }
+                return 3;
+            }
+
+            function updateCarouselConfig() {
+                slidesPerView = getSlidesPerView();
+                totalPages = Math.ceil(totalSlides / slidesPerView);
+                // Ensure currentPageIndex is valid after config change (e.g. resize)
+                currentPageIndex = Math.max(0, Math.min(currentPageIndex, totalPages - 1));
+            }
+
+            function updateCarouselDisplay() {
+                if (!carousel) return;
+                // Transform based on currentPageIndex (0-indexed page number)
+                const pageOffset = -currentPageIndex * 100;
                 carousel.style.transform = `translateX(${pageOffset}%)`;
 
-                // Update pagination
+                // Update pagination dots
                 if (paginationContainer) {
-                    document.querySelectorAll('.carousel-pagination span').forEach((dot, index) => {
-                        if (index === Math.floor(currentIndex / slidesPerView) && totalPages > 1) {
+                    const dots = paginationContainer.querySelectorAll('span');
+                    dots.forEach((dot, index) => {
+                        if (index === currentPageIndex && totalPages > 1) {
                             dot.classList.add('active');
                         } else {
                             dot.classList.remove('active');
@@ -868,80 +932,68 @@ include 'includes/header.php';
                 }
 
                 // Update arrow visibility
-                if (prevButton) prevButton.style.display = currentIndex === 0 ? 'none' : 'block';
-                if (nextButton) nextButton.style.display = (currentIndex + slidesPerView >= totalSlides) ? 'none' : 'block';
-                if (totalPages <= 1) {
-                  if (prevButton) prevButton.style.display = 'none';
-                  if (nextButton) nextButton.style.display = 'none';
-                }
+                if (prevButton) prevButton.style.display = (currentPageIndex === 0 || totalPages <= 1) ? 'none' : 'block';
+                if (nextButton) nextButton.style.display = (currentPageIndex >= totalPages - 1 || totalPages <= 1) ? 'none' : 'block';
             }
 
-            function createPagination() {
-                if (!paginationContainer || totalPages <= 1) return;
+            function createPaginationDots() {
+                if (!paginationContainer || totalSlides === 0) return;
                 paginationContainer.innerHTML = ''; // Clear existing dots
+                
+                if (totalPages <= 1) return; // No dots if only one page or no slides
+
                 for (let i = 0; i < totalPages; i++) {
                     const dot = document.createElement('span');
                     dot.addEventListener('click', () => {
-                        currentIndex = i * slidesPerView;
-                         // Ensure currentIndex doesn't exceed bounds when clicking pagination for the last page
-                        if (currentIndex + slidesPerView > totalSlides) {
-                            currentIndex = totalSlides - slidesPerView;
-                            if (currentIndex < 0) currentIndex = 0; // Handle case with less than 3 slides
-                        }
-                        updateCarousel();
+                        currentPageIndex = i;
+                        updateCarouselDisplay();
                     });
                     paginationContainer.appendChild(dot);
                 }
             }
-
-            if (totalSlides > 0) {
-                createPagination();
-                updateCarousel(); // Initial setup
+            
+            function initializeCarousel() {
+                if (totalSlides === 0) {
+                    if(prevButton) prevButton.style.display = 'none';
+                    if(nextButton) nextButton.style.display = 'none';
+                    if(paginationContainer) paginationContainer.innerHTML = '';
+                    return;
+                }
+                updateCarouselConfig();
+                createPaginationDots();
+                updateCarouselDisplay();
             }
 
             if (nextButton) {
                 nextButton.addEventListener('click', () => {
-                    if (currentIndex + slidesPerView < totalSlides) {
-                        currentIndex += slidesPerView;
-                        // Clamp to ensure we don't go past the last possible full view
-                        if (currentIndex + slidesPerView > totalSlides) {
-                             currentIndex = totalSlides - slidesPerView;
-                        }
-                         if (currentIndex < 0) currentIndex = 0; // Ensure it doesn't go negative
-                    } else {
-                        // If on the last set of items, and it's not a full set, don't advance further
-                        // Or, optionally, loop back to the start
-                        // currentIndex = 0; // Loop to start
+                    if (currentPageIndex < totalPages - 1) {
+                        currentPageIndex++;
+                        updateCarouselDisplay();
                     }
-                    updateCarousel();
                 });
             }
 
             if (prevButton) {
                 prevButton.addEventListener('click', () => {
-                    if (currentIndex - slidesPerView >= 0) {
-                        currentIndex -= slidesPerView;
-                    } else {
-                         currentIndex = 0; // Go to start if trying to go before start
+                    if (currentPageIndex > 0) {
+                        currentPageIndex--;
+                        updateCarouselDisplay();
                     }
-                    updateCarousel();
                 });
             }
             
-            // Adjust slides to be 1/3rd of the .similar-posts-carousel (the flex container for .carousel-slides)
-            // The .carousel-slides will be 300% width if it has 3x the number of slides it can show.
-            // The slides themselves are already styled with flex: 0 0 calc(100% / 3 - 20px);
-            // We need to make sure the carousel.style.transform moves correctly.
-            // The slidesPerView logic is key.
-            if (carousel && slides.length > slidesPerView) {
-                 // No direct width style needed on carousel (the flex container for slides)
-                 // Its width is determined by its parent and the flex properties of its children
-            } else if (carousel) {
-                // If not enough slides to scroll, hide arrows and pagination
-                if(prevButton) prevButton.style.display = 'none';
-                if(nextButton) nextButton.style.display = 'none';
-                if(paginationContainer) paginationContainer.innerHTML = '';
-            }
+            // Initial setup
+            initializeCarousel();
+
+            // Re-initialize on window resize
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    const oldTotalPages = totalPages;
+                    initializeCarousel(); // This will update config, dots, and display
+                }, 250); // Debounce resize event
+            });
         }
     });
 </script>
@@ -960,26 +1012,48 @@ function refreshComments() {
             }
         });
 }
+
+// Add toast notification function
+function showToast(message) {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    container.appendChild(toast);
+    // Force reflow so animation triggers
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    // Remove toast after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (container.contains(toast)) {
+                container.removeChild(toast);
+            }
+        }, 300);
+    }, 5000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.comment-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            // Prepare form data and include submit_comment so server detects it
+            const formData = new FormData(form);
+            formData.append('submit_comment', '1');
             fetch(window.location.href, {
                 method: 'POST',
-                body: new FormData(form),
+                body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(res => res.json())
             .then(data => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message';
-                messageDiv.textContent = data.message;
-                messageDiv.style.opacity = 0;
-                form.parentNode.insertBefore(messageDiv, form);
-                setTimeout(() => {
-                    messageDiv.style.transition = 'opacity 0.5s';
-                    messageDiv.style.opacity = 1;
-                }, 10);
+                showToast(data.message);
                 refreshComments();
             })
             .catch(err => console.error('Comment submission failed:', err));

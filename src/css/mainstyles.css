@@ -1991,6 +1991,7 @@ main {
 }
 
 .comment-form-container {
+    margin-top: 2rem;
     background: var(--white);
     padding: 2rem;
     border-radius: 12px;
