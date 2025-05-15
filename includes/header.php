@@ -330,7 +330,7 @@ if (!defined('DB_HOST')) {
                         </div>
                     </div>
                 </div>
-                <a href="#what-we-offer">What We Offer</a>
+                <a href="<?php echo SITE_URL; ?>/offers.php">What We Offer</a>
                 <div class="dropdown">
                     <button class="dropdown-btn">Our Impact <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
@@ -357,7 +357,7 @@ if (!defined('DB_HOST')) {
                         <a href="<?php echo SITE_URL; ?>/awards.php?type=client">Client</a>
                     </details>
                 </details>
-                <a href="#what-we-offer" class="what-we-offer-link">What We Offer</a>
+                <a href="<?php echo SITE_URL; ?>/offers.php" class="what-we-offer-link">What We Offer</a>
                 <details>
                     <summary>Our Impact</summary>
                     <a href="#impact/stories">Client Success Stories</a>

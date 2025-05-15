@@ -117,3 +117,85 @@ This ensures users are informed about cookie usage and can provide consent, whic
     - "Board of Trustees" and "Management Team" items were removed from the main dropdown as they are covered under "Our Leaders".
 - This structure is implemented for both desktop (hover-based dropdowns) and mobile (details/summary elements) navigation.
 - CSS for sub-dropdowns has been added directly in `includes/header.php`.
+
+## Project Overview
+
+This project involves the development and refinement of a website for TSPI, a microfinance NGO. Key pages and features include:
+
+*   **`AboutUs.php`**: A multi-section page providing comprehensive information about TSPI.
+*   **`offers.php`**: A page detailing the various loan programs, social programs, and insurance products offered by TSPI.
+*   **`awards.php`**: A page to showcase organizational and client awards, filterable by type.
+*   **Dynamic Content**: Integration with a backend (presumably WordPress, based on `wp-content` paths and PHP functions like `get_template_directory_uri()`) to fetch data such as news articles, leader information, and client stories.
+*   **Responsive Design**: Ensuring layouts adapt to various screen sizes.
+*   **Interactive Elements**: Features like sticky navigation, collapsible sections, carousels, and copy-to-clipboard functionality.
+*   **Fixed Navbar Offset**: Consistent handling of in-page navigation to prevent content from being obscured by the fixed header.
+
+## `AboutUs.php` Development
+
+The `AboutUs.php` page has undergone significant development to present detailed information about the organization.
+
+**Key Sections and Features:**
+
+1.  **Initial Structure & Content:**
+    *   Sections: "About TSPI (NGO)", "Vision & Mission", "Our Core Values", "Our Leaders", "Our Branches", "About TSPI-MBAI".
+    *   Sticky side navigation for easy access to different sections.
+    *   Main navigation in `includes/header.php` updated to link to new sections.
+
+2.  **"Our Leaders" Section:**
+    *   Displays Board of Trustees and Senior Management Team in card format.
+    *   Each card includes an image, name, position, and a collapsible bio.
+    *   Functionality to deep-link to a specific leader's card from other pages, automatically expanding their bio and scrolling into view, accounting for the fixed navbar.
+    *   See `documentation/about_us_leaders_section.txt` for more details.
+
+3.  **"Our Branches" Section:**
+    *   Initially a long list, restyled into a 2-column grid for branch items within each collapsible province, under collapsible region headers.
+    *   Copy-to-clipboard functionality for branch addresses.
+    *   CSS-based image carousel for the Head Office.
+    *   Moved to appear after "Our Leaders".
+    *   See `documentation/about_us_branches_section.txt` for more details.
+
+4.  **Navigation & General Page Enhancements:**
+    *   Implementation of a CSS custom property `--navbar-scroll-offset` for `scroll-margin-top` on all in-page navigation targets.
+    *   Updates to main header navigation (`includes/header.php`), including mobile navigation fixes.
+    *   Refinements to the sticky side navigation.
+
+## `offers.php` Development
+
+The `offers.php` page was created to showcase TSPI's various programs and services.
+
+**Key Features and Sections:**
+
+1.  **Creation & Initial Content:**
+    *   Sections for "Livelihood Loan Programs", "Social Loan Programs", and "Life Insurance and Credit Life Insurance Programs (KAAGAPAY)".
+    *   Each section features multiple cards detailing specific offers with Font Awesome icons.
+    *   Linked from "What We Offer" in the main navbar.
+
+2.  **Styling & Animations:**
+    *   Cards styled with white background, shadow, and rounded corners.
+    *   Fade-up animation on load and hover animations for offer cards.
+
+3.  **Intro Section Refinement:**
+    *   Initially, an intro paragraph with a client story carousel below it.
+    *   Restructured to a side-by-side layout:
+        *   Left: Main intro text with `<h1>` "Our Commitment to Empowerment".
+        *   Right: Client story carousel (fetching 3 recent 'stories' articles).
+    *   Background changed to white, section width constrained and centered.
+
+4.  **Program Section Restructuring & Content Updates:**
+    *   "Life Insurance and Credit Life Insurance Programs" (KAAGAPAY) restored as a full, separate section with 6 detailed cards and a descriptive paragraph, appearing after "Social Loan Programs".
+    *   "Social Loan Programs" section adjusted to display 4 cards in a row on wider screens.
+
+## `awards.php` Development
+
+*   Created from `news.php` to display articles with category slugs 'awards' or 'cliaward'.
+*   Supports URL parameter `?type=organization` or `?type=client` for filtering.
+*   Page title dynamically changes based on the filter.
+*   Linked in the main navbar under "Who We Are".
+
+## General Technical Notes
+
+*   **Fixed Navbar Offset:** A CSS custom property `--navbar-scroll-offset` (derived from `--navbar-height` plus a buffer) is used with `scroll-margin-top` for all in-page navigation targets to prevent content from being hidden by the fixed navbar. This is applied globally via CSS.
+*   **CSS Custom Properties:** `--navbar-height` and `--navbar-scroll-offset` are defined in a global stylesheet (e.g., `src/css/mainstyles.css` or equivalent) for consistent use.
+*   **JavaScript:** Utilized for interactive elements like copy-to-clipboard, collapsible sections, carousels, and managing URL hash changes for scrolling and expanding content.
+
+This document will be updated as the project progresses.

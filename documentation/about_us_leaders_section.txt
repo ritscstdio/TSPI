@@ -1,0 +1,105 @@
+# "Our Leaders" Section Documentation (`AboutUs.php`)
+
+This document details the structure and functionality of the "Our Leaders" section within the `AboutUs.php` page.
+
+## Overview
+
+The "Our Leaders" section showcases the Board of Trustees and the Senior Management Team of TSPI. It is designed to be informative and interactive, allowing users to learn more about each leader.
+
+## Structure
+
+Each leader is presented using a card-based layout. A typical leader card contains:
+
+*   **Image:** A photograph of the leader.
+*   **Name:** The leader's full name.
+*   **Position:** Their official title or role within the organization (e.g., "Chairman of the Board", "President & CEO").
+*   **Quote:** A brief, impactful quote from the leader (this may not be present for all leaders).
+*   **Collapsible Biography:** A more detailed biography or profile of the leader. This is initially collapsed and can be expanded by the user by clicking a "Read Bio" button or similar control.
+
+## Key Functionalities
+
+1.  **Dynamic Content:**
+    *   Leader information (images, names, positions, bios, etc.) is typically fetched dynamically using PHP. The exact source might be a PHP array defined within the page or included from another file, or potentially from a database via WordPress functions.
+
+2.  **Collapsible Biographies:**
+    *   Each leader's biography is hidden by default to keep the section concise.
+    *   JavaScript is used to toggle the visibility of the biography when a user interacts with a designated button (e.g., "Read Bio" / "Hide Bio").
+    *   The button text often changes to reflect the current state (e.g., from "Read Bio" to "Hide Bio").
+
+3.  **Deep Linking and Auto-Expansion/Scroll:**
+    *   **Purpose:** This feature allows linking directly to a specific leader's card from another page (e.g., the homepage) or even from a different section of the `AboutUs.php` page itself.
+    *   **Implementation:**
+        *   Each leader's card (or a primary wrapper element for it) is assigned a unique `id` attribute (e.g., `id="leader-john-doe"`).
+        *   JavaScript code listens for changes in the URL hash (`window.location.hash`).
+        *   If the hash matches a leader's ID:
+            1.  The script will programmatically expand that leader's biography.
+            2.  The page will then scroll smoothly to bring that leader's card into view.
+            3.  Crucially, the scroll accounts for the height of the fixed main navigation bar to ensure the leader's card (and particularly its top part) is not obscured. This is typically achieved by calculating an offset based on the navbar's height (often stored in a CSS custom property like `--navbar-height` or `--navbar-scroll-offset`).
+
+4.  **Styling:**
+    *   CSS is used to style the leader cards, including layout, typography, image presentation, and the appearance of the bio toggle button.
+    *   The expanded bio section is also styled for readability.
+
+## Technical Details (Illustrative)
+
+*   **HTML Structure (Simplified Example per leader):**
+    ```html
+    <div class="leader-card" id="leader-name">
+        <img src="path/to/image.jpg" alt="Leader Name">
+        <h3>Leader Name</h3>
+        <p>Position</p>
+        <blockquote>Quote (optional)</blockquote>
+        <button class="bio-toggle" data-target="#bio-leader-name">Read Bio</button>
+        <div class="bio-content" id="bio-leader-name" style="display:none;">
+            <p>Detailed biography...</p>
+        </div>
+    </div>
+    ```
+*   **JavaScript Snippet (Conceptual for deep linking & bio toggle):
+    ```javascript
+    // Bio Toggle
+    document.querySelectorAll('.bio-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            const bioContent = document.querySelector(targetId);
+            const isHidden = bioContent.style.display === 'none';
+            bioContent.style.display = isHidden ? 'block' : 'none';
+            button.textContent = isHidden ? 'Hide Bio' : 'Read Bio';
+        });
+    });
+
+    // Deep linking and scroll adjustment
+    function handleHashChange() {
+        const hash = window.location.hash;
+        if (hash) {
+            const targetElement = document.querySelector(hash);
+            if (targetElement && targetElement.classList.contains('leader-card')) { // Or other identifying class
+                // Expand bio if applicable
+                const bioToggle = targetElement.querySelector('.bio-toggle');
+                const bioContent = document.querySelector(bioToggle.dataset.target);
+                if (bioContent.style.display === 'none') {
+                    bioToggle.click(); // Simulate click to expand and update button text
+                }
+
+                // Scroll to element, adjusting for navbar
+                const navbarHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--navbar-scroll-offset')) || 180; // fallback
+                const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - navbarHeight;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('load', handleHashChange); // Also on initial load
+    ```
+
+## Dependencies
+*   JavaScript for interactivity (bio toggle, smooth scroll, hash handling).
+*   CSS for styling and layout.
+*   PHP for dynamically generating leader data (if applicable).
+*   CSS Custom Property (`--navbar-scroll-offset` or similar) defined globally for accurate scrolling. 

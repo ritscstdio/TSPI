@@ -1,0 +1,126 @@
+# "Our Branches" Section Documentation (`AboutUs.php`)
+
+This document outlines the structure, styling, and interactive features of the "Our Branches" section on the `AboutUs.php` page.
+
+## Overview
+
+The "Our Branches" section provides a comprehensive listing of TSPI's branches, organized by region and province. It also features details about the TSPI Head Office, including an image carousel.
+
+## Structure and Layout
+
+1.  **TSPI Head Office:**
+    *   Displayed at the top of the section.
+    *   Includes an image carousel showcasing multiple views of the head office (e.g., 4 images).
+    *   Contact details (address, phone numbers) are provided below the carousel.
+
+2.  **Branch Listings:**
+    *   Branches are grouped by **Region**.
+    *   Within each Region, branches are further grouped by **Province**.
+    *   **Collapsible Elements:**
+        *   Both Region names and Province names act as headers for collapsible sections (dropdowns).
+        *   Users can click on a Region or Province header to expand or collapse the list of branches/provinces within it.
+        *   Chevron icons (or similar visual cues) indicate the expanded/collapsed state and rotate on click.
+    *   **Branch Item Display:**
+        *   Inside each expanded Province, individual branch locations are listed.
+        *   The layout for branch items within a province has been styled as a 2-column grid on wider screens to improve readability and space utilization.
+        *   Each branch item typically displays its name/address and contact number(s).
+
+## Key Functionalities
+
+1.  **Head Office Image Carousel:**
+    *   A CSS-based image carousel displays multiple images of the TSPI Head Office.
+    *   Typically includes navigation controls (e.g., previous/next buttons or dots) for manual image browsing.
+    *   May also feature automatic image rotation.
+
+2.  **Collapsible Regions and Provinces:**
+    *   **Purpose:** To manage the potentially long list of branches and allow users to focus on specific areas of interest.
+    *   **Implementation:** JavaScript is used to toggle the visibility (e.g., `max-height` and `opacity` for smooth animations) of the content within each region and province when its header is clicked.
+    *   CSS classes are often added/removed to control the styling and state of the collapsible elements and their trigger icons (e.g., chevron rotation).
+
+3.  **Copy-to-Clipboard for Addresses:**
+    *   Users can click on a branch's address to copy it to their clipboard.
+    *   Visual feedback (e.g., a temporary message like "Address Copied!") is provided to confirm the action.
+    *   This functionality is implemented using JavaScript to interact with the browser's Clipboard API.
+    *   Initially, there was also copy-to-clipboard for phone numbers, but this was later removed, leaving only address copying.
+
+4.  **Styling and Animations:**
+    *   Modern styling is applied to the collapsible headers (background, padding, font treatment).
+    *   Smooth transition effects (e.g., `max-height`, `opacity`) are used for the expand/collapse animations of regions and provinces.
+    *   Spacing between branch items and between main Region headers has been adjusted for a cleaner look.
+
+## Navigation
+
+*   The "Our Branches" section is a main section within `AboutUs.php` and is linked in the sticky side navigation of the page.
+*   Initially, sub-links for each Region were considered for the sticky nav but were later removed to keep the side navigation concise.
+
+## Technical Details (Illustrative)
+
+*   **HTML Structure (Conceptual for a collapsible region/province):
+    ```html
+    <div class="region-header collapsible-trigger">
+        Region Name <span class="chevron">▼</span>
+    </div>
+    <div class="collapsible-content region-content">
+        <div class="province-header collapsible-trigger">
+            Province Name <span class="chevron">▼</span>
+        </div>
+        <div class="collapsible-content province-content">
+            <div class="branch-grid">
+                <!-- Branch items in 2-column layout -->
+                <div class="branch-item">
+                    <p class="branch-address" title="Click to copy address">Branch Address 1...</p>
+                    <p>Contact: 123-4567</p>
+                </div>
+                <!-- ... more branch items ... -->
+            </div>
+        </div>
+        <!-- ... more provinces ... -->
+    </div>
+    <!-- ... more regions ... -->
+    ```
+
+*   **JavaScript (Conceptual for collapsibles and copy-to-clipboard):
+    ```javascript
+    // Collapsible sections
+    document.querySelectorAll('.collapsible-trigger').forEach(trigger => {
+        trigger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                content.style.opacity = '0';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                content.style.opacity = '1';
+            }
+            // Toggle chevron icon if present
+            const chevron = this.querySelector('.chevron');
+            if (chevron) {
+                chevron.style.transform = this.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        });
+    });
+
+    // Copy address to clipboard
+    document.querySelectorAll('.branch-address').forEach(addressEl => {
+        addressEl.addEventListener('click', function() {
+            navigator.clipboard.writeText(this.innerText)
+                .then(() => {
+                    // Show feedback, e.g., a temporary tooltip or message
+                    console.log('Address copied!');
+                    // Example: show a message next to the element
+                    const feedback = document.createElement('span');
+                    feedback.textContent = ' Copied!';
+                    this.appendChild(feedback);
+                    setTimeout(() => feedback.remove(), 2000);
+                })
+                .catch(err => console.error('Failed to copy: ', err));
+        });
+    });
+    ```
+
+## Dependencies
+*   JavaScript for the interactive collapsible sections and copy-to-clipboard functionality.
+*   CSS for layout (including the 2-column grid for branches), styling of collapsibles, carousel, and visual feedback.
+*   PHP for generating branch data (if applicable).
+*   Images for the Head Office carousel. 
