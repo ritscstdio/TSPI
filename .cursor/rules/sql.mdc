@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+EVERYTIME THERE IS AN SQL QUERY THAT NEEDS TO BE ADDED OR CHANGED
+
+Remember there is already an existing database
+
+So if I were required to change/add a table or structure. Always refer to the SQL I will send along with the prompt.
+
+
+And the suggestion or answer you will give will be relevant to the SQL file I will provide so I won't have errors in phpmyadmin.

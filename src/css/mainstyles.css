@@ -1737,9 +1737,9 @@ main {
 }
 
 .similar-posts {
-    background-color: var(--light-blue);
-    padding-top: 3rem;
-    padding-bottom: 3rem;
+    background-color: var(--white);
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     width: 100vw;
     margin-left: calc(-50vw + 50%);
     box-sizing: border-box;
@@ -1764,7 +1764,7 @@ main {
 }
 
 .similar-posts-carousel {
-    overflow: hidden;
+    overflow: visible; /* Changed from hidden to visible */
 }
 
 .carousel-slides {
@@ -1776,6 +1776,14 @@ main {
     flex: 0 0 calc(100% / 3);
     padding: 0 0.75rem;
     box-sizing: border-box;
+    position: relative; /* Ensure z-index works correctly */
+    z-index: 1; /* Default z-index */
+    transition: z-index 0s 0.3s; /* Delay z-index change back to default to prevent flickering */
+}
+
+.carousel-slide:hover {
+    z-index: 10; /* Higher z-index on hover */
+    transition-delay: 0s; /* Apply immediately on hover */
 }
 
 .similar-post-card {
@@ -1788,13 +1796,14 @@ main {
     height: 100%;
     transform: scale(1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
+    position: relative; /* Keep this for stacking context if needed */
     text-decoration: none;
 }
 
 .similar-post-card:hover {
     transform: scale(1.03);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    /* z-index: 5; /* Ensure hovered card is above others within the same slide if structure changes */
 }
 
 .similar-post-thumbnail-container {
@@ -1828,7 +1837,17 @@ main {
     margin-bottom: 0.5rem;
     line-height: 1.3;
     font-weight: 600;
-    text-decoration: none;
+    /* text-decoration: none; Removed from here as it should be on the <a> tag */
+}
+
+.similar-post-title a {
+    color: inherit; /* Inherit color from .similar-post-title (var(--dark-navy)) */
+    text-decoration: none; /* Remove underline */
+}
+
+.similar-post-title a:hover {
+    text-decoration: underline; /* Optional: add underline back on hover for the link */
+    color: var(--primary-blue); /* Optional: change color on hover */
 }
 
 .similar-post-meta {
@@ -1963,7 +1982,7 @@ main {
 
 /* Add back comments section styles that were accidentally removed */
 .comments-section {
-    margin: 3rem 0;
+    
 }
 
 .comments-section h2 {

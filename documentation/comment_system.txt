@@ -1,0 +1,80 @@
+# Comment System Enhancements
+
+## Database Migration
+
+- Update the `comments` table:
+```sql
+ALTER TABLE comments
+  DROP COLUMN IF EXISTS upvotes,
+  DROP COLUMN IF EXISTS downvotes,
+  ADD COLUMN vote_score INT NOT NULL DEFAULT 0,
+  ADD COLUMN pinned TINYINT(1) NOT NULL DEFAULT 0; /* Pinned status remains */
+```
+
+- Recreate the `comment_votes` table to track individual user votes accurately:
+```sql
+DROP TABLE IF EXISTS comment_votes;
+CREATE TABLE comment_votes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  comment_id INT NOT NULL,
+  user_id INT NOT NULL,
+  vote TINYINT(1) NOT NULL COMMENT '1 for upvote, -1 for downvote',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_comment_vote (comment_id, user_id),
+  FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+- (Optional) To enable the new article voting system for trending, update the `articles` table and recreate `article_votes`:
+```sql
+ALTER TABLE articles
+  DROP COLUMN IF EXISTS upvotes,
+  DROP COLUMN IF EXISTS downvotes,
+  ADD COLUMN vote_score INT NOT NULL DEFAULT 0;
+
+DROP TABLE IF EXISTS article_votes;
+CREATE TABLE article_votes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  article_id INT NOT NULL,
+  user_id INT NOT NULL,
+  vote TINYINT(1) NOT NULL COMMENT '1 for upvote, -1 for downvote',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_article_vote (article_id, user_id),
+  FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+## Frontend (article.php)
+
+- Updated the comment fetching query to:
+  ```sql
+  ORDER BY pinned DESC, upvotes DESC, posted_at DESC
+  ```
+- Added an AJAX endpoint at the top of `article.php` to handle `vote_action` (upvote) and return the updated `upvotes` count.
+- In each top-level comment, inserted upvote controls (an up arrow button and the current count).
+- Implemented JavaScript to send AJAX requests on upvote clicks and update the display without reloading the page.
+- Limited reply forms to only top-level comments; nested replies are not supported.
+
+## Admin CMS (admin/comments.php & admin/comment-action.php)
+
+- `admin/comments.php`:
+  - Added `Upvotes` and `Pinned` columns in the comments table view.
+  - Pinned comments are listed at the top by default.
+  - Pin/unpin actions available via thumbtack icons in the Actions column.
+
+- `admin/comment-action.php`:
+  - Extended to handle `pin` and `unpin` actions, updating the `pinned` flag accordingly.
+
+## User Roles & Permissions
+
+- Only users with roles `admin`, `editor`, or `comment_moderator` can pin or unpin comments in the CMS.
+- Frontend upvoting is available to all visitors without authentication (consider adding rate-limiting or authentication if needed).
+
+## Notes & Next Steps
+
+- Consider implementing a dedicated votes table for tracking individual user votes and preventing multiple votes from the same user.
+- Styling of upvote buttons and counts can be customized via CSS in `article.php` or an external stylesheet. 

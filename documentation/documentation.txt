@@ -199,3 +199,7 @@ The `offers.php` page was created to showcase TSPI's various programs and servic
 *   **JavaScript:** Utilized for interactive elements like copy-to-clipboard, collapsible sections, carousels, and managing URL hash changes for scrolling and expanding content.
 
 This document will be updated as the project progresses.
+
+## Comment System Enhancements
+
+For details on the new upvote and pinning features in the comment system, including database migration and code modifications, see [comment_system.txt](comment_system.txt).

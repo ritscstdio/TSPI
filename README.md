@@ -42,8 +42,53 @@ These instructions will guide you to get a copy of the project up and running on
     *   Import any necessary database dumps (`.sql` files) if provided, or configure connection details in the relevant PHP files (e.g., `wp-config.php` for WordPress, or other custom database connection scripts).
     *   Ensure the database user has the correct privileges.
 
-4.  **Configure Environment (If applicable):
+4.  **Configure Environment (If applicable):**
     *   Check for any configuration files (e.g., `config.php`, `.env`) that might need to be set up with specific paths, URLs, or API keys. For a WordPress theme, most configuration is handled through the WordPress admin interface and `wp-config.php`.
+
+4.1. **Comments Feature Migration (Optional but recommended):**
+    *   To enable the new voting and pinning functionalities in the comment system, run the following SQL on your database:
+    ```sql
+    ALTER TABLE comments
+        DROP COLUMN IF EXISTS upvotes,
+        DROP COLUMN IF EXISTS downvotes,
+        ADD COLUMN vote_score INT NOT NULL DEFAULT 0,
+        ADD COLUMN pinned TINYINT(1) NOT NULL DEFAULT 0; /* Pinned remains */
+    
+    DROP TABLE IF EXISTS comment_votes;
+    CREATE TABLE comment_votes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        comment_id INT NOT NULL,
+        user_id INT NOT NULL,
+        vote TINYINT(1) NOT NULL COMMENT '1 for upvote, -1 for downvote',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_comment_vote (comment_id, user_id),
+        FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    ```
+
+4.2. **Article Voting Migration (Optional):**
+    *   To support the new voting system on articles for trending calculations, run the following SQL on your database:
+    ```sql
+    ALTER TABLE articles
+        DROP COLUMN IF EXISTS upvotes,
+        DROP COLUMN IF EXISTS downvotes,
+        ADD COLUMN vote_score INT NOT NULL DEFAULT 0;
+    
+    DROP TABLE IF EXISTS article_votes;
+    CREATE TABLE article_votes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        article_id INT NOT NULL,
+        user_id INT NOT NULL,
+        vote TINYINT(1) NOT NULL COMMENT '1 for upvote, -1 for downvote',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_article_vote (article_id, user_id),
+        FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    ```
 
 5.  **Access the website:**
     *   Open your web browser and navigate to the project's URL (e.g., `http://localhost/your-project-folder-name/` if using XAMPP/WAMP).

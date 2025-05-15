@@ -29,7 +29,7 @@ $sql = "SELECT c.*, a.title AS article_title, a.slug AS article_slug
         FROM comments c 
         JOIN articles a ON c.article_id = a.id 
         $where_sql 
-        ORDER BY c.posted_at DESC";
+        ORDER BY c.pinned DESC, c.vote_score DESC, c.posted_at DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $comments = $stmt->fetchAll();
@@ -75,6 +75,8 @@ $comments = $stmt->fetchAll();
                                     <th>Author</th>
                                     <th>Comment</th>
                                     <th>Article</th>
+                                    <th>Votes</th>
+                                    <th>Pinned</th>
                                     <th>Status</th>
                                     <th>Date</th>
                                     <th>Actions</th>
@@ -97,6 +99,8 @@ $comments = $stmt->fetchAll();
                                                 <?php echo nl2br(sanitize(substr($comment['content'], 0, 50))) . (strlen($comment['content']) > 50 ? '...' : ''); ?>
                                             </td>
                                             <td><?php echo sanitize($comment['article_title']); ?></td>
+                                            <td><?php echo $comment['vote_score']; ?></td>
+                                            <td><?php echo $comment['pinned'] ? 'Yes' : 'No'; ?></td>
                                             <td><span class="status-badge status-<?php echo $comment['status']; ?>"><?php echo ucfirst($comment['status']); ?></span></td>
                                             <td><?php echo date('M j, Y', strtotime($comment['posted_at'])); ?></td>
                                             <td class="actions">
@@ -107,6 +111,11 @@ $comments = $stmt->fetchAll();
                                                     <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=hide" class="btn-icon" title="Hide"><i class="fas fa-eye-slash"></i></a>
                                                 <?php elseif ($comment['status'] === 'spam'): ?>
                                                     <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=approve" class="btn-icon" title="Approve"><i class="fas fa-check"></i></a>
+                                                <?php endif; ?>
+                                                <?php if ($comment['pinned']): ?>
+                                                    <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=unpin" class="btn-icon" title="Unpin"><i class="fas fa-thumbtack fa-rotate-90"></i></a>
+                                                <?php else: ?>
+                                                    <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=pin" class="btn-icon" title="Pin"><i class="fas fa-thumbtack"></i></a>
                                                 <?php endif; ?>
                                                 <a href="../article.php?slug=<?php echo $comment['article_slug']; ?>" target="_blank" class="btn-icon" title="View Article"><i class="fas fa-external-link-alt"></i></a>
                                                 <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=delete" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this comment?"><i class="fas fa-trash"></i></a>
