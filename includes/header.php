@@ -243,6 +243,37 @@ if (!defined('DB_HOST')) {
              font-weight: bold; /* Make the About Us link bold in mobile */
         }
 
+        /* Mobile nav visibility and toggling */
+        .mobile-nav {
+            display: none;
+            flex-direction: column;
+            background-color: #fff;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        .mobile-nav.mobile-nav-active {
+            display: flex;
+        }
+
+        @media (max-width: 992px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (min-width: 993px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+            .mobile-nav {
+                display: none !important;
+            }
+        }
+
+        /* End of mobile nav visibility */
     </style>
 </head>
 
@@ -290,6 +321,13 @@ if (!defined('DB_HOST')) {
                                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                             </div>
                         </div>
+                        <div class="sub-dropdown-trigger">
+                            <a href="<?php echo SITE_URL; ?>/awards.php">Awards & Recognition <i class="fas fa-chevron-right"></i></a>
+                            <div class="sub-dropdown-content">
+                                <a href="<?php echo SITE_URL; ?>/awards.php?type=organization">Organization</a>
+                                <a href="<?php echo SITE_URL; ?>/awards.php?type=client">Client</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <a href="#what-we-offer">What We Offer</a>
@@ -312,6 +350,11 @@ if (!defined('DB_HOST')) {
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-branches">Our Branches</a>
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
+                    </details>
+                    <details class="sub-dropdown-details">
+                        <summary>Awards & Recognition</summary>
+                        <a href="<?php echo SITE_URL; ?>/awards.php?type=organization">Organization</a>
+                        <a href="<?php echo SITE_URL; ?>/awards.php?type=client">Client</a>
                     </details>
                 </details>
                 <a href="#what-we-offer" class="what-we-offer-link">What We Offer</a>
