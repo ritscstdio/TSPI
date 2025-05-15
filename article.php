@@ -88,63 +88,64 @@ $stmt->execute([$article['id'], $article['id']]);
 $similar_articles = $stmt->fetchAll();
 
 // Get comments for the article
-$stmt = $pdo->prepare("SELECT * 
-                      FROM comments 
-                      WHERE article_id = ? AND status = 'approved' AND parent_id IS NULL
-                      ORDER BY posted_at DESC");
+$stmt = $pdo->prepare("SELECT c.*, u.profile_picture 
+                      FROM comments c 
+                      LEFT JOIN users u ON c.user_id = u.id 
+                      WHERE c.article_id = ? AND c.status = 'approved' AND c.parent_id IS NULL
+                      ORDER BY c.posted_at DESC");
 $stmt->execute([$article['id']]);
 $comments = $stmt->fetchAll();
 
 // Get replies for each comment
 function get_comment_replies($comment_id, $pdo) {
-    $stmt = $pdo->prepare("SELECT * 
-                          FROM comments 
-                          WHERE parent_id = ? AND status = 'approved'
-                          ORDER BY posted_at ASC");
+    $stmt = $pdo->prepare("SELECT c.*, u.profile_picture 
+                          FROM comments c 
+                          LEFT JOIN users u ON c.user_id = u.id 
+                          WHERE c.parent_id = ? AND c.status = 'approved'
+                          ORDER BY c.posted_at ASC");
     $stmt->execute([$comment_id]);
     return $stmt->fetchAll();
 }
 
 // Handle comment submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
-    $author_name = $_POST['name'] ?? '';
-    $author_email = $_POST['email'] ?? '';
-    $author_website = $_POST['website'] ?? '';
+    if (!is_logged_in()) {
+        $_SESSION['message'] = "You must be logged in to comment.";
+        redirect('/user/login.php');
+    }
+    $user = get_logged_in_user();
+    $author_name = $user['name'];
+    $author_email = $user['email'];
+    $author_website = null;
     $content = $_POST['comment'] ?? '';
     $parent_id = !empty($_POST['parent_id']) ? (int) $_POST['parent_id'] : null;
     
     $errors = [];
-    
-    // Validate required fields
-    if (!$author_name) $errors[] = "Name is required.";
-    if (!$author_email) $errors[] = "Email is required.";
-    if (!$content) $errors[] = "Comment is required.";
-    
-    // Validate email
-    if ($author_email && !filter_var($author_email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Invalid email format.";
+    if (!$content) {
+        $errors[] = "Comment is required.";
     }
-    
-    // Validate website if provided
-    if ($author_website && !filter_var($author_website, FILTER_VALIDATE_URL)) {
-        $errors[] = "Invalid website URL.";
-    }
-    
     if (empty($errors)) {
-        // Insert comment
-        $stmt = $pdo->prepare("INSERT INTO comments (article_id, parent_id, author_name, author_email, author_website, content, ip) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?)");
+        // Insert comment with user_id
+        $stmt = $pdo->prepare("INSERT INTO comments (article_id, parent_id, author_name, author_email, author_website, content, user_id, ip) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
-            $article['id'], 
-            $parent_id, 
-            $author_name, 
-            $author_email, 
-            $author_website, 
-            $content, 
+            $article['id'],
+            $parent_id,
+            $author_name,
+            $author_email,
+            $author_website,
+            $content,
+            $user['id'],
             $_SERVER['REMOTE_ADDR']
         ]);
         
-        $_SESSION['message'] = "Comment submitted successfully! It will be visible after approval.";
+        $successMessage = "Comment submitted successfully! It will be visible after approval.";
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['message' => $successMessage]);
+            exit;
+        }
+        $_SESSION['message'] = $successMessage;
         redirect('/article.php?slug=' . $slug);
     }
 }
@@ -155,6 +156,69 @@ $page_image = $article['thumbnail'] ? SITE_URL . '/' . $article['thumbnail'] : n
 
 include 'includes/header.php';
 ?>
+
+<style>
+/* Disable textarea resizing */
+.comment-form textarea,
+.reply-form textarea {
+    resize: none;
+}
+/* Comment avatar styling */
+.comment-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 1rem;
+    float: left;
+}
+.comment-avatar-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+    color: #ccc;
+    margin-right: 1rem;
+    float: left;
+}
+.comment {
+    overflow: auto;
+}
+.comment .comment-content {
+    margin-left: 5px;
+}
+.comment.comment-reply .comment-content {
+    margin-left: 0;
+}
+.reply-form-container {
+    margin-left: 0;
+    margin-top: 1rem;
+    padding-left: 0;
+    width: 100%;
+}
+.login-required-box {
+    border: 1px solid #eee;
+    background: #fafbfc;
+    padding: 2rem 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    margin: 2rem 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.login-required-box i {
+    font-size: 2.5rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.login-required-box .btn {
+    margin: 1rem 0 0.5rem 0;
+    display: inline-block;
+}
+.login-required-box .signup-link {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+}
+</style>
 
 <main>
     <article class="article-container">
@@ -265,6 +329,11 @@ include 'includes/header.php';
                 <div class="comments-list">
                     <?php foreach ($comments as $comment): ?>
                         <div class="comment">
+                            <?php if ($comment['profile_picture']): ?>
+                                <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($comment['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
+                            <?php else: ?>
+                                <i class="fas fa-user-circle comment-avatar-icon"></i>
+                            <?php endif; ?>
                             <div class="comment-content">
                                 <div class="comment-header">
                                     <h4 class="comment-author"><?php echo sanitize($comment['author_name']); ?></h4>
@@ -274,8 +343,23 @@ include 'includes/header.php';
                                     <p><?php echo nl2br(sanitize($comment['content'])); ?></p>
                                 </div>
                                 <div class="comment-actions">
-                                    <button class="comment-reply-btn" data-comment-id="<?php echo $comment['id']; ?>">Reply</button>
+                                    <?php if (is_logged_in()): ?>
+                                        <button class="comment-reply-btn" data-comment-id="<?php echo $comment['id']; ?>">Reply</button>
+                                    <?php endif; ?>
                                 </div>
+                                <?php if (is_logged_in()): ?>
+                                    <div class="reply-form-container" id="reply-form-<?php echo $comment['id']; ?>" style="display: none;">
+                                        <h4>Leave a Reply</h4>
+                                        <form action="" method="post" class="comment-form">
+                                            <input type="hidden" name="parent_id" value="<?php echo $comment['id']; ?>">
+                                            <div class="form-group">
+                                                <label for="reply-comment-<?php echo $comment['id']; ?>">Comment</label>
+                                                <textarea id="reply-comment-<?php echo $comment['id']; ?>" name="comment" rows="4" required style="font-family: inherit;"></textarea>
+                                            </div>
+                                            <button type="submit" name="submit_comment" class="submit-comment">Post Reply</button>
+                                        </form>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             
                             <!-- Comment replies -->
@@ -284,6 +368,11 @@ include 'includes/header.php';
                             foreach ($replies as $reply): 
                             ?>
                                 <div class="comment comment-reply">
+                                    <?php if ($reply['profile_picture']): ?>
+                                        <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($reply['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
+                                    <?php else: ?>
+                                        <i class="fas fa-user-circle comment-avatar-icon"></i>
+                                    <?php endif; ?>
                                     <div class="comment-content">
                                         <div class="comment-header">
                                             <h4 class="comment-author"><?php echo sanitize($reply['author_name']); ?></h4>
@@ -295,35 +384,6 @@ include 'includes/header.php';
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                            
-                            <!-- Reply form (hidden by default) -->
-                            <div class="reply-form-container" id="reply-form-<?php echo $comment['id']; ?>" style="display: none; margin-top: 1rem; padding-left: 2rem;">
-                                <h4>Leave a Reply</h4>
-                                <form action="" method="post" class="comment-form">
-                                    <input type="hidden" name="parent_id" value="<?php echo $comment['id']; ?>">
-                                    <div class="form-group">
-                                        <label for="reply-comment-<?php echo $comment['id']; ?>">Comment</label>
-                                        <textarea id="reply-comment-<?php echo $comment['id']; ?>" name="comment" rows="4" required></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="reply-name-<?php echo $comment['id']; ?>">Name</label>
-                                        <input type="text" id="reply-name-<?php echo $comment['id']; ?>" name="name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="reply-email-<?php echo $comment['id']; ?>">Email</label>
-                                        <input type="email" id="reply-email-<?php echo $comment['id']; ?>" name="email" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="reply-website-<?php echo $comment['id']; ?>">Website</label>
-                                        <input type="url" id="reply-website-<?php echo $comment['id']; ?>" name="website">
-                                    </div>
-                                    <div class="form-group checkbox">
-                                        <input type="checkbox" id="reply-save-info-<?php echo $comment['id']; ?>" name="save-info">
-                                        <label for="reply-save-info-<?php echo $comment['id']; ?>">Save my name, email, and website in this browser for the next time I comment.</label>
-                                    </div>
-                                    <button type="submit" name="submit_comment" class="submit-comment">Post Reply</button>
-                                </form>
-                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -331,6 +391,7 @@ include 'includes/header.php';
                 <p>No comments yet. Be the first to comment!</p>
             <?php endif; ?>
 
+            <?php if (is_logged_in()): ?>
             <!-- Comment Form -->
             <div class="comment-form-container">
                 <h3>Leave a Reply</h3>
@@ -343,35 +404,25 @@ include 'includes/header.php';
                         </ul>
                     </div>
                 <?php endif; ?>
-                
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>
                 <?php endif; ?>
-                
                 <form action="" method="post" class="comment-form">
                     <div class="form-group">
                         <label for="comment">Comment</label>
-                        <textarea id="comment" name="comment" rows="6" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="website">Website</label>
-                        <input type="url" id="website" name="website">
-                    </div>
-                    <div class="form-group checkbox">
-                        <input type="checkbox" id="save-info" name="save-info">
-                        <label for="save-info">Save my name, email, and website in this browser for the next time I comment.</label>
+                        <textarea id="comment" name="comment" rows="6" required style="font-family: inherit;"></textarea>
                     </div>
                     <button type="submit" name="submit_comment" class="submit-comment">Post Comment</button>
                 </form>
             </div>
+            <?php else: ?>
+            <div class="login-required-box">
+                <i class="fas fa-sign-in-alt"></i>
+                <p>You must be logged in to leave a reply.</p>
+                <a href="<?php echo SITE_URL; ?>/user/login.php" class="btn btn-primary">Login</a>
+                <p class="signup-link">Don't have an account? <a href="<?php echo SITE_URL; ?>/user/signup.php">Sign up here</a>.</p>
+            </div>
+            <?php endif; ?>
         </section>
     </article>
 </main>
@@ -398,6 +449,48 @@ include 'includes/header.php';
             });
         });
     });
+</script>
+
+<script>
+// AJAX comment/reply submission
+function refreshComments() {
+    fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCommentsSection = doc.querySelector('.comments-section');
+            if (newCommentsSection) {
+                document.querySelector('.comments-section').innerHTML = newCommentsSection.innerHTML;
+            }
+        });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.comment-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch(window.location.href, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.textContent = data.message;
+                messageDiv.style.opacity = 0;
+                form.parentNode.insertBefore(messageDiv, form);
+                setTimeout(() => {
+                    messageDiv.style.transition = 'opacity 0.5s';
+                    messageDiv.style.opacity = 1;
+                }, 10);
+                refreshComments();
+            })
+            .catch(err => console.error('Comment submission failed:', err));
+        });
+    });
+});
 </script>
 
 <?php
