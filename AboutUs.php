@@ -716,6 +716,43 @@ include 'includes/header.php';
 
 /* End Carousel Styles */
 
+/* Add styling for branch address links */
+.branch-address a {
+    color: var(--text-gray); /* Match the text color */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.2s ease; /* Smooth transition for hover effect */
+    display: inline-flex;
+    align-items: center;
+}
+
+.branch-address a::before {
+    content: "\f3c5"; /* Map marker icon from Font Awesome */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    margin-right: 6px;
+    font-size: 0.9em;
+    color: var(--secondary-gold);
+    opacity: 0.8;
+}
+
+.branch-address a:hover {
+    color: var(--primary-blue); /* Change text color on hover */
+}
+
+.branch-address a:hover::before {
+    opacity: 1;
+    color: var(--primary-blue);
+}
+
+/* Style the head office address link */
+.head-office-details .branch-address a {
+    font-weight: 500;
+}
+
+.head-office-details .branch-address a::before {
+    color: var(--primary-blue);
+}
+
 </style>
 
 <main>
@@ -1105,7 +1142,7 @@ include 'includes/header.php';
                     </div>
                 </div>
                     <h3>TSPI HEAD OFFICE</h3>
-                    <p class="branch-address">2363 Antipolo St. Guadalupe Nuevo Makati City, Philippines</p>
+                    <p class="branch-address"><a href="https://www.google.com/maps?q=2363+Antipolo+St.+Guadalupe+Nuevo+Makati+City,+Philippines" target="_blank">2363 Antipolo St. Guadalupe Nuevo Makati City, Philippines</a></p>
                 </div>
 
                 <h3 class="branches-main-header">TSPI BRANCHES</h3>
@@ -1120,22 +1157,22 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">BATAC</p>
-                                        <p class="branch-address">City Pearl Complex, National Hi-way #7 Caunayan, Batac City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=City+Pearl+Complex,+National+Hi-way+%237+Caunayan,+Batac+City" target="_blank">City Pearl Complex, National Hi-way #7 Caunayan, Batac City</a></p>
                                         <p class="branch-contact">(0915)123-3381 / (077) 670-2290</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">PINILI</p>
-                                        <p class="branch-address">National Highway, Brgy. Darat, Pinili, Ilocos Norte</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=National+Highway,+Brgy.+Darat,+Pinili,+Ilocos+Norte" target="_blank">National Highway, Brgy. Darat, Pinili, Ilocos Norte</a></p>
                                         <p class="branch-contact">09773086322</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">LAOAG</p>
-                                        <p class="branch-address">Jomel 2 Bldg., P. Gomez St., Brgy. 23, Laoag City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Jomel+2+Bldg.,+P.+Gomez+St.,+Brgy.+23,+Laoag+City" target="_blank">Jomel 2 Bldg., P. Gomez St., Brgy. 23, Laoag City</a></p>
                                         <p class="branch-contact">(0949)700-6154 / (0918)-7492894 / (077) 670-4194</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">DINGRAS</p>
-                                        <p class="branch-address">Castro St., Brgy. Albano, Dingras, Ilocos Norte</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Castro+St.,+Brgy.+Albano,+Dingras,+Ilocos+Norte" target="_blank">Castro St., Brgy. Albano, Dingras, Ilocos Norte</a></p>
                                         <p class="branch-contact">(0948) 107-9574 / (0977)365-8289</p>
                                     </div>
                                 </div>
@@ -1147,32 +1184,32 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">CANDON</p>
-                                        <p class="branch-address">Cassy and J Real State, National Highway, Tablac Candon City, Ilocos Sur</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Cassy+and+J+Real+State,+National+Highway,+Tablac+Candon+City,+Ilocos+Sur" target="_blank">Cassy and J Real State, National Highway, Tablac Candon City, Ilocos Sur</a></p>
                                         <p class="branch-contact">(0995)772-7107 / (077) 644-0516 / (077)604-4473</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MAGSINGAL</p>
-                                        <p class="branch-address">2nd Floor Retreta Bldg., Brgy.Vacunero, Sto.Domingo, I. Sur</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Retreta+Bldg.,+Brgy.Vacunero,+Sto.Domingo,+Ilocos+Sur" target="_blank">2nd Floor Retreta Bldg., Brgy.Vacunero, Sto.Domingo, I. Sur</a></p>
                                         <p class="branch-contact">(0915) 273-2796 / (0917)623-4817</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">NARVACAN</p>
-                                        <p class="branch-address">2nd Floor Soliven Building Brgy Sta.Lucia, Narvacan, Ilocos Sur</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Soliven+Building+Brgy+Sta.Lucia,+Narvacan,+Ilocos+Sur" target="_blank">2nd Floor Soliven Building Brgy Sta.Lucia, Narvacan, Ilocos Sur</a></p>
                                         <p class="branch-contact">(0995) 454-0399 / (077) 604-0304</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">STA CRUZ ILOCOS</p>
-                                        <p class="branch-address">MAJVV Building, Poblacion Este Sta Cruz, Ilocos Sur</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=MAJVV+Building,+Poblacion+Este+Sta+Cruz,+Ilocos+Sur" target="_blank">MAJVV Building, Poblacion Este Sta Cruz, Ilocos Sur</a></p>
                                         <p class="branch-contact">(0915)101-0837</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">VIGAN</p>
-                                        <p class="branch-address">Galleria De Vigan Bldg., 3rd Floor Florentino St. corner Governor Reyes,Vigan City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Galleria+De+Vigan+Bldg.,+Florentino+St.+corner+Governor+Reyes,+Vigan+City" target="_blank">Galleria De Vigan Bldg., 3rd Floor Florentino St. corner Governor Reyes,Vigan City</a></p>
                                         <p class="branch-contact">(0915) 101-0692 / (077) 674-1755</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">CABUGAO</p>
-                                        <p class="branch-address">National Highway, Brgy. Bonifacio Cabugao,Rebibis Bldg. Ilocos Sur</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=National+Highway,+Brgy.+Bonifacio+Cabugao,+Ilocos+Sur" target="_blank">National Highway, Brgy. Bonifacio Cabugao,Rebibis Bldg. Ilocos Sur</a></p>
                                         <p class="branch-contact">(0916) 1163901 / (077) 604-0082</p>
                                     </div>
                                 </div>
@@ -1184,47 +1221,47 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">AGOO</p>
-                                        <p class="branch-address">2nd Floor RMAE Bldg., San Jose Norte, Agoo, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=RMAE+Bldg.,+San+Jose+Norte,+Agoo,+La+Union" target="_blank">2nd Floor RMAE Bldg., San Jose Norte, Agoo, La Union</a></p>
                                         <p class="branch-contact">(0917) 862-1933 / (072) 607-2582</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">ROSARIO</p>
-                                        <p class="branch-address">Ordońa St., Poblacion East, Rosario, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Ordońa+St.,+Poblacion+East,+Rosario,+La+Union" target="_blank">Ordońa St., Poblacion East, Rosario, La Union</a></p>
                                         <p class="branch-contact">(0915)084-3415 / (072) 619- 52-83</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">TUBAO</p>
-                                        <p class="branch-address">2nd Floor YRQ Building, Poblacion, Tubao, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=YRQ+Building,+Poblacion,+Tubao,+La+Union" target="_blank">2nd Floor YRQ Building, Poblacion, Tubao, La Union</a></p>
                                         <p class="branch-contact">(0915)101-0091 / (072)687-0047</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BACNOTAN</p>
-                                        <p class="branch-address">2nd Floor Yamaha Building, Poblacion, Bacnotan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Yamaha+Building,+Poblacion,+Bacnotan,+La+Union" target="_blank">2nd Floor Yamaha Building, Poblacion, Bacnotan</a></p>
                                         <p class="branch-contact">(0915)102-5475 / (072) 607-2710</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BALAOAN</p>
-                                        <p class="branch-address">National Highway, Brgy. San Pablo, Balaoan, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=National+Highway,+Brgy.+San+Pablo,+Balaoan,+La+Union" target="_blank">National Highway, Brgy. San Pablo, Balaoan, La Union</a></p>
                                         <p class="branch-contact">(0915)101-0381 / (072) 607-0215</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BANGAR</p>
-                                        <p class="branch-address">2nd Floor LFLP Bldg ( LOLA FRIDA and LOLO PETER), San Pedro St., Central West, Bangar, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=LFLP+Bldg,+San+Pedro+St.,+Central+West,+Bangar,+La+Union" target="_blank">2nd Floor LFLP Bldg ( LOLA FRIDA and LOLO PETER), San Pedro St., Central West, Bangar, La Union</a></p>
                                         <p class="branch-contact">(0936)636-0356 / (072) 607-2036</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BAUANG</p>
-                                        <p class="branch-address">Corner Florendo St., Central East, Bauang, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Florendo+St.,+Central+East,+Bauang,+La+Union" target="_blank">Corner Florendo St., Central East, Bauang, La Union</a></p>
                                         <p class="branch-contact">(0915)102-5003 / (072) 607-2583</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">NAGUILIAN</p>
-                                        <p class="branch-address">Sobrepeña Bldg., Brgy. Ortiz, Naguilian, La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Sobrepeña+Bldg.,+Brgy.+Ortiz,+Naguilian,+La+Union" target="_blank">Sobrepeña Bldg., Brgy. Ortiz, Naguilian, La Union</a></p>
                                         <p class="branch-contact">(0915)102-5004 / (072) 609-1478</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">SAN FERNANDO</p>
-                                        <p class="branch-address">Purok 2 Pagdaroan, Saan Fernando City La Union</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Purok+2+Pagdaroan,+San+Fernando+City+La+Union" target="_blank">Purok 2 Pagdaroan, Saan Fernando City La Union</a></p>
                                         <p class="branch-contact">(0936)908-6341 / (072) 607-2394</p>
                                     </div>
                                 </div>
@@ -1236,92 +1273,92 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">URDANETA</p>
-                                        <p class="branch-address">Apartment 3, UDH Site, Dilan Paurido, Urdaneta City, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=UDH+Site,+Dilan+Paurido,+Urdaneta+City,+Pangasinan" target="_blank">Apartment 3, UDH Site, Dilan Paurido, Urdaneta City, Pangasinan</a></p>
                                         <p class="branch-contact">(0927)231-7576 / (075) 656-0226</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">UMINGAN</p>
-                                        <p class="branch-address">2nd fl Delos Santos Bldg., Casadores St., Pob East, Umingan, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Delos+Santos+Bldg.,+Casadores+St.,+Poblacion+East,+Umingan,+Pangasinan" target="_blank">2nd fl Delos Santos Bldg., Casadores St., Pob East, Umingan, Pangasinan</a></p>
                                         <p class="branch-contact">(0917)704-1289 /</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">TAYUG</p>
-                                        <p class="branch-address">2nd Flr Magic 8 Bldg Rizal St. Brgy C, Tayug Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Magic+8+Bldg+Rizal+St.+Brgy+C,+Tayug+Pangasinan" target="_blank">2nd Flr Magic 8 Bldg Rizal St. Brgy C, Tayug Pangasinan</a></p>
                                         <p class="branch-contact">(0947) 871-5221 /</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">POZZORUBIO</p>
-                                        <p class="branch-address">2nd Floor Lamsen Bldg., Caballero St., Pozzorubio, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Lamsen+Bldg.,+Caballero+St.,+Pozzorubio,+Pangasinan" target="_blank">2nd Floor Lamsen Bldg., Caballero St., Pozzorubio, Pangasinan</a></p>
                                         <p class="branch-contact">(0921) 865-4325 / (075) 6322097</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">SAN FABIAN</p>
-                                        <p class="branch-address">Mc Arthur Hi-way, Cayanga, San Fabian, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Mc+Arthur+Hi-way,+Cayanga,+San+Fabian,+Pangasinan" target="_blank">Mc Arthur Hi-way, Cayanga, San Fabian, Pangasinan</a></p>
                                         <p class="branch-contact">0963-994-6260 /</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MANAOAG</p>
-                                        <p class="branch-address">1B Tower Tabayoyong St.Poblacion Manaoag Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Tower+Tabayoyong+St.+Poblacion+Manaoag+Pangasinan" target="_blank">1B Tower Tabayoyong St.Poblacion Manaoag Pangasinan</a></p>
                                         <p class="branch-contact">09672879757/09090988576 /</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MANGALDAN</p>
-                                        <p class="branch-address">2nd flr RBCP Bldg.Rizal St. Poblacion,Mangaldan Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=RBCP+Bldg.+Rizal+St.+Poblacion,+Mangaldan+Pangasinan" target="_blank">2nd flr RBCP Bldg.Rizal St. Poblacion,Mangaldan Pangasinan</a></p>
                                         <p class="branch-contact">(0915)101-0510/09503135365</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">DAGUPAN</p>
-                                        <p class="branch-address">2nd floor A & G Bldng. Caranglaan District Dagupan City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=A+%26+G+Bldng.+Caranglaan+District+Dagupan+City" target="_blank">2nd floor A & G Bldng. Caranglaan District Dagupan City</a></p>
                                         <p class="branch-contact">(0915) 101-0741/ 09128709000 /</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BUGALLON</p>
-                                        <p class="branch-address">Samson Bldg., Romulo Hi-way, Poblacion, Bugallon, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Samson+Bldg.,+Romulo+Hi-way,+Poblacion,+Bugallon,+Pangasinan" target="_blank">Samson Bldg., Romulo Hi-way, Poblacion, Bugallon, Pangasinan</a></p>
                                         <p class="branch-contact">(0915)101-2697 /09368855455 / (075) 632-0405</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">LINGAYEN</p>
-                                        <p class="branch-address">2nd Floor 52 William Gabriel Bldg. Avenida Rizal East, Poblacion Lingayen, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=William+Gabriel+Bldg.+Avenida+Rizal+East,+Poblacion+Lingayen,+Pangasinan" target="_blank">2nd Floor 52 William Gabriel Bldg. Avenida Rizal East, Poblacion Lingayen, Pangasinan</a></p>
                                         <p class="branch-contact">09508826993 /09453100283 / (075) 529-6804</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">ALAMINOS</p>
-                                        <p class="branch-address">#34 De Guzman St. Brgy Palamis Alaminos City, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=34+De+Guzman+St.+Brgy+Palamis+Alaminos+City,+Pangasinan" target="_blank">#34 De Guzman St. Brgy Palamis Alaminos City, Pangasinan</a></p>
                                         <p class="branch-contact">(0930) 244-4933 /</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BOLINAO</p>
-                                        <p class="branch-address">2nd Floor Casas Blgd. P Deperio St., Germinal, Poblacion Bolinao, Pangasinan (beside town market and basketball court)</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Casas+Blgd.+P+Deperio+St.,+Germinal,+Poblacion+Bolinao,+Pangasinan" target="_blank">2nd Floor Casas Blgd. P Deperio St., Germinal, Poblacion Bolinao, Pangasinan (beside town market and basketball court)</a></p>
                                         <p class="branch-contact">(0967) 429-0015 / (075) 636-0264</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">DASOL</p>
-                                        <p class="branch-address">Casolming St. Poblacion Dasol, Pangasinan (beside Dasol Municipal Hall)</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Casolming+St.+Poblacion+Dasol,+Pangasinan" target="_blank">Casolming St. Poblacion Dasol, Pangasinan (beside Dasol Municipal Hall)</a></p>
                                         <p class="branch-contact">09475671687</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MANGATAREM</p>
-                                        <p class="branch-address">2nd Floor Tagorda Bldg., Lone Palm Aqua Center, Plaza Rizal,Poblacion, Mangatarem, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Tagorda+Bldg.,+Lone+Palm+Aqua+Center,+Plaza+Rizal,+Poblacion,+Mangatarem,+Pangasinan" target="_blank">2nd Floor Tagorda Bldg., Lone Palm Aqua Center, Plaza Rizal,Poblacion, Mangatarem, Pangasinan</a></p>
                                         <p class="branch-contact">(0956)759-1339, (0912) 515-1527 / (075) 633-0194</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">CALASIAO</p>
-                                        <p class="branch-address">S & R Bldg Nalsian, Calasiao, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=S+%26+R+Bldg+Nalsian,+Calasiao,+Pangasinan" target="_blank">S & R Bldg Nalsian, Calasiao, Pangasinan</a></p>
                                         <p class="branch-contact">0995-663-0313 / (075) 615-23-06</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MALASIQUI</p>
-                                        <p class="branch-address">2/F JPAS Commercial Bldg., Magsaysay Street, Poblacion, Malasiqui,Pangasinan.</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=JPAS+Commercial+Bldg.,+Magsaysay+Street,+Poblacion,+Malasiqui,+Pangasinan" target="_blank">2/F JPAS Commercial Bldg., Magsaysay Street, Poblacion, Malasiqui,Pangasinan.</a></p>
                                         <p class="branch-contact">0938-690-3436 / (075) 632-3252</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">SAN CARLOS</p>
-                                        <p class="branch-address">Caranto Bldg., Burgos-Posadas Street, San Carlos, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Caranto+Bldg.,+Burgos-Posadas+Street,+San+Carlos,+Pangasinan" target="_blank">Caranto Bldg., Burgos-Posadas Street, San Carlos, Pangasinan</a></p>
                                         <p class="branch-contact">0915-1025-422/09708317315 / (075) 634-1590</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BAYAMBANG</p>
-                                        <p class="branch-address">Mayo Bldg., Magsaysay St., Bayambang, Pangasinan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Mayo+Bldg.,+Magsaysay+St.,+Bayambang,+Pangasinan" target="_blank">Mayo Bldg., Magsaysay St., Bayambang, Pangasinan</a></p>
                                         <p class="branch-contact">(0995-336-6257) / (075) 568-6185</p>
                                     </div>
                                 </div>
@@ -1340,7 +1377,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">SOLANO</p>
-                                        <p class="branch-address">Fugaban Bldg.Binacao Street, Brgy. Roxas Solano Nueva Vizcaya (beside house of Mayor Dacayo)</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Fugaban+Bldg.+Binacao+Street,+Brgy.+Roxas+Solano+Nueva+Vizcaya" target="_blank">Fugaban Bldg.Binacao Street, Brgy. Roxas Solano Nueva Vizcaya (beside house of Mayor Dacayo)</a></p>
                                         <p class="branch-contact">(0926) 861-0473 (0935)184 1826</p>
                                     </div>
                                 </div>
@@ -1352,32 +1389,32 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">SANTIAGO</p>
-                                        <p class="branch-address">3rd flr. Villarica Bldg. City Road Centro West, Santiago City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Villarica+Bldg.+City+Road+Centro+West,+Santiago+City,+Isabela" target="_blank">3rd flr. Villarica Bldg. City Road Centro West, Santiago City</a></p>
                                         <p class="branch-contact">(0917) 702-6946 / (078) 682-7085</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">ALICIA</p>
-                                        <p class="branch-address">2nd floor Adenas Bldg., Maharlika Hi-way, Antonino, Alicia, Isabela</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Adenas+Bldg.,+Maharlika+Hi-way,+Antonino,+Alicia,+Isabela" target="_blank">2nd floor Adenas Bldg., Maharlika Hi-way, Antonino, Alicia, Isabela</a></p>
                                         <p class="branch-contact">09066682791 / (078) 323-0362</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">CABATUAN</p>
-                                        <p class="branch-address"># 67 Zamora St. Purok 3 San Andres, Cabatuan Isabela</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=67+Zamora+St.+Purok+3+San+Andres,+Cabatuan+Isabela" target="_blank"># 67 Zamora St. Purok 3 San Andres, Cabatuan Isabela</a></p>
                                         <p class="branch-contact">(0975)445-7653 / (078) 652-5032</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">ILAGAN</p>
-                                        <p class="branch-address">2nd Floor JBR Bldg., Calamagui 1st, Ilagan, Isabela</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=JBR+Bldg.,+Calamagui+1st,+Ilagan,+Isabela" target="_blank">2nd Floor JBR Bldg., Calamagui 1st, Ilagan, Isabela</a></p>
                                         <p class="branch-contact">09174194094 / (078) 624-0047</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">CAUAYAN</p>
-                                        <p class="branch-address">1st floor OH. Bldg. Cabatuan Road San Fermin Cauayan City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=OH.+Bldg.+Cabatuan+Road+San+Fermin+Cauayan+City,+Isabela" target="_blank">1st floor OH. Bldg. Cabatuan Road San Fermin Cauayan City</a></p>
                                         <p class="branch-contact">(0956) 126-1611 / (078) 6521151</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">ROXAS (SATELITE OFFICE)</p>
-                                        <p class="branch-address">Purok 5 Brgy Vira, Roxas Isabela</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Purok+5+Brgy+Vira,+Roxas+Isabela" target="_blank">Purok 5 Brgy Vira, Roxas Isabela</a></p>
                                         <p class="branch-contact">(0915)104-1990 / (078) 664-2754</p>
                                     </div>
                                 </div>
@@ -1389,7 +1426,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">TUGUEGARAO</p>
-                                        <p class="branch-address">3/F NP Baccay Bldg. 118 Balzain Road, Balzain West, Tuguegarao City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=NP+Baccay+Bldg.+118+Balzain+Road,+Balzain+West,+Tuguegarao+City" target="_blank">3/F NP Baccay Bldg. 118 Balzain Road, Balzain West, Tuguegarao City</a></p>
                                         <p class="branch-contact">(0975) 328-0565 / (078) 844-1441</p>
                                     </div>
                                 </div>
@@ -1401,7 +1438,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">CABARROGUIS</p>
-                                        <p class="branch-address">Brgy. Mangandinay, Cabarroguis, Quirino Province</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Brgy.+Mangandinay,+Cabarroguis,+Quirino+Province" target="_blank">Brgy. Mangandinay, Cabarroguis, Quirino Province</a></p>
                                         <p class="branch-contact">(0997) 652-3890 (0907)939-4319</p>
                                     </div>
                                 </div>
@@ -1420,7 +1457,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">BAGUIO</p>
-                                        <p class="branch-address">3rd Floor Luy Wing Building, Magsaysay Avenue, Baguio City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Luy+Wing+Building,+Magsaysay+Avenue,+Baguio+City" target="_blank">3rd Floor Luy Wing Building, Magsaysay Avenue, Baguio City</a></p>
                                         <p class="branch-contact">(0915) 101-2360 / (074) 665-4504</p>
                                     </div>
                                 </div>
@@ -1439,27 +1476,27 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">SAN JOSE DEL MONTE</p>
-                                        <p class="branch-address">#1262 Blk. 6 Lt. 41 Farmview Subd., Brgy. Tungkong Mangga City of San Jose Del Monte</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=1262+Blk.+6+Lt.+41+Farmview+Subd.,+Brgy.+Tungkong+Mangga+City+of+San+Jose+Del+Monte,+Bulacan" target="_blank">#1262 Blk. 6 Lt. 41 Farmview Subd., Brgy. Tungkong Mangga City of San Jose Del Monte</a></p>
                                         <p class="branch-contact">(0915) 1010297 / 9124084087</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">STA MARIA</p>
-                                        <p class="branch-address">6035 ME DR. F. Santiago Laguerta Str. Poblacion Sta. Maria Bulacan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=6035+ME+DR.+F.+Santiago+Laguerta+Str.+Poblacion+Sta.+Maria+Bulacan" target="_blank">6035 ME DR. F. Santiago Laguerta Str. Poblacion Sta. Maria Bulacan</a></p>
                                         <p class="branch-contact">(0915 102 5766 / (044)8 7691250</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BALAGTAS</p>
-                                        <p class="branch-address">2/F 3A's Bldg. 209 Borol 1st, Balagtas Bulacan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=3A's+Bldg.+209+Borol+1st,+Balagtas+Bulacan" target="_blank">2/F 3A's Bldg. 209 Borol 1st, Balagtas Bulacan</a></p>
                                         <p class="branch-contact">(0915)1012652 / (044) 8158210</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MALOLOS</p>
-                                        <p class="branch-address">2nd Floor, APB Bldg. #5630 Paseo del Congreso St., Liang, Malolos City Bulacan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=APB+Bldg.+5630+Paseo+del+Congreso+St.,+Liang,+Malolos+City+Bulacan" target="_blank">2nd Floor, APB Bldg. #5630 Paseo del Congreso St., Liang, Malolos City Bulacan</a></p>
                                         <p class="branch-contact">(0915)1012648 / (044) 7946124</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">BALIUAG</p>
-                                        <p class="branch-address">2nd Floor Alexandra Bldg., #790 Col. Tomacruz St., Poblacion, Baliuag, Bulacan</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Alexandra+Bldg.,+790+Col.+Tomacruz+St.,+Poblacion,+Baliuag,+Bulacan" target="_blank">2nd Floor Alexandra Bldg., #790 Col. Tomacruz St., Poblacion, Baliuag, Bulacan</a></p>
                                         <p class="branch-contact">(0906)690-2754 / (044) 7677072</p>
                                     </div>
                                 </div>
@@ -1471,32 +1508,32 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">CAMILING</p>
-                                        <p class="branch-address">Bonifacio St. Poblacion H, Camiling, Tarlac</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Bonifacio+St.+Poblacion+H,+Camiling,+Tarlac" target="_blank">Bonifacio St. Poblacion H, Camiling, Tarlac</a></p>
                                         <p class="branch-contact">(0915) 101-0879 / (045) 491-0601</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">GERONA</p>
-                                        <p class="branch-address">NJ Bldg., Unit 1,2,3 Poblacion 3, Gerona, Tarlac</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=NJ+Bldg.,+Poblacion+3,+Gerona,+Tarlac" target="_blank">NJ Bldg., Unit 1,2,3 Poblacion 3, Gerona, Tarlac</a></p>
                                         <p class="branch-contact">(0906) 397-5021 / (0907) 452-1131 / (0997)354-5089 / (045) 931-3323</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">PANIQUI</p>
-                                        <p class="branch-address">Unit 5 Jemare Plaza, Magallanes St. Poblacion Sur Paniqui Tarlac</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Jemare+Plaza,+Magallanes+St.+Poblacion+Sur+Paniqui+Tarlac" target="_blank">Unit 5 Jemare Plaza, Magallanes St. Poblacion Sur Paniqui Tarlac</a></p>
                                         <p class="branch-contact">09956213220</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">MONCADA</p>
-                                        <p class="branch-address">2nd Floor BDO Bldg., Mc Arthur Hi-way Poblacion 1, Moncada, Tarlac</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=BDO+Bldg.,+Mc+Arthur+Hi-way+Poblacion+1,+Moncada,+Tarlac" target="_blank">2nd Floor BDO Bldg., Mc Arthur Hi-way Poblacion 1, Moncada, Tarlac</a></p>
                                         <p class="branch-contact">09167000446 / (045) 606-0224</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">TARLAC</p>
-                                        <p class="branch-address">Clinica Pascual Bldg Zamora St.San Roque Tarlac City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Clinica+Pascual+Bldg+Zamora+St.+San+Roque+Tarlac+City" target="_blank">Clinica Pascual Bldg Zamora St.San Roque Tarlac City</a></p>
                                         <p class="branch-contact">(0915) 101-2189 / (0977) 204-0166 / 0995-5904493 / (045) 982-6141</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">CAPAS</p>
-                                        <p class="branch-address">2nd Floor/Manny Lo Building, Mc Arthur Hi Way, Barangay Cut Cut 1st, Capas, Tarlac</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Manny+Lo+Building,+Mc+Arthur+Hi+Way,+Barangay+Cut+Cut+1st,+Capas,+Tarlac" target="_blank">2nd Floor/Manny Lo Building, Mc Arthur Hi Way, Barangay Cut Cut 1st, Capas, Tarlac</a></p>
                                         <p class="branch-contact">(0950) 811-6922 / 045-491-6244</p>
                                     </div>
                                 </div>
@@ -1508,12 +1545,12 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">APALIT</p>
-                                        <p class="branch-address">3rd Floor St. Jude Bldg., San Vicente Apalit Pampanga</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=St.+Jude+Bldg.,+San+Vicente+Apalit+Pampanga" target="_blank">3rd Floor St. Jude Bldg., San Vicente Apalit Pampanga</a></p>
                                         <p class="branch-contact">0915-881-3172 / (045) 6520141</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">SAN FERNANDO</p>
-                                        <p class="branch-address">Block 9, Lot 1, Dolores Homesite, Dolores CSFP</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Block+9,+Lot+1,+Dolores+Homesite,+Dolores,+San+Fernando,+Pampanga" target="_blank">Block 9, Lot 1, Dolores Homesite, Dolores CSFP</a></p>
                                         <p class="branch-contact">0915-101-1183 / (045) 4093543</p>
                                     </div>
                                 </div>
@@ -1525,32 +1562,32 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">GAPAN</p>
-                                        <p class="branch-address">2nd Flr. Magbitang Apartment, San Vicente Gapan City Nueva Ecija</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Magbitang+Apartment,+San+Vicente+Gapan+City+Nueva+Ecija" target="_blank">2nd Flr. Magbitang Apartment, San Vicente Gapan City Nueva Ecija</a></p>
                                         <p class="branch-contact">09959048226 / (044)958-5623</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">PALAYAN</p>
-                                        <p class="branch-address">Unit 2, Santos Building, Barangay Malate, Palayan City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Santos+Building,+Barangay+Malate,+Palayan+City,+Nueva+Ecija" target="_blank">Unit 2, Santos Building, Barangay Malate, Palayan City</a></p>
                                         <p class="branch-contact">0995-663-2805 / (044) 940-1627</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">CABANATUAN</p>
-                                        <p class="branch-address">Unit 1, BRR Building, H. Concepcion Cabanatuan City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=BRR+Building,+H.+Concepcion+Cabanatuan+City,+Nueva+Ecija" target="_blank">Unit 1, BRR Building, H. Concepcion Cabanatuan City</a></p>
                                         <p class="branch-contact">0915-102-5089 / (044) 9600687</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">SAN JOSE</p>
-                                        <p class="branch-address">Sanchez Building, San Roque St. Rafael Rueda, San Jose City, Nueva Ecija</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Sanchez+Building,+San+Roque+St.+Rafael+Rueda,+San+Jose+City,+Nueva+Ecija" target="_blank">Sanchez Building, San Roque St. Rafael Rueda, San Jose City, Nueva Ecija</a></p>
                                         <p class="branch-contact">(0906) 654 8658 / (044) 940-7233</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">GUIMBA</p>
-                                        <p class="branch-address">2nd Floor CCN Bldg., Ongiangco St. corner Sarmiento St. Guimba, Nueva Ecija</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=CCN+Bldg.,+Ongiangco+St.+corner+Sarmiento+St.+Guimba,+Nueva+Ecija" target="_blank">2nd Floor CCN Bldg., Ongiangco St. corner Sarmiento St. Guimba, Nueva Ecija</a></p>
                                         <p class="branch-contact">09956220832 / (044)335-0422</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">TALAVERA/STO DOMINGO</p>
-                                        <p class="branch-address">Maharlika Highway, Calipahan,T alavera Nueva Ecija ( Beside Ridez Lumber)</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Maharlika+Highway,+Calipahan,+Talavera+Nueva+Ecija" target="_blank">Maharlika Highway, Calipahan,T alavera Nueva Ecija ( Beside Ridez Lumber)</a></p>
                                         <p class="branch-contact">(0995) 622-0833 / (044) 958-3340</p>
                                     </div>
                                 </div>
@@ -1569,17 +1606,17 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">DBB</p>
-                                        <p class="branch-address">Stall # 23&24 Navjar Complex, Don P. Campos Avenue, Dasmariñas, Cavite</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Navjar+Complex,+Don+P.+Campos+Avenue,+Dasmariñas,+Cavite" target="_blank">Stall # 23&24 Navjar Complex, Don P. Campos Avenue, Dasmariñas, Cavite</a></p>
                                         <p class="branch-contact">(0915) 1543625 / (046) 4320685</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">INDANG</p>
-                                        <p class="branch-address">Miguel Tan, San Gregorio St., Poblacion 1, Indang, Cavite</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Miguel+Tan,+San+Gregorio+St.,+Poblacion+1,+Indang,+Cavite" target="_blank">Miguel Tan, San Gregorio St., Poblacion 1, Indang, Cavite</a></p>
                                         <p class="branch-contact">(0915) 1024868 / (046) 4432354</p>
                                     </div>
                                     <div class="branch-item">
                                         <p class="branch-name">GMA (Gen. Mariano Alvarez)</p>
-                                        <p class="branch-address">Blk 3 lot 35 Congressional road, Brgy San Gabriel GMA Cavite. (In front of BDO Office)</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Blk+3+lot+35+Congressional+road,+Brgy+San+Gabriel+GMA+Cavite" target="_blank">Blk 3 lot 35 Congressional road, Brgy San Gabriel GMA Cavite. (In front of BDO Office)</a></p>
                                         <p class="branch-contact">0915(1012200) / (046) 4604332</p>
                                     </div>
                                 </div>
@@ -1591,7 +1628,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">BIÑAN</p>
-                                        <p class="branch-address">Simpeys Bldg. 3rd floor Brgy. San Antonio Binan Laguna</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Simpeys+Bldg.+Brgy.+San+Antonio+Binan+Laguna" target="_blank">Simpeys Bldg. 3rd floor Brgy. San Antonio Binan Laguna</a></p>
                                         <p class="branch-contact">(0977) 3123288 / (049) 5211643</p>
                                     </div>
                                 </div>
@@ -1603,7 +1640,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">BALAYAN</p>
-                                        <p class="branch-address">Brgy. 7, Paz St. Balayan Batangas</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Brgy.+7,+Paz+St.+Balayan+Batangas" target="_blank">Brgy. 7, Paz St. Balayan Batangas</a></p>
                                         <p class="branch-contact">(0950)2781793 / (043) 7236960</p>
                                     </div>
                                 </div>
@@ -1615,7 +1652,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">ANTIPOLO</p>
-                                        <p class="branch-address">4th Flr. FBM Bldg.San Roque Antipolo City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=FBM+Bldg.+San+Roque+Antipolo+City" target="_blank">4th Flr. FBM Bldg.San Roque Antipolo City</a></p>
                                         <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
                                     </div>
                                 </div>
@@ -1627,7 +1664,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">CANDELARIA</p>
-                                        <p class="branch-address">2nd Floor Tocy Bldg., Rizal Avenue corner Ona St. Candelaria, Quezon</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Tocy+Bldg.,+Rizal+Avenue+corner+Ona+St.+Candelaria,+Quezon" target="_blank">2nd Floor Tocy Bldg., Rizal Avenue corner Ona St. Candelaria, Quezon</a></p>
                                         <p class="branch-contact">(0929)-742-4981</p>
                                     </div>
                                 </div>
@@ -1646,7 +1683,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">POLANGUI</p>
-                                        <p class="branch-address">Ground Floor Valentin Bldg., Basud, Polangui, Albay</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Valentin+Bldg.,+Basud,+Polangui,+Albay" target="_blank">Ground Floor Valentin Bldg., Basud, Polangui, Albay</a></p>
                                         <p class="branch-contact">(0915) 101-1005 / (0951) 952-9220</p>
                                     </div>
                                 </div>
@@ -1658,7 +1695,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">STA. ELENA</p>
-                                        <p class="branch-address">Purok 12, Brgy. Poblacion, Sta. Elena, Camarines Norte</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Purok+12,+Brgy.+Poblacion,+Sta.+Elena,+Camarines+Norte" target="_blank">Purok 12, Brgy. Poblacion, Sta. Elena, Camarines Norte</a></p>
                                         <p class="branch-contact">(0908) 818-9163 / (0915) 102-5497</p>
                                     </div>
                                 </div>
@@ -1670,7 +1707,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">SAN FERNANDO</p>
-                                        <p class="branch-address">Zone 3 Bonifacio, San Fernando, Camarines Sur</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Zone+3+Bonifacio,+San+Fernando,+Camarines+Sur" target="_blank">Zone 3 Bonifacio, San Fernando, Camarines Sur</a></p>
                                         <p class="branch-contact">(0909) 508-3931 / (0956) 467-6611</p>
                                     </div>
                                 </div>
@@ -1682,7 +1719,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">BACACAY</p>
-                                        <p class="branch-address">Purok 8 Bonga Bacacay, Albay</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Purok+8+Bonga+Bacacay,+Albay" target="_blank">Purok 8 Bonga Bacacay, Albay</a></p>
                                         <p class="branch-contact">(0917)622-0585 / (0915) 102-5680</p>
                                     </div>
                                 </div>
@@ -1701,7 +1738,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">LAS PINAS</p>
-                                        <p class="branch-address">Rm. 8, 3rd floor Luis Bldg. 379 Real St. Talon1 Las pinas City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Luis+Bldg.+379+Real+St.+Talon1+Las+pinas+City" target="_blank">Rm. 8, 3rd floor Luis Bldg. 379 Real St. Talon1 Las pinas City</a></p>
                                         <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
                                     </div>
                                 </div>
@@ -1713,7 +1750,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">PARAÑAQUE</p>
-                                        <p class="branch-address">Jackley BldgLot 2, Block 17, Press Drive Street Corner Dr. A Santos Avenue Fourth Estate Subdivision Paranaque City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Jackley+Bldg+Lot+2,+Block+17,+Press+Drive+Street+Corner+Dr.+A+Santos+Avenue+Fourth+Estate+Subdivision+Paranaque+City" target="_blank">Jackley BldgLot 2, Block 17, Press Drive Street Corner Dr. A Santos Avenue Fourth Estate Subdivision Paranaque City</a></p>
                                         <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
                                     </div>
                                 </div>
@@ -1725,7 +1762,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">TAGUIG</p>
-                                        <p class="branch-address">#302 Bravo Cor.Salazar St., Signal Village Taguig</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=302+Bravo+Cor.Salazar+St.,+Signal+Village+Taguig" target="_blank">#302 Bravo Cor.Salazar St., Signal Village Taguig</a></p>
                                         <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
                                     </div>
                                 </div>
@@ -1737,7 +1774,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">TSPI CORPORATE CENTER BRANCH (FORMERLY MAKATI BRANCH)</p>
-                                        <p class="branch-address">2363 Antipolo street Guadalupe Nuevo Makati City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=2363+Antipolo+street+Guadalupe+Nuevo+Makati+City" target="_blank">2363 Antipolo street Guadalupe Nuevo Makati City</a></p>
                                         <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
                                     </div>
                                 </div>
@@ -1749,7 +1786,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">QUEZON CITY</p>
-                                        <p class="branch-address">3/F Room 311, F&L Center Bldg., 2211 Commonwealth Avenue, Brgy Holy Spirit QC</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=F%26L+Center+Bldg.,+2211+Commonwealth+Avenue,+Brgy+Holy+Spirit+Quezon+City" target="_blank">3/F Room 311, F&L Center Bldg., 2211 Commonwealth Avenue, Brgy Holy Spirit QC</a></p>
                                         <p class="branch-contact">(0929)-742-4981</p>
                                     </div>
                                 </div>
@@ -1761,7 +1798,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">BAGONG SILANG</p>
-                                        <p class="branch-address">Phase 4 Package 8-A, Block 66 Lot 25 and 27 Bagong Silang Caloocan City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=Phase+4+Package+8-A,+Block+66+Lot+25+and+27+Bagong+Silang+Caloocan+City" target="_blank">Phase 4 Package 8-A, Block 66 Lot 25 and 27 Bagong Silang Caloocan City</a></p>
                                         <p class="branch-contact">(0915)1012200 / (046) 4604332</p>
                                     </div>
                                 </div>
@@ -1773,7 +1810,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">TONDO</p>
-                                        <p class="branch-address">2408 General Lucban Gagalangin Tondo Manila</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=2408+General+Lucban+Gagalangin+Tondo+Manila" target="_blank">2408 General Lucban Gagalangin Tondo Manila</a></p>
                                         <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
                                     </div>
                                 </div>
@@ -1785,7 +1822,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">MALABON</p>
-                                        <p class="branch-address">#93 Bronze Street Lybaert Apartelle 2nd Flr Tugatog Malabon City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=93+Bronze+Street+Lybaert+Apartelle+Tugatog+Malabon+City" target="_blank">#93 Bronze Street Lybaert Apartelle 2nd Flr Tugatog Malabon City</a></p>
                                         <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
                                     </div>
                                 </div>
@@ -1797,7 +1834,7 @@ include 'includes/header.php';
                                 <div class="branch-items-grid">
                                     <div class="branch-item">
                                         <p class="branch-name">VALENZUELA</p>
-                                        <p class="branch-address">11 Gov. Santiago St., Malinta Valenzuela City</p>
+                                        <p class="branch-address"><a href="https://www.google.com/maps?q=11+Gov.+Santiago+St.,+Malinta+Valenzuela+City" target="_blank">11 Gov. Santiago St., Malinta Valenzuela City</a></p>
                                         <p class="branch-contact">(0915)823-8413 / (02)8 2912575</p>
                                     </div>
                                 </div>
@@ -1888,33 +1925,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-});
-</script>
-
-<script>
-// Copy Branch Address only
-document.addEventListener('DOMContentLoaded', function () {
-    const addressElements = document.querySelectorAll('#our-branches .branch-address');
-    addressElements.forEach(el => {
-        el.style.cursor = 'pointer';
-        el.title = 'Click to copy address';
-        el.addEventListener('click', function () {
-            const textToCopy = this.innerText.trim();
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalText = this.innerHTML;
-                this.innerHTML = 'Address Copied!';
-                const originalColor = this.style.color;
-                this.style.color = 'var(--secondary-gold)';
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.style.color = originalColor || 'var(--text-gray)';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy address: ', err);
-                alert('Failed to copy address. Please copy manually.');
-            });
-        });
-    });
 });
 </script>
 
