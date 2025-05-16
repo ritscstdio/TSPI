@@ -122,78 +122,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend']) && $expired
 include '../includes/header.php';
 ?>
 
-<main class="container verify-container">
-    <div class="auth-box fade-up-on-load">
-        <?php if ($verified): ?>
-            <div class="message success">
-                <h1><i class="fas fa-check-circle"></i> Email Verified</h1>
-                <p>Thank you, <?php echo sanitize($username); ?>! Your email address (<?php echo sanitize($email); ?>) has been verified.</p>
-                <p>Your account is now active. You can now <a href="<?php echo SITE_URL; ?>/user/login.php">login</a> to your account.</p>
-            </div>
-        <?php elseif ($expired && isset($resent)): ?>
-            <div class="message info">
-                <h1><i class="fas fa-envelope"></i> <?php echo $resend_success ? "Verification Email Sent" : "Verification Email Issue"; ?></h1>
-                <p><?php echo $resend_success ? "A new verification link has been sent to " . sanitize($user['email']) : "We encountered an issue sending to " . sanitize($user['email']); ?>.</p>
-                <p><?php echo $resend_success ? "Please check your email and click on the verification link to complete the registration process." : "Please try again later or use the verification link below."; ?></p>
-            </div>
-            
-            <?php if (!$resend_success && isset($user) && isset($new_verification_code)): ?>
-                <div class="dev-verification-link" style="border-color: #dc3545;">
-                    <p><strong>Email Delivery Failed:</strong> Please use this link to verify your account.</p>
-                    <p>Use this link to verify your account:</p>
-                    <a href="<?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>" target="_blank">
-                        <?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>
-                    </a>
-                </div>
-            <?php endif; ?>
-        <?php elseif ($expired): ?>
-            <div class="message warning">
-                <h1><i class="fas fa-exclamation-triangle"></i> Verification Link Expired</h1>
-                <p>The verification link has expired.</p>
-                <p>Would you like to receive a new verification link?</p>
-                <form method="post" action="">
-                    <input type="hidden" name="resend" value="1">
-                    <button type="submit" class="btn btn-primary">Resend Verification Email</button>
-                </form>
-            </div>
-            <?php if (isset($resend_error)): ?>
-                <div class="message error">
-                    <p><?php echo $resend_error; ?></p>
-                </div>
-            <?php endif; ?>
-            
-            <?php if (isset($user) && isset($new_verification_code)): ?>
-                <div class="dev-verification-link">
-                    <p><strong>Development Testing Only:</strong> Email sending may not work in local environment.</p>
-                    <p>Use this link to verify your account:</p>
-                    <a href="<?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>" target="_blank">
-                        <?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>
-                    </a>
-                </div>
-                <style>
-                    .dev-verification-link {
-                        margin-top: 15px;
-                        padding: 10px;
-                        background-color: #f8f9fa;
-                        border: 1px dashed #ccc;
-                        border-radius: 4px;
-                    }
-                    .dev-verification-link p:last-child {
-                        margin-bottom: 5px;
-                    }
-                </style>
-            <?php endif; ?>
-        <?php else: ?>
-            <div class="message error">
-                <h1><i class="fas fa-times-circle"></i> Verification Failed</h1>
-                <p><?php echo $error; ?></p>
-                <p>If you're having trouble with the verification process, please <a href="<?php echo SITE_URL; ?>/contact.php">contact support</a>.</p>
-            </div>
-        <?php endif; ?>
-    </div>
-</main>
-
 <style>
+/* Apply the fixed navbar offset rule */
+h1 {
+    scroll-margin-top: var(--navbar-scroll-offset);
+}
+
 .verify-container {
     max-width: 600px;
     margin: 2rem auto;
@@ -316,6 +250,128 @@ include '../includes/header.php';
     background-color: #004494;
 }
 </style>
+
+<main class="container verify-container">
+    <div class="auth-box fade-up-on-load">
+        <?php if ($verified): ?>
+            <div class="message success">
+                <h1><i class="fas fa-check-circle"></i> Email Verified</h1>
+                <p>Thank you, <?php echo sanitize($username); ?>! Your email address (<?php echo sanitize($email); ?>) has been verified.</p>
+                <p>Your account is now active. Would you like to:</p>
+                <div class="verification-actions">
+                    <a href="<?php echo SITE_URL; ?>/user/login.php" class="btn btn-secondary">Login to your account</a>
+                    <a href="<?php echo SITE_URL; ?>/user/membership-form.php?verified=true" class="btn btn-primary">Complete Membership Form</a>
+                </div>
+            </div>
+            
+            <style>
+                .verification-actions {
+                    display: flex;
+                    gap: 1rem;
+                    margin-top: 1.5rem;
+                    justify-content: center;
+                }
+                
+                .verification-actions .btn {
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 30px;
+                    text-decoration: none;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                }
+                
+                .verification-actions .btn-primary {
+                    background: var(--primary-blue);
+                    color: var(--white);
+                }
+                
+                .verification-actions .btn-secondary {
+                    background: var(--light-gray);
+                    color: var(--text-gray);
+                }
+                
+                .verification-actions .btn:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                }
+                
+                .verification-actions .btn-primary:hover {
+                    background: var(--dark-navy);
+                }
+                
+                .verification-actions .btn-secondary:hover {
+                    background: #e8e8e8;
+                    color: var(--primary-blue);
+                }
+                
+                @media (max-width: 768px) {
+                    .verification-actions {
+                        flex-direction: column;
+                    }
+                }
+            </style>
+        <?php elseif ($expired && isset($resent)): ?>
+            <div class="message info">
+                <h1><i class="fas fa-envelope"></i> <?php echo $resend_success ? "Verification Email Sent" : "Verification Email Issue"; ?></h1>
+                <p><?php echo $resend_success ? "A new verification link has been sent to " . sanitize($user['email']) : "We encountered an issue sending to " . sanitize($user['email']); ?>.</p>
+                <p><?php echo $resend_success ? "Please check your email and click on the verification link to complete the registration process." : "Please try again later or use the verification link below."; ?></p>
+            </div>
+            
+            <?php if (!$resend_success && isset($user) && isset($new_verification_code)): ?>
+                <div class="dev-verification-link" style="border-color: #dc3545;">
+                    <p><strong>Email Delivery Failed:</strong> Please use this link to verify your account.</p>
+                    <p>Use this link to verify your account:</p>
+                    <a href="<?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>" target="_blank">
+                        <?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+        <?php elseif ($expired): ?>
+            <div class="message warning">
+                <h1><i class="fas fa-exclamation-triangle"></i> Verification Link Expired</h1>
+                <p>The verification link has expired.</p>
+                <p>Would you like to receive a new verification link?</p>
+                <form method="post" action="">
+                    <input type="hidden" name="resend" value="1">
+                    <button type="submit" class="btn btn-primary">Resend Verification Email</button>
+                </form>
+            </div>
+            <?php if (isset($resend_error)): ?>
+                <div class="message error">
+                    <p><?php echo $resend_error; ?></p>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($user) && isset($new_verification_code)): ?>
+                <div class="dev-verification-link">
+                    <p><strong>Development Testing Only:</strong> Email sending may not work in local environment.</p>
+                    <p>Use this link to verify your account:</p>
+                    <a href="<?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>" target="_blank">
+                        <?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>
+                    </a>
+                </div>
+                <style>
+                    .dev-verification-link {
+                        margin-top: 15px;
+                        padding: 10px;
+                        background-color: #f8f9fa;
+                        border: 1px dashed #ccc;
+                        border-radius: 4px;
+                    }
+                    .dev-verification-link p:last-child {
+                        margin-bottom: 5px;
+                    }
+                </style>
+            <?php endif; ?>
+        <?php else: ?>
+            <div class="message error">
+                <h1><i class="fas fa-times-circle"></i> Verification Failed</h1>
+                <p><?php echo $error; ?></p>
+                <p>If you're having trouble with the verification process, please <a href="<?php echo SITE_URL; ?>/contact.php">contact support</a>.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</main>
 
 <?php
 include '../includes/footer.php';

@@ -220,3 +220,70 @@ For details on the new upvote and pinning features in the comment system, includ
 ## Common Issues & Troubleshooting
 - If you see errors related to `Unknown column 'content_id'` or similar, verify the SQL migration scripts were executed properly.
 - Some PHP files may still reference the old column name `article_id`. These files need to be edited to reference `content_id` instead, or you need to maintain the old column name in your database.
+
+## Membership Form
+
+The website includes a comprehensive membership form for users to join TSPI. This feature allows users to sign up through two main entry points:
+
+1. After successfully verifying their email account (from the verification page)
+2. By clicking the "Join Us" button on the homepage
+
+### Form Structure and Sections:
+
+1. **Personal Information**
+   - Branch, CID number, and Center number fields
+   - Available plans (checkboxes for BLIP, LPIP, LMIP, CLIP, MRI, GLIP)
+   - Member classification checkboxes
+   - Name fields (last, first, middle)
+   - Gender and civil status radio buttons
+   - Birth information, nationality, and contact details
+   - ID numbers and addresses
+
+2. **Business/Source of Funds**
+   - Primary business and business address
+   - Years in business
+   - Other income sources (up to 4)
+
+3. **Spouse Information**
+   - Only shown when "Married" is selected as civil status
+   - Includes spouse's name, occupation, birthday, ID number, and age
+
+4. **Beneficiaries and Dependents**
+   - Table for up to 5 beneficiaries
+   - Fields for name, date of birth, gender, relationship, and dependent status
+
+5. **Trustee**
+   - Trustee name, date of birth, and relationship fields
+
+6. **Signatures**
+   - Date of signing (defaults to current date)
+   - CID number (auto-populated from earlier field)
+   - Proxy information
+   - Member/beneficiary signature fields
+
+### JavaScript Functionality:
+
+1. **Age Calculation**
+   - Automatically calculates age from entered birthdate for both member and spouse
+
+2. **Field Synchronization**
+   - Copies CID number from personal info section to signature section automatically
+
+3. **Conditional Display**
+   - Toggles visibility of spouse section based on civil status selection
+
+4. **Form Validation**
+   - Ensures at least one plan and one member classification are selected
+   - Validates that at least one beneficiary is added
+   - Displays error messages for invalid submissions
+
+5. **Default Values**
+   - Sets the signing date to the current date by default
+
+### Integration:
+
+- The membership form is linked from the verification page after successful email verification
+- The "Join Us" button on the homepage links directly to the membership form
+- Form state is managed through URL parameters (`verified=true` or `join=true`) to track entry point
+
+This feature enhances user onboarding by providing a seamless path from account verification or homepage interest to full membership application.

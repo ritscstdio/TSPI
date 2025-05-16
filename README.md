@@ -12,6 +12,7 @@ Key pages include:
 *   **What We Offer (`offers.php`):** Information on livelihood loan programs, social loan programs, and life insurance (KAAGAPAY).
 *   **News (`news.php`):** Displays news contents, likely filterable by categories.
 *   **Awards (`awards.php`):** Showcases organizational and client awards, filterable by type.
+*   **Membership Form (`user/membership-form.php`):** Comprehensive form for users to join TSPI, accessible after email verification or via "Join Us" button.
 *   Other pages for stories, contact information, careers, etc.
 
 ## Getting Started
@@ -108,6 +109,9 @@ These instructions will guide you to get a copy of the project up and running on
 ## Navigation and Key Features to Test
 
 *   **Main Navigation:** Ensure all links in the header (desktop and mobile) work correctly.
+*   **Homepage:**
+    *   Test the "Join Us" button to ensure it links to the membership form.
+    *   Verify the news carousel and scroll-to-top functionality.
 *   **`AboutUs.php`:**
     *   Test the sticky side navigation.
     *   Verify that all sections load with correct content.
@@ -121,6 +125,17 @@ These instructions will guide you to get a copy of the project up and running on
 *   **`awards.php`:**
     *   Test filtering using URL parameters (`?type=organization`, `?type=client`).
     *   Confirm the page title changes dynamically.
+*   **Membership Form (`user/membership-form.php`):**
+    *   Test accessing the form via the "Join Us" button on the homepage.
+    *   Test accessing the form after email verification.
+    *   Verify that the spouse section only appears when "Married" is selected.
+    *   Test age auto-calculation from birthdates.
+    *   Test CID number auto-population from personal info to signature section.
+    *   Verify form validation works correctly.
+    *   Test submission with valid data.
+*   **User Verification (`user/verify.php`):**
+    *   Verify that the "Complete Membership Form" button appears after successful verification.
+    *   Test the link to ensure it properly directs to the membership form with the verified parameter.
 *   **Responsiveness:** Check all pages on different screen sizes (desktop, tablet, mobile).
 
 ## Developer Documentation

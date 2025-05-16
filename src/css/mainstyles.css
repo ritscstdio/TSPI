@@ -2666,3 +2666,203 @@ body.homepage-body .hero {
 /* End Cookie Consent Banner Styles */
 
 /* Make sure this is the end of the file or before any other specific overrides if needed */ 
+
+/* Membership Form Styles */
+.membership-form-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.membership-form-container .auth-box {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-top: 7rem;
+    margin-bottom: 3rem;
+}
+
+.membership-form-container h1 {
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+.membership-form-container h2 {
+    color: var(--primary-blue);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.membership-form-container .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+}
+
+.membership-form-container .form-col {
+    flex: 1 0 100%;
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.membership-form-container .form-col-2 {
+    flex: 1 0 50%;
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.membership-form-container .form-col-3 {
+    flex: 1 0 33.333%;
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.membership-form-container .form-col-4 {
+    flex: 1 0 25%;
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.membership-form-container .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.membership-form-container .checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.membership-form-container .checkbox-item input[type="checkbox"] {
+    margin-top: 0.2rem;
+}
+
+.membership-form-container .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.membership-form-container .radio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.membership-form-container .form-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.membership-form-container .btn-primary {
+    background: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 2rem auto 0;
+    min-width: 200px;
+}
+
+.membership-form-container .btn-primary:hover {
+    background: var(--dark-navy);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26, 61, 143, 0.2);
+}
+
+.membership-form-container .section-divider {
+    margin: 2.5rem 0;
+    border-top: 1px dashed #ddd;
+}
+
+/* Beneficiary table styles */
+.beneficiaries-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.beneficiaries-table th,
+.beneficiaries-table td {
+    padding: 0.7rem;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.beneficiaries-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.beneficiaries-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.beneficiaries-table .form-group {
+    margin-bottom: 0;
+}
+
+.beneficiaries-table input {
+    padding: 0.5rem;
+}
+
+/* Date picker styling */
+input[type="date"] {
+    padding: 0.8rem;
+    border: 1px solid rgba(26, 61, 143, 0.2);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+}
+
+input[type="date"]:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(26, 61, 143, 0.1);
+}
+
+@media (max-width: 768px) {
+    .membership-form-container .form-col-2,
+    .membership-form-container .form-col-3,
+    .membership-form-container .form-col-4 {
+        flex: 1 0 100%;
+    }
+    
+    .membership-form-container .auth-box {
+        padding: 1.5rem;
+    }
+    
+    .membership-form-container h1 {
+        font-size: 1.5rem;
+    }
+    
+    .membership-form-container h2 {
+        font-size: 1.2rem;
+    }
+    
+    .beneficiaries-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

@@ -16,7 +16,7 @@ include 'includes/header.php';
         <div class="hero-fade-up" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center;">
             <h1>TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
             <p>Tulay sa Pag-unlad, Inc. (TSPI) is a microfinance NGO in the Philippines dedicated to empowering communities through financial inclusion and sustainable development. For decades, we have been committed to providing financial services and support to underserved communities, helping them build better futures.</p>
-            <button class="cta-button">Join Us!</button>
+            <a href="<?php echo SITE_URL; ?>/user/membership-form.php?join=true" class="cta-button">Join Us!</a>
         </div>
     </section>
 
