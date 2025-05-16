@@ -10,7 +10,7 @@ try {
                                  FROM articles a
                                  JOIN article_categories ac ON a.id = ac.article_id
                                  JOIN categories c ON ac.category_id = c.id
-                                 WHERE a.status = 'published' AND c.slug = 'stories'
+                                 WHERE a.status = 'published' AND c.slug = 'cli_stories'
                                  ORDER BY a.published_at DESC
                                  LIMIT 3");
     $client_stories = $stmt_stories->fetchAll(PDO::FETCH_ASSOC);

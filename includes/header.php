@@ -322,10 +322,10 @@ if (!defined('DB_HOST')) {
                             </div>
                         </div>
                         <div class="sub-dropdown-trigger">
-                            <a href="<?php echo SITE_URL; ?>/awards.php">Awards & Recognition <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/awards.php">Awards & Recognitions <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="<?php echo SITE_URL; ?>/awards.php?type=organization">Organization</a>
-                                <a href="<?php echo SITE_URL; ?>/awards.php?type=client">Client</a>
+                                <a href="<?php echo SITE_URL; ?>/awards.php?category=org_awards">Organization</a>
+                                <a href="<?php echo SITE_URL; ?>/awards.php?category=cli_awards">Clients</a>
                             </div>
                         </div>
                     </div>
@@ -336,9 +336,40 @@ if (!defined('DB_HOST')) {
                     <div class="dropdown-content">
                         <a href="#impact/stories">Client Success Stories</a>
                         <a href="#impact/annual-reports">Annual Reports</a>
+                        <div class="sub-dropdown-trigger">
+                            <a href="#impact/sambayanihan">SAMBAYANIHAN <i class="fas fa-chevron-right"></i></a>
+                            <div class="sub-dropdown-content">
+                                <a href="#impact/sambayanihan/clients">Clients</a>
+                                <a href="#impact/sambayanihan/employees">Employees</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <a href="<?php echo SITE_URL; ?>/news.php">News</a>
+                <div class="dropdown">
+                    <button class="dropdown-btn">Resources <i class="fas fa-chevron-down"></i></button>
+                    <div class="dropdown-content">
+                        <div class="sub-dropdown-trigger">
+                            <a href="#resources/publications">Publications <i class="fas fa-chevron-right"></i></a>
+                            <div class="sub-dropdown-content">
+                                <a href="#resources/publications/annual-reports">Annual Reports</a>
+                                <a href="#resources/publications/financial-statements">Audited Financial Statements</a>
+                                <a href="#resources/publications/newsletter">Newsletter</a>
+                            </div>
+                        </div>
+                        <div class="sub-dropdown-trigger">
+                            <a href="#resources/corporate-governance">Corporate Governance <i class="fas fa-chevron-right"></i></a>
+                            <div class="sub-dropdown-content">
+                                <a href="#resources/corporate-governance/incorporation">Article of Incorporation and by Law</a>
+                                <a href="#resources/corporate-governance/sec">SEC Registration</a>
+                                <a href="#resources/corporate-governance/mnrc">MNRC Registration</a>
+                                <a href="#resources/corporate-governance/npc">NPC Registration</a>
+                                <a href="#resources/corporate-governance/board-charter">Board Charter</a>
+                                <a href="#resources/corporate-governance/code-of-conduct">Code of Conduct</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="mobile-nav">
                 <a href="<?php echo SITE_URL; ?>/homepage.php" class="home-link">Home</a>
@@ -352,9 +383,9 @@ if (!defined('DB_HOST')) {
                         <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                     </details>
                     <details class="sub-dropdown-details">
-                        <summary>Awards & Recognition</summary>
-                        <a href="<?php echo SITE_URL; ?>/awards.php?type=organization">Organization</a>
-                        <a href="<?php echo SITE_URL; ?>/awards.php?type=client">Client</a>
+                        <summary>Awards & Recognitions</summary>
+                        <a href="<?php echo SITE_URL; ?>/awards.php?category=org_awards">Organization</a>
+                        <a href="<?php echo SITE_URL; ?>/awards.php?category=cli_awards">Clients</a>
                     </details>
                 </details>
                 <a href="<?php echo SITE_URL; ?>/offers.php" class="what-we-offer-link">What We Offer</a>
@@ -362,8 +393,31 @@ if (!defined('DB_HOST')) {
                     <summary>Our Impact</summary>
                     <a href="#impact/stories">Client Success Stories</a>
                     <a href="#impact/annual-reports">Annual Reports</a>
+                    <details class="sub-dropdown-details">
+                        <summary>SAMBAYANIHAN</summary>
+                        <a href="#impact/sambayanihan/clients">Clients</a>
+                        <a href="#impact/sambayanihan/employees">Employees</a>
+                    </details>
                 </details>
                 <a href="<?php echo SITE_URL; ?>/news.php" class="news-link">News</a>
+                <details>
+                    <summary>Resources</summary>
+                    <details class="sub-dropdown-details">
+                        <summary>Publications</summary>
+                        <a href="#resources/publications/annual-reports">Annual Reports</a>
+                        <a href="#resources/publications/financial-statements">Audited Financial Statements</a>
+                        <a href="#resources/publications/newsletter">Newsletter</a>
+                    </details>
+                    <details class="sub-dropdown-details">
+                        <summary>Corporate Governance</summary>
+                        <a href="#resources/corporate-governance/incorporation">Article of Incorporation and by Law</a>
+                        <a href="#resources/corporate-governance/sec">SEC Registration</a>
+                        <a href="#resources/corporate-governance/mnrc">MNRC Registration</a>
+                        <a href="#resources/corporate-governance/npc">NPC Registration</a>
+                        <a href="#resources/corporate-governance/board-charter">Board Charter</a>
+                        <a href="#resources/corporate-governance/code-of-conduct">Code of Conduct</a>
+                    </details>
+                </details>
             </div>
             <div class="search-bar" style="position: relative;">
                 <form id="searchForm">
