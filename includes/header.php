@@ -334,8 +334,8 @@ if (!defined('DB_HOST')) {
                 <div class="dropdown">
                     <button class="dropdown-btn">Our Impact <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="#impact/stories">Client Success Stories</a>
-                        <a href="#impact/annual-reports">Annual Reports</a>
+                        <a href="<?php echo SITE_URL; ?>/stories.php">Client Stories</a>
+                        <a href="<?php echo SITE_URL; ?>/reports.php">Annual Reports</a>
                         <div class="sub-dropdown-trigger">
                             <a href="<?php echo SITE_URL; ?>/sambayanihan.php">SAMBAYANIHAN <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
@@ -388,8 +388,8 @@ if (!defined('DB_HOST')) {
                 <a href="<?php echo SITE_URL; ?>/offers.php" class="what-we-offer-link">What We Offer</a>
                 <details>
                     <summary>Our Impact</summary>
-                    <a href="#impact/stories">Client Success Stories</a>
-                    <a href="#impact/annual-reports">Annual Reports</a>
+                    <a href="<?php echo SITE_URL; ?>/stories.php">Client Stories</a>
+                    <a href="<?php echo SITE_URL; ?>/reports.php">Annual Reports</a>
                     <details class="sub-dropdown-details">
                         <summary><a href="<?php echo SITE_URL; ?>/sambayanihan.php" class="summary-link-mobile">SAMBAYANIHAN</a></summary>
                         <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_client">Clients</a>
