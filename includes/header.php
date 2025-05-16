@@ -337,10 +337,10 @@ if (!defined('DB_HOST')) {
                         <a href="#impact/stories">Client Success Stories</a>
                         <a href="#impact/annual-reports">Annual Reports</a>
                         <div class="sub-dropdown-trigger">
-                            <a href="#impact/sambayanihan">SAMBAYANIHAN <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/sambayanihan.php">SAMBAYANIHAN <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="#impact/sambayanihan/clients">Clients</a>
-                                <a href="#impact/sambayanihan/employees">Employees</a>
+                                <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_client">Clients</a>
+                                <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_employees">Employees</a>
                             </div>
                         </div>
                     </div>
@@ -350,22 +350,19 @@ if (!defined('DB_HOST')) {
                     <button class="dropdown-btn">Resources <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <div class="sub-dropdown-trigger">
-                            <a href="#resources/publications">Publications <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/publications.php">Publications <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="#resources/publications/annual-reports">Annual Reports</a>
-                                <a href="#resources/publications/financial-statements">Audited Financial Statements</a>
-                                <a href="#resources/publications/newsletter">Newsletter</a>
+                                <a href="<?php echo SITE_URL; ?>/publications.php?category=ann_reports">Annual Reports</a>
+                                <a href="<?php echo SITE_URL; ?>/publications.php?category=aud_financial">Audited Financial Statements</a>
+                                <a href="<?php echo SITE_URL; ?>/publications.php?category=newsletter">Newsletter</a>
                             </div>
                         </div>
                         <div class="sub-dropdown-trigger">
-                            <a href="#resources/corporate-governance">Corporate Governance <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/governance.php">Corporate Governance <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="#resources/corporate-governance/incorporation">Article of Incorporation and by Law</a>
-                                <a href="#resources/corporate-governance/sec">SEC Registration</a>
-                                <a href="#resources/corporate-governance/mnrc">MNRC Registration</a>
-                                <a href="#resources/corporate-governance/npc">NPC Registration</a>
-                                <a href="#resources/corporate-governance/board-charter">Board Charter</a>
-                                <a href="#resources/corporate-governance/code-of-conduct">Code of Conduct</a>
+                                <a href="<?php echo SITE_URL; ?>/governance.php?category=leg_documents">Foundational Legal Documents</a>
+                                <a href="<?php echo SITE_URL; ?>/governance.php?category=reg_registrations">Regulatory Compliance</a>
+                                <a href="<?php echo SITE_URL; ?>/governance.php?category=gov_framework">Governance Framework</a>
                             </div>
                         </div>
                     </div>
@@ -394,28 +391,25 @@ if (!defined('DB_HOST')) {
                     <a href="#impact/stories">Client Success Stories</a>
                     <a href="#impact/annual-reports">Annual Reports</a>
                     <details class="sub-dropdown-details">
-                        <summary>SAMBAYANIHAN</summary>
-                        <a href="#impact/sambayanihan/clients">Clients</a>
-                        <a href="#impact/sambayanihan/employees">Employees</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/sambayanihan.php" class="summary-link-mobile">SAMBAYANIHAN</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_client">Clients</a>
+                        <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_employees">Employees</a>
                     </details>
                 </details>
                 <a href="<?php echo SITE_URL; ?>/news.php" class="news-link">News</a>
                 <details>
                     <summary>Resources</summary>
                     <details class="sub-dropdown-details">
-                        <summary>Publications</summary>
-                        <a href="#resources/publications/annual-reports">Annual Reports</a>
-                        <a href="#resources/publications/financial-statements">Audited Financial Statements</a>
-                        <a href="#resources/publications/newsletter">Newsletter</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/publications.php" class="summary-link-mobile">Publications</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/publications.php?category=ann_reports">Annual Reports</a>
+                        <a href="<?php echo SITE_URL; ?>/publications.php?category=aud_financial">Audited Financial Statements</a>
+                        <a href="<?php echo SITE_URL; ?>/publications.php?category=newsletter">Newsletter</a>
                     </details>
                     <details class="sub-dropdown-details">
-                        <summary>Corporate Governance</summary>
-                        <a href="#resources/corporate-governance/incorporation">Article of Incorporation and by Law</a>
-                        <a href="#resources/corporate-governance/sec">SEC Registration</a>
-                        <a href="#resources/corporate-governance/mnrc">MNRC Registration</a>
-                        <a href="#resources/corporate-governance/npc">NPC Registration</a>
-                        <a href="#resources/corporate-governance/board-charter">Board Charter</a>
-                        <a href="#resources/corporate-governance/code-of-conduct">Code of Conduct</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/governance.php" class="summary-link-mobile">Corporate Governance</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/governance.php?category=leg_documents">Foundational Legal Documents</a>
+                        <a href="<?php echo SITE_URL; ?>/governance.php?category=reg_registrations">Regulatory Compliance</a>
+                        <a href="<?php echo SITE_URL; ?>/governance.php?category=gov_framework">Governance Framework</a>
                     </details>
                 </details>
             </div>
