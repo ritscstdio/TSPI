@@ -30,12 +30,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li class="nav-header"><span>Content Management</span></li>
             
             <?php if ($current_user && in_array($current_user['role'], ['admin', 'editor'])): ?>
-                <li class="<?php echo in_array($current_page, ['articles.php', 'add-article.php', 'edit-article.php']) ? 'active' : ''; ?>">
-                    <a href="articles.php"><i class="fas fa-newspaper"></i> <span>Articles</span></a>
-                </li>
-                
-                <li class="<?php echo in_array($current_page, ['pages.php', 'add-page.php', 'edit-page.php']) ? 'active' : ''; ?>">
-                    <a href="pages.php"><i class="fas fa-file-alt"></i> <span>Pages</span></a>
+                <li class="<?php echo in_array($current_page, ['content.php', 'add-content.php', 'edit-content.php']) ? 'active' : ''; ?>">
+                    <a href="content.php"><i class="fas fa-newspaper"></i> <span>Content</span></a>
                 </li>
                 
                 <li class="<?php echo in_array($current_page, ['categories.php', 'add-category.php', 'edit-category.php']) ? 'active' : ''; ?>">

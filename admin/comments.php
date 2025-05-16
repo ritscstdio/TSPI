@@ -24,10 +24,10 @@ if ($filter_status) {
     $params[] = $filter_status;
 }
 
-// Fetch all comments with article titles
-$sql = "SELECT c.*, a.title AS article_title, a.slug AS article_slug 
+// Fetch all comments with content titles
+$sql = "SELECT c.*, a.title AS content_title, a.slug AS content_slug 
         FROM comments c 
-        JOIN articles a ON c.article_id = a.id 
+        JOIN content a ON c.content_id = a.id 
         $where_sql 
         ORDER BY c.pinned DESC, c.vote_score DESC, c.posted_at DESC";
 $stmt = $pdo->prepare($sql);
@@ -74,7 +74,7 @@ $comments = $stmt->fetchAll();
                                 <tr>
                                     <th>Author</th>
                                     <th>Comment</th>
-                                    <th>Article</th>
+                                    <th>content</th>
                                     <th>Votes</th>
                                     <th>Pinned</th>
                                     <th>Status</th>
@@ -98,7 +98,7 @@ $comments = $stmt->fetchAll();
                                             <td class="comment-text-preview" data-full-comment="<?php echo nl2br(sanitize($comment['content'])); ?>">
                                                 <?php echo nl2br(sanitize(substr($comment['content'], 0, 50))) . (strlen($comment['content']) > 50 ? '...' : ''); ?>
                                             </td>
-                                            <td><?php echo sanitize($comment['article_title']); ?></td>
+                                            <td><?php echo sanitize($comment['content_title']); ?></td>
                                             <td><?php echo $comment['vote_score']; ?></td>
                                             <td><?php echo $comment['pinned'] ? 'Yes' : 'No'; ?></td>
                                             <td><span class="status-badge status-<?php echo $comment['status']; ?>"><?php echo ucfirst($comment['status']); ?></span></td>
@@ -117,7 +117,7 @@ $comments = $stmt->fetchAll();
                                                 <?php else: ?>
                                                     <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=pin" class="btn-icon" title="Pin"><i class="fas fa-thumbtack"></i></a>
                                                 <?php endif; ?>
-                                                <a href="../article.php?slug=<?php echo $comment['article_slug']; ?>" target="_blank" class="btn-icon" title="View Article"><i class="fas fa-external-link-alt"></i></a>
+                                                <a href="../content.php?slug=<?php echo $comment['content_slug']; ?>" target="_blank" class="btn-icon" title="View content"><i class="fas fa-external-link-alt"></i></a>
                                                 <a href="comment-action.php?id=<?php echo $comment['id']; ?>&action=delete" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this comment?"><i class="fas fa-trash"></i></a>
                                             </td>
                                         </tr>

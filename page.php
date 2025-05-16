@@ -31,12 +31,12 @@ include 'includes/header.php';
 ?>
 
 <main class="page-container">
-    <article>
+    <content>
         <h1 class="page-title"><?php echo sanitize($page['title']); ?></h1>
         <div class="page-content">
             <?php echo $page['content']; ?>
         </div>
-    </article>
+    </content>
 </main>
 
 <?php

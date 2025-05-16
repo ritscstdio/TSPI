@@ -1,6 +1,6 @@
 <?php
 $page_title = "News";
-$page_description = "Latest TSPI Articles and Updates";
+$page_description = "Latest TSPI contents and Updates";
 $body_class = "news-page"; // Add specific body class for news page styling
 include 'includes/header.php';
 ?>
@@ -20,11 +20,11 @@ $current_sort = isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_op
     : 'published_at_desc';
 // Build query
 $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.author_id, u.name as author_name 
-        FROM articles a 
+        FROM content a 
         JOIN users u ON a.author_id = u.id";
 $params = [];
 if ($filter_category) {
-    $sql .= " JOIN article_categories ac ON a.id = ac.article_id";
+    $sql .= " JOIN content_categories ac ON a.id = ac.content_id";
 }
 $sql .= " WHERE a.status = 'published'";
 if ($filter_category) {
@@ -48,7 +48,7 @@ switch ($current_sort) {
 }
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
-$news_articles = $stmt->fetchAll();
+$news_contents = $stmt->fetchAll();
 
 // Determine the page title based on the filter
 $dynamic_page_title = "TSPI News"; // Default title
@@ -87,9 +87,9 @@ if ($filter_category) {
             </select>
         </form>
 
-        <!-- Articles Grid -->
-        <div class="articles-grid">
-            <?php foreach ($news_articles as $art): ?>
+        <!-- contents Grid -->
+        <div class="contents-grid">
+            <?php foreach ($news_contents as $art): ?>
                 <?php
                 if ($art['thumbnail']) {
                     if (preg_match('#^https?://#i', $art['thumbnail'])) {
@@ -101,7 +101,7 @@ if ($filter_category) {
                     $img = SITE_URL . '/assets/default-thumbnail.jpg';
                 }
                 ?>
-                <a href="<?php echo SITE_URL; ?>/article.php?slug=<?php echo $art['slug']; ?>" class="similar-post-card">
+                <a href="<?php echo SITE_URL; ?>/content.php?slug=<?php echo $art['slug']; ?>" class="similar-post-card">
                     <div class="similar-post-thumbnail-container">
                         <img src="<?php echo $img; ?>" alt="<?php echo sanitize($art['title']); ?>" class="similar-post-thumbnail">
                     </div>

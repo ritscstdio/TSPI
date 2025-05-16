@@ -1628,8 +1628,8 @@ main {
     margin-top: auto;
 }
 
-/* Article Template Styles */
-.article-container {
+/* content Template Styles */
+.content-container {
     max-width: 800px;
     margin: 2rem auto;
     background-color: var(--white);
@@ -1639,11 +1639,11 @@ main {
     z-index: 2;
 }
 
-.article-header {
+.content-header {
     margin-bottom: 2rem;
 }
 
-.article-thumbnail {
+.content-thumbnail {
     width: 100%;
     margin-bottom: 1.5rem;
     border-radius: 12px;
@@ -1651,39 +1651,39 @@ main {
     box-shadow: 0 4px 16px rgba(26, 61, 143, 0.15);
 }
 
-.article-thumbnail img {
+.content-thumbnail img {
     width: 100%;
     height: auto;
     display: block;
     transition: transform 0.3s ease;
 }
 
-.article-thumbnail img:hover {
+.content-thumbnail img:hover {
     transform: scale(1.02);
 }
 
-.article-title {
+.content-title {
     font-size: 2.5rem;
     color: var(--primary-blue);
     margin-bottom: 1rem;
     line-height: 1.2;
 }
 
-.article-meta {
+.content-meta {
     display: flex;
     gap: 1.5rem;
     color: var(--text-gray);
     font-size: 0.95rem;
 }
 
-.article-body {
+.content-body {
     font-size: 1.1rem;
     line-height: 1.8;
     color: var(--text-gray);
     margin-bottom: 2rem;
 }
 
-.article-tags {
+.content-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
@@ -1705,7 +1705,7 @@ main {
     transform: translateY(-2px);
 }
 
-.article-navigation {
+.content-navigation {
     display: flex;
     justify-content: space-between;
     margin: 3rem 0;
@@ -2156,16 +2156,16 @@ main {
 }
 
 @media (max-width: 768px) {
-    .article-title {
+    .content-title {
         font-size: 2rem;
     }
     
-    .article-meta {
+    .content-meta {
         flex-direction: column;
         gap: 0.5rem;
     }
     
-    .article-navigation {
+    .content-navigation {
         flex-direction: column;
         gap: 1.5rem;
     }
@@ -2202,44 +2202,44 @@ main {
     }
 }
 
-/* Article categories under title */
-.article-categories {
+/* content categories under title */
+.content-categories {
     margin: 0.5rem 0;
     font-size: 0.9rem;
     color: var(--secondary-gold);
 }
-.article-categories a {
+.content-categories a {
     color: var(--secondary-gold);
     text-decoration: none;
     margin-right: 0.5rem;
 }
-.article-categories a:hover {
+.content-categories a:hover {
     text-decoration: underline;
 }
 
 /* Overlap hero on desktop */
 @media (min-width: 769px) {
-    .article-container {
+    .content-container {
         margin-top: -120px; /* Pull up to overlap hero */
     }
 }
 
-/* Article page specific styling */
-.article-page main {
-    padding-top: 160px; /* Add padding-top only for the article page */
+/* content page specific styling */
+.content-page main {
+    padding-top: 160px; /* Add padding-top only for the content page */
 }
 
-.article-page .article-container {
-    margin-top: 2rem; /* Reset the negative margin we applied earlier for the article pages */
+.content-page .content-container {
+    margin-top: 2rem; /* Reset the negative margin we applied earlier for the content pages */
 }
 
 @media (max-width: 768px) {
-    .article-page main {
+    .content-page main {
         padding-top: 140px; /* Slightly less padding on mobile */
     }
     /* Apply mobile padding for news page as well */
     .news-page main {
-        padding-top: 140px; /* Match article page padding (mobile) */
+        padding-top: 140px; /* Match content page padding (mobile) */
     }
 }
 
@@ -2280,8 +2280,8 @@ main {
     border-color: var(--primary-blue);
 }
 
-/* Grid layout for news articles */
-.articles-grid {
+/* Grid layout for news contents */
+.contents-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
@@ -2290,12 +2290,12 @@ main {
     padding: 0 2rem;
 }
 @media (max-width: 992px) {
-    .articles-grid {
+    .contents-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 @media (max-width: 600px) {
-    .articles-grid {
+    .contents-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -2408,20 +2408,20 @@ main {
 
 /* News page specific styling */
 .news-page main {
-    padding-top: 160px; /* Match article page padding (desktop) */
+    padding-top: 160px; /* Match content page padding (desktop) */
 }
 
-.article-page .article-container {
-    margin-top: 2rem; /* Reset the negative margin we applied earlier for the article pages */
+.content-page .content-container {
+    margin-top: 2rem; /* Reset the negative margin we applied earlier for the content pages */
 }
 
 @media (max-width: 768px) {
-    .article-page main {
+    .content-page main {
         padding-top: 140px; /* Slightly less padding on mobile */
     }
     /* Apply mobile padding for news page as well */
     .news-page main {
-        padding-top: 140px; /* Match article page padding (mobile) */
+        padding-top: 140px; /* Match content page padding (mobile) */
     }
 }
 
@@ -2462,8 +2462,8 @@ main {
     border-color: var(--primary-blue);
 }
 
-/* Grid layout for news articles */
-.articles-grid {
+/* Grid layout for news contents */
+.contents-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
@@ -2472,12 +2472,12 @@ main {
     padding: 0 2rem;
 }
 @media (max-width: 992px) {
-    .articles-grid {
+    .contents-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 @media (max-width: 600px) {
-    .articles-grid {
+    .contents-grid {
         grid-template-columns: 1fr;
     }
 }

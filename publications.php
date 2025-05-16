@@ -62,9 +62,9 @@ $current_sort = isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_op
 
 // Build query
 $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.author_id, u.name as author_name 
-        FROM articles a 
+        FROM content a 
         JOIN users u ON a.author_id = u.id
-        JOIN article_categories ac ON a.id = ac.article_id
+        JOIN content_categories ac ON a.id = ac.content_id
         JOIN categories c ON ac.category_id = c.id";
 
 $sql .= " WHERE a.status = 'published'";
@@ -100,7 +100,7 @@ switch ($current_sort) {
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
-$publication_articles = $stmt->fetchAll();
+$publication_contents = $stmt->fetchAll();
 
 // Determine the page title based on the filter
 $dynamic_page_title = "Publications"; // Default title
@@ -140,10 +140,10 @@ if ($filter_category) {
             </select>
         </form>
 
-        <!-- Articles Grid -->
-        <div class="articles-grid">
-            <?php if (count($publication_articles) > 0): ?>
-                <?php foreach ($publication_articles as $art): ?>
+        <!-- contents Grid -->
+        <div class="contents-grid">
+            <?php if (count($publication_contents) > 0): ?>
+                <?php foreach ($publication_contents as $art): ?>
                     <?php
                     if ($art['thumbnail']) {
                         if (preg_match('#^https?://#i', $art['thumbnail'])) {
@@ -155,7 +155,7 @@ if ($filter_category) {
                         $img = SITE_URL . '/assets/default-thumbnail.jpg';
                     }
                     ?>
-                    <a href="<?php echo SITE_URL; ?>/article.php?slug=<?php echo $art['slug']; ?>" class="similar-post-card">
+                    <a href="<?php echo SITE_URL; ?>/content.php?slug=<?php echo $art['slug']; ?>" class="similar-post-card">
                         <div class="similar-post-thumbnail-container">
                             <img src="<?php echo $img; ?>" alt="<?php echo sanitize($art['title']); ?>" class="similar-post-thumbnail">
                         </div>
@@ -174,7 +174,7 @@ if ($filter_category) {
                     </a>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="no-articles-message">
+                <div class="no-contents-message">
                     <p>No publications found in this category.</p>
                 </div>
             <?php endif; ?>

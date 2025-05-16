@@ -1,30 +1,30 @@
 <?php
-$page_title = "Edit Article";
-$body_class = "admin-edit-article-page";
+$page_title = "Edit Content";
+$body_class = "admin-edit-content-page";
 require_once '../includes/config.php';
 require_login();
 require_role(['admin','editor']);
 
 $current_user = get_logged_in_user();
 
-// Get article ID
-$article_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
-if (!$article_id) {
-    redirect('/admin/articles.php');
+// Get content ID
+$content_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+if (!$content_id) {
+    redirect('/admin/content.php');
 }
-// Fetch article data
-$stmt = $pdo->prepare("SELECT * FROM articles WHERE id = ?");
-$stmt->execute([$article_id]);
-$article = $stmt->fetch();
-if (!$article) {
-    $_SESSION['message'] = "Article not found.";
-    redirect('/admin/articles.php');
+// Fetch content data
+$stmt = $pdo->prepare("SELECT * FROM content WHERE id = ?");
+$stmt->execute([$content_id]);
+$content = $stmt->fetch();
+if (!$content) {
+    $_SESSION['message'] = "Content not found.";
+    redirect('/admin/content.php');
 }
 
 // Fetch categories and selected categories
 $all_categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
-$stmt = $pdo->prepare("SELECT category_id FROM article_categories WHERE article_id = ?");
-$stmt->execute([$article_id]);
+$stmt = $pdo->prepare("SELECT category_id FROM content_categories WHERE content_id = ?");
+$stmt->execute([$content_id]);
 $selected_categories = array_column($stmt->fetchAll(), 'category_id');
 
 // Handle form submission
@@ -38,33 +38,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$title) $errors[] = "Title is required.";
     if (!$content) $errors[] = "Content is required.";
     if (empty($errors)) {
-        // Update article
-        $stmt = $pdo->prepare("UPDATE articles SET title = ?, content = ?, excerpt = ?, status = ? WHERE id = ?");
-        $stmt->execute([$title, $content, $excerpt, $status, $article_id]);
+        // Update content
+        $stmt = $pdo->prepare("UPDATE content SET title = ?, content = ?, excerpt = ?, status = ? WHERE id = ?");
+        $stmt->execute([$title, $content, $excerpt, $status, $content_id]);
         
         // Update categories
-        $stmt = $pdo->prepare("DELETE FROM article_categories WHERE article_id = ?");
-        $stmt->execute([$article_id]);
+        $stmt = $pdo->prepare("DELETE FROM content_categories WHERE content_id = ?");
+        $stmt->execute([$content_id]);
         if (!empty($categories_input)) {
             $values = [];
             $placeholders = [];
             foreach ($categories_input as $cat_id) {
                 $placeholders[] = "(?, ?)";
-                $values[] = $article_id;
+                $values[] = $content_id;
                 $values[] = (int)$cat_id;
             }
-            $query = "INSERT INTO article_categories (article_id, category_id) VALUES " . implode(', ', $placeholders);
+            $query = "INSERT INTO content_categories (content_id, category_id) VALUES " . implode(', ', $placeholders);
             $stmt = $pdo->prepare($query);
             $stmt->execute($values);
         }
         
-        $_SESSION['message'] = "Article updated successfully.";
-        redirect('/admin/articles.php');
+        $_SESSION['message'] = "Content updated successfully.";
+        redirect('/admin/content.php');
     }
 }
 
 // Prepare thumbnail URL for preview (handle absolute or relative paths)
-$thumbRaw = $article['thumbnail'] ?? '';
+$thumbRaw = $content['thumbnail'] ?? '';
 if ($thumbRaw) {
     if (preg_match('#^https?://#i', $thumbRaw)) {
         $thumbnailUrl = htmlspecialchars($thumbRaw);
@@ -93,8 +93,8 @@ if ($thumbRaw) {
             <?php include 'includes/header.php'; ?>
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Edit Article</h1>
-                    <a href="articles.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Articles</a>
+                    <h1>Edit Content</h1>
+                    <a href="content.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Content</a>
                 </div>
                 <?php if (!empty($errors)): ?>
                     <div class="message error">
@@ -109,7 +109,7 @@ if ($thumbRaw) {
                     <form action="" method="post" enctype="multipart/form-data" class="admin-form">
                         <div class="form-group">
                             <label for="title">Title</label>
-                            <input type="text" id="title" name="title" value="<?php echo sanitize($article['title']); ?>" required>
+                            <input type="text" id="title" name="title" value="<?php echo sanitize($content['title']); ?>" required>
                         </div>
 
                         <div class="form-group">
@@ -125,12 +125,12 @@ if ($thumbRaw) {
 
                         <div class="form-group">
                             <label for="excerpt">Excerpt (optional)</label>
-                            <textarea id="excerpt" name="excerpt" rows="3"><?php echo sanitize($article['excerpt']); ?></textarea>
-                            <p class="form-hint">A short summary of the article. If left empty, an excerpt will be generated from the content.</p>
+                            <textarea id="excerpt" name="excerpt" rows="3"><?php echo sanitize($content['excerpt']); ?></textarea>
+                            <p class="form-hint">A short summary of the content. If left empty, an excerpt will be generated from the content.</p>
                         </div>
 
                         <div class="form-group">
-                            <label for="article-content-editor">Content</label>
+                            <label for="content-content-editor">Content</label>
                             <div class="editor-toolbar">
                                 <button type="button" class="toolbar-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
@@ -151,8 +151,8 @@ if ($thumbRaw) {
                                 <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
                             </div>
-                            <div class="editor-content" id="article-content-editor" contenteditable="true"><?php echo htmlspecialchars($article['content']); ?></div>
-                            <input type="hidden" id="article-content" name="content" value="<?php echo htmlspecialchars($article['content']); ?>">
+                            <div class="editor-content" id="content-content-editor" contenteditable="true"><?php echo htmlspecialchars($content['content']); ?></div>
+                            <input type="hidden" id="content-content" name="content" value="<?php echo htmlspecialchars($content['content']); ?>">
                         </div>
 
                         <div class="form-group">
@@ -177,15 +177,15 @@ if ($thumbRaw) {
                         <div class="form-group">
                             <label for="status">Status</label>
                             <select id="status" name="status">
-                                <option value="draft" <?php echo $article['status'] === 'draft' ? 'selected' : ''; ?>>Draft</option>
-                                <option value="published" <?php echo $article['status'] === 'published' ? 'selected' : ''; ?>>Published</option>
-                                <option value="archived" <?php echo $article['status'] === 'archived' ? 'selected' : ''; ?>>Archived</option>
+                                <option value="draft" <?php echo $content['status'] === 'draft' ? 'selected' : ''; ?>>Draft</option>
+                                <option value="published" <?php echo $content['status'] === 'published' ? 'selected' : ''; ?>>Published</option>
+                                <option value="archived" <?php echo $content['status'] === 'archived' ? 'selected' : ''; ?>>Archived</option>
                             </select>
                         </div>
 
                         <div class="btn-group">
-                            <button type="submit" class="btn btn-primary">Update Article</button>
-                            <a href="articles.php" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Content</button>
+                            <a href="content.php" class="btn btn-light">Cancel</a>
                         </div>
                     </form>
                 </div>

@@ -1,8 +1,8 @@
 <?php
-$body_class = "article-page";
+$body_class = "content-page";
 require_once 'includes/config.php';
 
-// Handle AJAX vote requests for comments and articles
+// Handle AJAX vote requests for comments and contents
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vote_action'])) {
     header('Content-Type: application/json');
     if (!is_logged_in()) {
@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vote_action'])) {
         exit;
     }
     $user_id = $_SESSION['user_id'];
-    $action = $_POST['vote_action']; // e.g., 'upvote', 'downvote', 'article_upvote', 'article_downvote'
+    $action = $_POST['vote_action']; // e.g., 'upvote', 'downvote', 'content_upvote', 'content_downvote'
     $item_id = null;
     $table_name = '';
     $votes_table_name = '';
@@ -21,20 +21,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vote_action'])) {
         $table_name = 'comments';
         $votes_table_name = 'comment_votes';
         $item_id_column = 'comment_id';
-    } elseif (isset($_POST['article_id'])) {
-        $item_id = (int)$_POST['article_id'];
-        $table_name = 'articles';
-        $votes_table_name = 'article_votes';
-        $item_id_column = 'article_id';
+    } elseif (isset($_POST['content_id'])) {
+        $item_id = (int)$_POST['content_id'];
+        $table_name = 'content';
+        $votes_table_name = 'content_votes';
+        $item_id_column = 'content_id';
     } else {
         echo json_encode(['error' => 'Invalid request', 'message' => 'Missing item ID.']);
         exit;
     }
 
     $requested_vote = 0;
-    if ($action === 'upvote' || $action === 'article_upvote') {
+    if ($action === 'upvote' || $action === 'content_upvote') {
         $requested_vote = 1;
-    } elseif ($action === 'downvote' || $action === 'article_downvote') {
+    } elseif ($action === 'downvote' || $action === 'content_downvote') {
         $requested_vote = -1;
     }
 
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vote_action'])) {
     exit;
 }
 
-// Get article slug
+// Get content slug
 $slug = $_GET['slug'] ?? '';
 
 if (!$slug) {
@@ -103,32 +103,32 @@ if (!$slug) {
     redirect('/');
 }
 
-// Get article details
+// Get content details
 $stmt = $pdo->prepare("SELECT a.*, u.name as author_name 
-                      FROM articles a 
+                      FROM content a 
                       JOIN users u ON a.author_id = u.id 
                       WHERE a.slug = ?");
 $stmt->execute([$slug]);
-$article = $stmt->fetch();
+$content = $stmt->fetch();
 
-if (!$article) {
-    // Article not found at all
+if (!$content) {
+    // content not found at all
     header("HTTP/1.0 404 Not Found");
     include '404.php';
     exit;
-} elseif ($article['status'] === 'archived') {
-    // Article is archived
-    $page_title = "Article Not Available";
+} elseif ($content['status'] === 'archived') {
+    // content is archived
+    $page_title = "content Not Available";
     include 'includes/header.php';
     echo "<main><div class='container' style='padding: 2rem; text-align: center;'>";
-    echo "<h1>Article Not Available</h1>";
-    echo "<p>This article has been archived and is no longer available.</p>";
+    echo "<h1>content Not Available</h1>";
+    echo "<p>This content has been archived and is no longer available.</p>";
     echo "<a href='" . SITE_URL . "/' class='btn'>Go to Homepage</a>";
     echo "</div></main>";
     include 'includes/footer.php';
     exit;
-} elseif ($article['status'] !== 'published') {
-    // Article found but not published (e.g., draft)
+} elseif ($content['status'] !== 'published') {
+    // content found but not published (e.g., draft)
     header("HTTP/1.0 404 Not Found");
     include '404.php';
     exit;
@@ -136,78 +136,78 @@ if (!$article) {
 
 // Get user votes if logged in
 $user_votes = [];
-$user_article_vote = null;
+$user_content_vote = null;
 if (is_logged_in()) {
     $user_id = $_SESSION['user_id'];
     
     // Get user's votes on comments
     $stmt = $pdo->prepare("SELECT comment_id, vote FROM comment_votes WHERE user_id = ? AND comment_id IN (
-                          SELECT id FROM comments WHERE article_id = ?)");
-    $stmt->execute([$user_id, $article['id']]);
+                          SELECT id FROM comments WHERE content_id = ?)");
+    $stmt->execute([$user_id, $content['id']]);
     while ($row = $stmt->fetch()) {
         $user_votes[$row['comment_id']] = $row['vote'];
     }
     
-    // Get user's vote on this article
-    $stmt = $pdo->prepare("SELECT vote FROM article_votes WHERE user_id = ? AND article_id = ?");
-    $stmt->execute([$user_id, $article['id']]);
-    $user_article_vote = $stmt->fetchColumn();
+    // Get user's vote on this content
+    $stmt = $pdo->prepare("SELECT vote FROM content_votes WHERE user_id = ? AND content_id = ?");
+    $stmt->execute([$user_id, $content['id']]);
+    $user_content_vote = $stmt->fetchColumn();
 }
 
-// Get article categories
+// Get content categories
 $stmt = $pdo->prepare("SELECT c.* 
                       FROM categories c 
-                      JOIN article_categories ac ON c.id = ac.category_id 
-                      WHERE ac.article_id = ?");
-$stmt->execute([$article['id']]);
+                      JOIN content_categories ac ON c.id = ac.category_id 
+                      WHERE ac.content_id = ?");
+$stmt->execute([$content['id']]);
 $categories = $stmt->fetchAll();
 
-// Get article tags
+// Get content tags
 $stmt = $pdo->prepare("SELECT t.* 
                       FROM tags t 
-                      JOIN article_tags at ON t.id = at.tag_id 
-                      WHERE at.article_id = ?");
-$stmt->execute([$article['id']]);
+                      JOIN content_tags at ON t.id = at.tag_id 
+                      WHERE at.content_id = ?");
+$stmt->execute([$content['id']]);
 $tags = $stmt->fetchAll();
 
-// Get previous article
+// Get previous content
 $stmt = $pdo->prepare("SELECT id, title, slug 
-                      FROM articles 
+                      FROM content 
                       WHERE published_at < ? AND status = 'published' 
                       ORDER BY published_at DESC 
                       LIMIT 1");
-$stmt->execute([$article['published_at']]);
-$prev_article = $stmt->fetch();
+$stmt->execute([$content['published_at']]);
+$prev_content = $stmt->fetch();
 
-// Get next article
+// Get next content
 $stmt = $pdo->prepare("SELECT id, title, slug 
-                      FROM articles 
+                      FROM content 
                       WHERE published_at > ? AND status = 'published' 
                       ORDER BY published_at ASC 
                       LIMIT 1");
-$stmt->execute([$article['published_at']]);
-$next_article = $stmt->fetch();
+$stmt->execute([$content['published_at']]);
+$next_content = $stmt->fetch();
 
-// Get similar articles based on categories
+// Get similar contents based on categories
 $stmt = $pdo->prepare("SELECT a.*, u.name as author_name
-                      FROM articles a 
+                      FROM content a 
                       JOIN users u ON a.author_id = u.id
-                      JOIN article_categories ac1 ON a.id = ac1.article_id 
-                      JOIN article_categories ac2 ON ac2.category_id = ac1.category_id 
-                      WHERE ac2.article_id = ? AND a.id != ? AND a.status = 'published' 
+                      JOIN content_categories ac1 ON a.id = ac1.content_id 
+                      JOIN content_categories ac2 ON ac2.category_id = ac1.category_id 
+                      WHERE ac2.content_id = ? AND a.id != ? AND a.status = 'published' 
                       GROUP BY a.id, u.name 
                       ORDER BY COUNT(a.id) DESC, a.published_at DESC 
                       LIMIT 4");
-$stmt->execute([$article['id'], $article['id']]);
-$similar_articles = $stmt->fetchAll();
+$stmt->execute([$content['id'], $content['id']]);
+$similar_contents = $stmt->fetchAll();
 
-// Get comments for the article
+// Get comments for the content
 $stmt = $pdo->prepare("SELECT c.*, u.profile_picture 
                       FROM comments c 
                       LEFT JOIN users u ON c.user_id = u.id 
-                      WHERE c.article_id = ? AND c.status = 'approved' AND c.parent_id IS NULL
+                      WHERE c.content_id = ? AND c.status = 'approved' AND c.parent_id IS NULL
                       ORDER BY c.pinned DESC, c.vote_score DESC, c.posted_at DESC");
-$stmt->execute([$article['id']]);
+$stmt->execute([$content['id']]);
 $comments = $stmt->fetchAll();
 
 // Get replies for each comment
@@ -231,24 +231,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
     $author_name = $user['name'];
     $author_email = $user['email'];
     $author_website = null;
-    $content = $_POST['comment'] ?? '';
+    $comment_text = $_POST['comment'] ?? '';
     $parent_id = !empty($_POST['parent_id']) ? (int) $_POST['parent_id'] : null;
     
     $errors = [];
-    if (!$content) {
+    if (!$comment_text) {
         $errors[] = "Comment is required.";
     }
     if (empty($errors)) {
+        // Get content ID to avoid variable collision
+        $content_id = $content['id'];
+        
         // Insert comment with user_id
-        $stmt = $pdo->prepare("INSERT INTO comments (article_id, parent_id, author_name, author_email, author_website, content, user_id, ip) 
+        $stmt = $pdo->prepare("INSERT INTO comments (content_id, parent_id, author_name, author_email, author_website, content, user_id, ip) 
                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
-            $article['id'],
+            $content_id,
             $parent_id,
             $author_name,
             $author_email,
             $author_website,
-            $content,
+            $comment_text,
             $user['id'],
             $_SERVER['REMOTE_ADDR']
         ]);
@@ -260,13 +263,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_comment'])) {
             exit;
         }
         $_SESSION['message'] = $successMessage;
-        redirect('/article.php?slug=' . $slug);
+        redirect('/content.php?slug=' . $slug);
     }
 }
 
-$page_title = $article['title'];
-$page_description = $article['excerpt'] ?: substr(strip_tags($article['content']), 0, 160);
-$page_image = $article['thumbnail'] ? SITE_URL . '/' . $article['thumbnail'] : null;
+$page_title = $content['title'];
+$page_description = $content['excerpt'] ?: substr(strip_tags($content['content']), 0, 160);
+$page_image = $content['thumbnail'] ? SITE_URL . '/' . $content['thumbnail'] : null;
 
 include 'includes/header.php';
 ?>
@@ -341,7 +344,7 @@ include 'includes/header.php';
 
 /* Vote Button Styling */
 .comment-votes,
-.article-votes {
+.content-votes {
     display: inline-flex;
     align-items: center;
     background-color: #f0f0f0;
@@ -380,17 +383,17 @@ include 'includes/header.php';
 }
 
 .vote-btn.active.upvote-btn,
-.vote-btn.active.article-upvote-btn {
+.vote-btn.active.content-upvote-btn {
     color: var(--primary-blue);
 }
 
 .vote-btn.active.downvote-btn,
-.vote-btn.active.article-downvote-btn {
+.vote-btn.active.content-downvote-btn {
     color: var(--secondary-gold);
 }
 
 .vote-score,
-.article-vote-score {
+.content-vote-score {
     font-weight: bold;
     font-size: 0.9rem;
     color: #333;
@@ -401,13 +404,13 @@ include 'includes/header.php';
 }
 
 .vote-score.score-up,
-.article-vote-score.score-up {
+.content-vote-score.score-up {
     transform: translateY(-2px) scale(1.1);
     color: var(--primary-blue);
 }
 
 .vote-score.score-down,
-.article-vote-score.score-down {
+.content-vote-score.score-down {
     transform: translateY(2px) scale(1.1);
     color: var(--secondary-gold);
 }
@@ -424,8 +427,8 @@ include 'includes/header.php';
     border-width: 0;
 }
 
-/* Article vote container styling */
-.article-votes-container {
+/* content vote container styling */
+.content-votes-container {
     margin-top: 1.5rem;
     margin-bottom: 1.5rem;
     display: flex;
@@ -433,7 +436,7 @@ include 'includes/header.php';
     align-items: flex-start; /* Align items to the start */
 }
 
-.article-votes-container h4 {
+.content-votes-container h4 {
     margin-bottom: 0.5rem; /* Add some space below the heading */
 }
 
@@ -611,27 +614,27 @@ include 'includes/header.php';
 </style>
 
 <main>
-    <article class="article-container">
-        <!-- Article Header -->
-        <header class="article-header">
-            <div class="article-thumbnail">
-                <?php if ($article['thumbnail']): ?>
-                    <img src="<?php echo $article['thumbnail']; ?>" alt="<?php echo sanitize($article['title']); ?>">
+    <article class="content-container">
+        <!-- content Header -->
+        <header class="content-header">
+            <div class="content-thumbnail">
+                <?php if ($content['thumbnail']): ?>
+                    <img src="<?php echo $content['thumbnail']; ?>" alt="<?php echo sanitize($content['title']); ?>">
                 <?php else: ?>
-                    <img src="assets/default-thumbnail.jpg" alt="<?php echo sanitize($article['title']); ?>">
+                    <img src="assets/default-thumbnail.jpg" alt="<?php echo sanitize($content['title']); ?>">
                 <?php endif; ?>
             </div>
             
-            <h1 class="article-title"><?php echo sanitize($article['title']); ?></h1>
+            <h1 class="content-title"><?php echo sanitize($content['title']); ?></h1>
             
-            <div class="article-meta">
-                <span class="article-date"><?php echo date('F j, Y', strtotime($article['published_at'])); ?></span>
-                <span class="article-author">By <?php echo sanitize($article['author_name']); ?></span>
+            <div class="content-meta">
+                <span class="content-date"><?php echo date('F j, Y', strtotime($content['published_at'])); ?></span>
+                <span class="content-author">By <?php echo sanitize($content['author_name']); ?></span>
                 
             </div>
 
             <?php if (!empty($categories)): ?>
-                <div class="article-categories">
+                <div class="content-categories">
                     <?php foreach ($categories as $index => $category): ?>
                         <a href="category.php?slug=<?php echo $category['slug']; ?>"><?php echo sanitize($category['name']); ?></a>
                         <?php if ($index < count($categories) - 1): ?>|<?php endif; ?>
@@ -640,39 +643,39 @@ include 'includes/header.php';
             <?php endif; ?>
         </header>
 
-        <!-- Article Body -->
-        <div class="article-body">
+        <!-- content Body -->
+        <div class="content-body">
             <?php
                 // Wrap iframes in a responsive container
-                $content = $article['content'];
-                $content = preg_replace('/<iframe.*?>.*?<\/iframe>/is', '<div class="video-embed-container">$0</div>', $content);
-                echo $content;
+                $bodyContent = $content['content'];
+                $bodyContent = preg_replace('/<iframe.*?>.*?<\/iframe>/is', '<div class="video-embed-container">$0<\/div>', $bodyContent);
+                echo $bodyContent;
             ?>
         </div>
 
-        <!-- Article Votes -->
-        <div class="article-votes-container">
-            <h4>Did you like this article? </h4> 
-            <div class="article-votes">
-                <button class="vote-btn article-upvote-btn <?php echo (isset($user_article_vote) && $user_article_vote == 1) ? 'active' : ''; ?>" 
-                        data-article-id="<?php echo $article['id']; ?>"
-                        aria-pressed="<?php echo (isset($user_article_vote) && $user_article_vote == 1) ? 'true' : 'false'; ?>">
+        <!-- content Votes -->
+        <div class="content-votes-container">
+            <h4>Did you like this content? </h4> 
+            <div class="content-votes">
+                <button class="vote-btn content-upvote-btn <?php echo (isset($user_content_vote) && $user_content_vote == 1) ? 'active' : ''; ?>" 
+                        data-content-id="<?php echo $content['id']; ?>"
+                        aria-pressed="<?php echo (isset($user_content_vote) && $user_content_vote == 1) ? 'true' : 'false'; ?>">
                     <i class="fas fa-thumbs-up"></i>
                     <span class="sr-only">Like</span>
                 </button>
-                <span class="article-vote-score" data-article-id="<?php echo $article['id']; ?>"><?php echo $article['vote_score']; ?></span>
-                <button class="vote-btn article-downvote-btn <?php echo (isset($user_article_vote) && $user_article_vote == -1) ? 'active' : ''; ?>" 
-                        data-article-id="<?php echo $article['id']; ?>"
-                        aria-pressed="<?php echo (isset($user_article_vote) && $user_article_vote == -1) ? 'true' : 'false'; ?>">
+                <span class="content-vote-score" data-content-id="<?php echo $content['id']; ?>"><?php echo $content['vote_score']; ?></span>
+                <button class="vote-btn content-downvote-btn <?php echo (isset($user_content_vote) && $user_content_vote == -1) ? 'active' : ''; ?>" 
+                        data-content-id="<?php echo $content['id']; ?>"
+                        aria-pressed="<?php echo (isset($user_content_vote) && $user_content_vote == -1) ? 'true' : 'false'; ?>">
                     <i class="fas fa-thumbs-down"></i>
                     <span class="sr-only">Dislike</span>
                 </button>
             </div>
         </div>
 
-        <!-- Article Tags -->
+        <!-- content Tags -->
         <?php if (!empty($tags)): ?>
-            <div class="article-tags">
+            <div class="content-tags">
                 <?php foreach ($tags as $tag): ?>
                     <a href="tag.php?slug=<?php echo $tag['slug']; ?>" class="tag">#<?php echo sanitize($tag['name']); ?></a>
                 <?php endforeach; ?>
@@ -680,30 +683,30 @@ include 'includes/header.php';
         <?php endif; ?>
 
         <!-- Navigation -->
-        <nav class="article-navigation">
+        <nav class="content-navigation">
             <div class="prev-post">
-                <?php if ($prev_article): ?>
+                <?php if ($prev_content): ?>
                     <span class="nav-label">Previous Post</span>
-                    <a href="article.php?slug=<?php echo $prev_article['slug']; ?>" class="nav-link"><?php echo sanitize($prev_article['title']); ?></a>
+                    <a href="content.php?slug=<?php echo $prev_content['slug']; ?>" class="nav-link"><?php echo sanitize($prev_content['title']); ?></a>
                 <?php endif; ?>
             </div>
             <div class="next-post">
-                <?php if ($next_article): ?>
+                <?php if ($next_content): ?>
                     <span class="nav-label">Next Post</span>
-                    <a href="article.php?slug=<?php echo $next_article['slug']; ?>" class="nav-link"><?php echo sanitize($next_article['title']); ?></a>
+                    <a href="content.php?slug=<?php echo $next_content['slug']; ?>" class="nav-link"><?php echo sanitize($next_content['title']); ?></a>
                 <?php endif; ?>
             </div>
         </nav>
     </article>
 
     <!-- Similar Posts -->
-    <?php if (!empty($similar_articles)): ?>
+    <?php if (!empty($similar_contents)): ?>
         <section class="similar-posts">
             <h2>Similar Posts</h2>
             <div class="similar-posts-carousel-container">
                 <div class="similar-posts-carousel">
                     <div class="carousel-slides">
-                        <?php foreach ($similar_articles as $similar): ?>
+                        <?php foreach ($similar_contents as $similar): ?>
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
                                     <?php if ($similar['thumbnail']): ?>
@@ -713,7 +716,7 @@ include 'includes/header.php';
                                     <?php endif; ?>
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">
-                                            <a href="article.php?slug=<?php echo $similar['slug']; ?>"><?php echo sanitize($similar['title']); ?></a>
+                                            <a href="content.php?slug=<?php echo $similar['slug']; ?>"><?php echo sanitize($similar['title']); ?></a>
                                         </h3>
                                         <p class="similar-post-meta">
                                             Published by <?php echo sanitize($similar['author_name']); ?> | <?php echo date('F j, Y', strtotime($similar['published_at'])); ?>
@@ -733,7 +736,7 @@ include 'includes/header.php';
         </section>
     <?php endif; ?>
 
-    <article class="article-container">
+    <article class="content-container">
         <!-- Comments Section -->
         <section class="comments-section">
             <h2>Comments</h2>
@@ -1064,16 +1067,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function handleVote(button, isArticleVote) {
-        const itemId = button.getAttribute(isArticleVote ? 'data-article-id' : 'data-comment-id');
-        const action = button.classList.contains(isArticleVote ? 'article-upvote-btn' : 'upvote-btn') 
-                       ? (isArticleVote ? 'article_upvote' : 'upvote') 
-                       : (isArticleVote ? 'article_downvote' : 'downvote');
+    function handleVote(button, iscontentVote) {
+        const itemId = button.getAttribute(iscontentVote ? 'data-content-id' : 'data-comment-id');
+        const action = button.classList.contains(iscontentVote ? 'content-upvote-btn' : 'upvote-btn') 
+                       ? (iscontentVote ? 'content_upvote' : 'upvote') 
+                       : (iscontentVote ? 'content_downvote' : 'downvote');
 
         const formData = new URLSearchParams();
         formData.append('vote_action', action);
-        if (isArticleVote) {
-            formData.append('article_id', itemId);
+        if (iscontentVote) {
+            formData.append('content_id', itemId);
         } else {
             formData.append('comment_id', itemId);
         }
@@ -1090,18 +1093,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const scoreSelector = isArticleVote 
-                ? `.article-vote-score[data-article-id="${itemId}"]` 
+            const scoreSelector = iscontentVote 
+                ? `.content-vote-score[data-content-id="${itemId}"]` 
                 : `.vote-score[data-comment-id="${itemId}"]`;
             const scoreDisplay = document.querySelector(scoreSelector);
             
-            const upvoteBtnSelector = isArticleVote
-                ? `.vote-btn.article-upvote-btn[data-article-id="${itemId}"]`
+            const upvoteBtnSelector = iscontentVote
+                ? `.vote-btn.content-upvote-btn[data-content-id="${itemId}"]`
                 : `.vote-btn.upvote-btn[data-comment-id="${itemId}"]`;
             const upvoteBtn = document.querySelector(upvoteBtnSelector);
 
-            const downvoteBtnSelector = isArticleVote
-                ? `.vote-btn.article-downvote-btn[data-article-id="${itemId}"]`
+            const downvoteBtnSelector = iscontentVote
+                ? `.vote-btn.content-downvote-btn[data-content-id="${itemId}"]`
                 : `.vote-btn.downvote-btn[data-comment-id="${itemId}"]`;
             const downvoteBtn = document.querySelector(downvoteBtnSelector);
 
@@ -1144,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() { handleVote(this, false); });
     });
 
-    document.querySelectorAll('.vote-btn.article-upvote-btn, .vote-btn.article-downvote-btn').forEach(btn => {
+    document.querySelectorAll('.vote-btn.content-upvote-btn, .vote-btn.content-downvote-btn').forEach(btn => {
         btn.addEventListener('click', function() { handleVote(this, true); });
     });
 });

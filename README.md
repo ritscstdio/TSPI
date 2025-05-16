@@ -10,7 +10,7 @@ Key pages include:
 *   **Homepage (`index.php` or `homepage.php`):** The main landing page.
 *   **About Us (`AboutUs.php`):** Detailed information about TSPI, its vision, mission, core values, leaders, branches, and TSPI-MBAI.
 *   **What We Offer (`offers.php`):** Information on livelihood loan programs, social loan programs, and life insurance (KAAGAPAY).
-*   **News (`news.php`):** Displays news articles, likely filterable by categories.
+*   **News (`news.php`):** Displays news contents, likely filterable by categories.
 *   **Awards (`awards.php`):** Showcases organizational and client awards, filterable by type.
 *   Other pages for stories, contact information, careers, etc.
 
@@ -68,24 +68,24 @@ These instructions will guide you to get a copy of the project up and running on
     );
     ```
 
-4.2. **Article Voting Migration (Optional):**
-    *   To support the new voting system on articles for trending calculations, run the following SQL on your database:
+4.2. **content Voting Migration (Optional):**
+    *   To support the new voting system on contents for trending calculations, run the following SQL on your database:
     ```sql
-    ALTER TABLE articles
+    ALTER TABLE contents
         DROP COLUMN IF EXISTS upvotes,
         DROP COLUMN IF EXISTS downvotes,
         ADD COLUMN vote_score INT NOT NULL DEFAULT 0;
     
-    DROP TABLE IF EXISTS article_votes;
-    CREATE TABLE article_votes (
+    DROP TABLE IF EXISTS content_votes;
+    CREATE TABLE content_votes (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        article_id INT NOT NULL,
+        content_id INT NOT NULL,
         user_id INT NOT NULL,
         vote TINYINT(1) NOT NULL COMMENT '1 for upvote, -1 for downvote',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_article_vote (article_id, user_id),
-        FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_content_vote (content_id, user_id),
+        FOREIGN KEY (content_id) REFERENCES contents(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
     ```
@@ -128,5 +128,33 @@ These instructions will guide you to get a copy of the project up and running on
 *   General project flow and development notes: `documentation/documentation.txt`
 *   "Our Leaders" section (AboutUs.php): `documentation/about_us_leaders_section.txt`
 *   "Our Branches" section (AboutUs.php): `documentation/about_us_branches_section.txt`
+
+## Database Migration & Admin Update
+
+1. Before running any migration scripts, check your existing table constraints using:
+   ```sql
+   SHOW CREATE TABLE content_categories;
+   SHOW CREATE TABLE content_tags; 
+   SHOW CREATE TABLE content_votes;
+   SHOW CREATE TABLE comments;
+   ```
+
+2. Import the SQL migration scripts in the following order:
+   - First run `documentation/rename_articles_to_content.sql` to rename core content tables
+   - Then run `documentation/rename_comments_articleid_to_contentid.sql` to update the comments table
+   
+3. If you're having issues with the terminal commands, you can run these SQL statements manually in phpMyAdmin:
+   ```sql
+   ALTER TABLE `comments` CHANGE `article_id` `content_id` INT(11) NOT NULL;
+   ALTER TABLE `comments` ADD CONSTRAINT `comments_content_fk` FOREIGN KEY (`content_id`) REFERENCES `content`(`id`) ON DELETE CASCADE;
+   ```
+
+4. If you encounter foreign key constraint errors, modify the scripts to match your actual constraint names.
+
+5. The admin UI has been restructured:
+   - The "Articles" section is now "Content". Files have been renamed under `admin/`.
+   - The "Pages" section has been removed.
+   - To manage the Content (previously Articles), use `admin/content.php`, `admin/add-content.php`, and `admin/edit-content.php`.
+   - Category management now groups categories by front-end navbar sections; slug editing and delete/add are disabled in admin.
 
 This README will be updated as the project evolves.

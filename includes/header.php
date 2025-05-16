@@ -15,7 +15,7 @@ if (!defined('DB_HOST')) {
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title><?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?></title>
-    <meta name="description" content="<?php echo $page_description ?? 'Tulay sa Pag-unlad, Inc. | Blog and Article System'; ?>" />
+    <meta name="description" content="<?php echo $page_description ?? 'Tulay sa Pag-unlad, Inc. | Blog and content System'; ?>" />
     <meta name="author" content="TSPI" />
 
     <meta property="og:title" content="<?php echo isset($page_title) ? $page_title . ' - ' . SITE_NAME : SITE_NAME; ?>" />
@@ -463,7 +463,7 @@ if (!defined('DB_HOST')) {
             
             // Make AJAX request
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', '<?php echo SITE_URL; ?>/includes/search_articles.php?q=' + encodeURIComponent(query), true);
+            xhr.open('GET', '<?php echo SITE_URL; ?>/includes/search_content.php?q=' + encodeURIComponent(query), true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             
             xhr.onload = function() {
@@ -475,23 +475,23 @@ if (!defined('DB_HOST')) {
                             if (response.count > 0) {
                                 let html = '';
                                 
-                                response.results.forEach(function(article) {
-                                    const date = new Date(article.published_at);
+                                response.results.forEach(function(content) {
+                                    const date = new Date(content.published_at);
                                     const formattedDate = date.toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'short',
                                         day: 'numeric'
                                     });
                                     
-                                    html += `<a href="<?php echo SITE_URL; ?>/article.php?slug=${article.slug}" class="search-result-item">
-                                        <span class="result-title">${article.title}</span>
-                                        <span class="result-meta">${article.author} | ${formattedDate}</span>
+                                    html += `<a href="<?php echo SITE_URL; ?>/content.php?slug=${content.slug}" class="search-result-item">
+                                        <span class="result-title">${content.title}</span>
+                                        <span class="result-meta">${content.author} | ${formattedDate}</span>
                                     </a>`;
                                 });
                                 
                                 searchResults.innerHTML = html;
                             } else {
-                                searchResults.innerHTML = '<p class="no-results">No articles found</p>';
+                                searchResults.innerHTML = '<p class="no-results">No contents found</p>';
                             }
                         } else {
                             searchResults.innerHTML = '<p class="no-results">Error: ' + response.message + '</p>';

@@ -1,6 +1,6 @@
 <?php
-$page_title = "Add Article";
-$body_class = "admin-add-article-page";
+$page_title = "Add content";
+$body_class = "admin-add-content-page";
 require_once '../includes/config.php';
 require_login();
 require_role(['admin','editor']);
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($thumbnail_select) {
         $thumbnail = $thumbnail_select;
     } elseif (isset($_FILES['thumbnail']) && $_FILES['thumbnail']['error'] === UPLOAD_ERR_OK) {
-        $upload_dir = UPLOADS_DIR . '/articles/';
+        $upload_dir = UPLOADS_DIR . '/contents/';
         
         // Create upload directory if it doesn't exist
         if (!is_dir($upload_dir)) {
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Upload file if no errors
         if (empty($errors) && move_uploaded_file($_FILES['thumbnail']['tmp_name'], $target_file)) {
-            $thumbnail = 'uploads/articles/' . $filename;
+            $thumbnail = 'uploads/contents/' . $filename;
             // Save uploaded thumbnail into media library
             $mime_type = $_FILES['thumbnail']['type'];
             $stmt = $pdo->prepare("INSERT INTO media (file_path, mime_type, uploaded_by) VALUES (?, ?, ?)");
@@ -72,12 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // If no errors, insert the article
+    // If no errors, insert the content
     if (empty($errors)) {
         $slug = generate_slug($title);
         
         // Check if slug already exists
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM articles WHERE slug = ?");
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM content WHERE slug = ?");
         $stmt->execute([$slug]);
         if ($stmt->fetchColumn() > 0) {
             $slug .= '-' . uniqid();
@@ -86,12 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->beginTransaction();
         
         try {
-            // Insert article
-            $stmt = $pdo->prepare("INSERT INTO articles (title, slug, content, excerpt, thumbnail, status, author_id) 
+            // Insert content
+            $stmt = $pdo->prepare("INSERT INTO content (title, slug, content, excerpt, thumbnail, status, author_id) 
                                   VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$title, $slug, $content, $excerpt, $thumbnail, $status, $current_user['id']]);
             
-            $article_id = $pdo->lastInsertId();
+            $content_id = $pdo->lastInsertId();
             
             // Insert categories
             if (!empty($selected_categories)) {
@@ -99,12 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $category_placeholders = [];
                 
                 foreach ($selected_categories as $category_id) {
-                    $category_values[] = $article_id;
+                    $category_values[] = $content_id;
                     $category_values[] = $category_id;
                     $category_placeholders[] = "(?, ?)";
                 }
                 
-                $stmt = $pdo->prepare("INSERT INTO article_categories (article_id, category_id) 
+                $stmt = $pdo->prepare("INSERT INTO content_categories (content_id, category_id) 
                                       VALUES " . implode(', ', $category_placeholders));
                 $stmt->execute($category_values);
             }
@@ -131,15 +131,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $tag_id = $tag['id'];
                     }
                     
-                    // Link tag to article
-                    $stmt = $pdo->prepare("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)");
-                    $stmt->execute([$article_id, $tag_id]);
+                    // Link tag to content
+                    $stmt = $pdo->prepare("INSERT INTO content_tags (content_id, tag_id) VALUES (?, ?)");
+                    $stmt->execute([$content_id, $tag_id]);
                 }
             }
             
             $pdo->commit();
-            $_SESSION['message'] = "Article created successfully.";
-            redirect('/admin/articles.php');
+            $_SESSION['message'] = "Content created successfully.";
+            redirect('/admin/content.php');
         } catch (Exception $e) {
             $pdo->rollBack();
             $errors[] = "Error: " . $e->getMessage();
@@ -200,8 +200,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Add Article</h1>
-                    <a href="articles.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Articles</a>
+                    <h1>Add Content</h1>
+                    <a href="content.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Content</a>
                 </div>
                 
                 <?php if (!empty($errors)): ?>
@@ -235,11 +235,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-group">
                             <label for="excerpt">Excerpt (optional)</label>
                             <textarea id="excerpt" name="excerpt" rows="3"><?php echo isset($_POST['excerpt']) ? sanitize($_POST['excerpt']) : ''; ?></textarea>
-                            <p class="form-hint">A short summary of the article. If left empty, an excerpt will be generated from the content.</p>
+                            <p class="form-hint">A short summary of the content. If left empty, an excerpt will be generated from the content.</p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="article-content-editor">Content</label>
+                            <label for="content-content-editor">Content</label>
                             <div class="editor-toolbar">
                                 <button type="button" class="toolbar-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
@@ -260,8 +260,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
                                 <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
                             </div>
-                            <div class="editor-content" id="article-content-editor" contenteditable="true"><?php echo isset($_POST['content']) ? $_POST['content'] : ''; ?></div>
-                            <input type="hidden" id="article-content" name="content" value="<?php echo isset($_POST['content']) ? htmlspecialchars($_POST['content']) : ''; ?>">
+                            <div class="editor-content" id="content-content-editor" contenteditable="true"><?php echo isset($_POST['content']) ? $_POST['content'] : ''; ?></div>
+                            <input type="hidden" id="content-content" name="content" value="<?php echo isset($_POST['content']) ? htmlspecialchars($_POST['content']) : ''; ?>">
                         </div>
                         
                         <div class="form-group">
@@ -293,8 +293,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <div class="btn-group">
-                            <button type="submit" class="btn btn-primary">Save Article</button>
-                            <a href="articles.php" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save content</button>
+                            <a href="content.php" class="btn btn-light">Cancel</a>
                         </div>
                     </form>
                 </div>

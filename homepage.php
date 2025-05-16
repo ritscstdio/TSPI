@@ -32,13 +32,13 @@ include 'includes/header.php';
     <section class="news-grid-section">
         <h2 style="text-align: center; margin-top: 2rem;">Latest TSPI News!</h2>
         <?php
-        // Fetch latest published articles
-        $stmt = $pdo->prepare("SELECT title, slug, thumbnail, content, published_at FROM articles WHERE status = 'published' ORDER BY published_at DESC LIMIT 3");
+        // Fetch latest published contents
+        $stmt = $pdo->prepare("SELECT title, slug, thumbnail, content, published_at FROM content WHERE status = 'published' ORDER BY published_at DESC LIMIT 3");
         $stmt->execute();
-        $latest_articles = $stmt->fetchAll();
+        $latest_contents = $stmt->fetchAll();
         ?>
         <div class="news-grid">
-        <?php foreach ($latest_articles as $art): ?>
+        <?php foreach ($latest_contents as $art): ?>
             <?php
             if ($art['thumbnail']) {
                 if (preg_match('#^https?://#i', $art['thumbnail'])) {
@@ -57,7 +57,7 @@ include 'includes/header.php';
                 <div class="news-card-desc">
                     <div class="news-card-desc-text"><?php echo sanitize($excerpt); ?>...</div>
                     <div class="news-card-meta"><?php echo date('M j, Y', strtotime($art['published_at'])); ?></div>
-                    <a href="<?php echo SITE_URL; ?>/article.php?slug=<?php echo $art['slug']; ?>" class="cta-button read-this-btn">Read this!</a>
+                    <a href="<?php echo SITE_URL; ?>/content.php?slug=<?php echo $art['slug']; ?>" class="cta-button read-this-btn">Read this!</a>
                 </div>
             </div>
         <?php endforeach; ?>

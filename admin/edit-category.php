@@ -67,10 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="name">Name</label>
                         <input type="text" id="name" name="name" value="<?php echo sanitize($category['name']); ?>" required>
                     </div>
-                    <div class="form-group">
-                        <label for="slug">Slug</label>
-                        <input type="text" id="slug" name="slug" value="<?php echo sanitize($category['slug']); ?>" placeholder="Optional, auto-generated if blank">
-                    </div>
                     <button type="submit" class="btn btn-primary">Update Category</button>
                 </form>
             </div>

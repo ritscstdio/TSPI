@@ -76,7 +76,7 @@
                         <div class="nested-dropdown">
                             <button class="nested-btn">Corporate Governance <i class="fas fa-chevron-right"></i></button>
                             <div class="nested-content">
-                                <a href="#governance/articles">Article of Incorporation and by Law</a>
+                                <a href="#governance/contents">content of Incorporation and by Law</a>
                                 <a href="#governance/sec">SEC Registration</a>
                                 <a href="#governance/mnrc">MNRC Registration</a>
                                 <a href="#governance/npc">NPC Registration</a>
@@ -139,7 +139,7 @@
                     </details>
                     <details>
                         <summary>Corporate Governance</summary>
-                        <a href="#governance/articles">Article of Incorporation and by Law</a>
+                        <a href="#governance/contents">content of Incorporation and by Law</a>
                         <a href="#governance/sec">SEC Registration</a>
                         <a href="#governance/mnrc">MNRC Registration</a>
                         <a href="#governance/npc">NPC Registration</a>

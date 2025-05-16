@@ -125,7 +125,7 @@ This project involves the development and refinement of a website for TSPI, a mi
 *   **`AboutUs.php`**: A multi-section page providing comprehensive information about TSPI.
 *   **`offers.php`**: A page detailing the various loan programs, social programs, and insurance products offered by TSPI.
 *   **`awards.php`**: A page to showcase organizational and client awards, filterable by type.
-*   **Dynamic Content**: Integration with a backend (presumably WordPress, based on `wp-content` paths and PHP functions like `get_template_directory_uri()`) to fetch data such as news articles, leader information, and client stories.
+*   **Dynamic Content**: Integration with a backend (presumably WordPress, based on `wp-content` paths and PHP functions like `get_template_directory_uri()`) to fetch data such as news contents, leader information, and client stories.
 *   **Responsive Design**: Ensuring layouts adapt to various screen sizes.
 *   **Interactive Elements**: Features like sticky navigation, collapsible sections, carousels, and copy-to-clipboard functionality.
 *   **Fixed Navbar Offset**: Consistent handling of in-page navigation to prevent content from being obscured by the fixed header.
@@ -178,7 +178,7 @@ The `offers.php` page was created to showcase TSPI's various programs and servic
     *   Initially, an intro paragraph with a client story carousel below it.
     *   Restructured to a side-by-side layout:
         *   Left: Main intro text with `<h1>` "Our Commitment to Empowerment".
-        *   Right: Client story carousel (fetching 3 recent 'stories' articles).
+        *   Right: Client story carousel (fetching 3 recent 'stories' contents).
     *   Background changed to white, section width constrained and centered.
 
 4.  **Program Section Restructuring & Content Updates:**
@@ -187,7 +187,7 @@ The `offers.php` page was created to showcase TSPI's various programs and servic
 
 ## `awards.php` Development
 
-*   Created from `news.php` to display articles with category slugs 'awards' or 'cliaward'.
+*   Created from `news.php` to display contents with category slugs 'awards' or 'cliaward'.
 *   Supports URL parameter `?type=organization` or `?type=client` for filtering.
 *   Page title dynamically changes based on the filter.
 *   Linked in the main navbar under "Who We Are".
@@ -203,3 +203,20 @@ This document will be updated as the project progresses.
 ## Comment System Enhancements
 
 For details on the new upvote and pinning features in the comment system, including database migration and code modifications, see [comment_system.txt](comment_system.txt).
+
+## Admin Restructure: "Articles" → "Content" & Remove "Pages"
+
+- The `articles` table and related tables (`article_categories`, `article_tags`, `article_votes`) have been renamed to `content`, `content_categories`, `content_tags`, and `content_votes` respectively. Foreign key constraints have been updated accordingly.
+- All references to these tables have been updated throughout the codebase (SQL queries in PHP files).
+- Column `article_id` has been renamed to `content_id` in all related tables and queries.
+- After running the initial table rename migrations, you must rename the `article_id` column in the `comments` table to `content_id`. The SQL for this is provided in `documentation/rename_article_id_to_content_id.sql`.
+- Admin CRUD pages for "Articles" have been renamed:
+  - `admin/articles.php` → `admin/content.php`
+  - `admin/add-article.php` → `admin/add-content.php`
+  - `admin/edit-article.php` → `admin/edit-content.php`
+- The "Pages" section (`pages.php`, `add-page.php`, `edit-page.php`) has been removed from the admin.
+- Sidebar navigation updated: "Articles" now labeled "Content", "Pages" removed.
+
+## Common Issues & Troubleshooting
+- If you see errors related to `Unknown column 'content_id'` or similar, verify the SQL migration scripts were executed properly.
+- Some PHP files may still reference the old column name `article_id`. These files need to be edited to reference `content_id` instead, or you need to maintain the old column name in your database.

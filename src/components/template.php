@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <link rel="icon" type="image/png" href="/TSPI/src/assets/favicon.png">
     </head>
-    <body class="article-page">
+    <body class="content-page">
         <header class="header">
             <div class="header-top">
                 <div class="header-top-inner">
@@ -75,7 +75,7 @@
                             <div class="nested-dropdown">
                                 <button class="nested-btn">Corporate Governance <i class="fas fa-chevron-right"></i></button>
                                 <div class="nested-content">
-                                    <a href="#governance/articles">Article of Incorporation and by Law</a>
+                                    <a href="#governance/contents">content of Incorporation and by Law</a>
                                     <a href="#governance/sec">SEC Registration</a>
                                     <a href="#governance/mnrc">MNRC Registration</a>
                                     <a href="#governance/npc">NPC Registration</a>
@@ -138,7 +138,7 @@
                         </details>
                         <details>
                             <summary>Corporate Governance</summary>
-                            <a href="#governance/articles">Article of Incorporation and by Law</a>
+                            <a href="#governance/contents">content of Incorporation and by Law</a>
                             <a href="#governance/sec">SEC Registration</a>
                             <a href="#governance/mnrc">MNRC Registration</a>
                             <a href="#governance/npc">NPC Registration</a>
@@ -173,46 +173,46 @@
         
     <!-- Main Content Area -->
     <main>
-        <article class="article-container">
-            <!-- Article Header -->
-            <header class="article-header">
-                <div class="article-thumbnail">
-                    <img src="/TSPI/src/assets/article-thumbnail.jpg" alt="Article Thumbnail">
+        <content class="content-container">
+            <!-- content Header -->
+            <header class="content-header">
+                <div class="content-thumbnail">
+                    <img src="/TSPI/src/assets/content-thumbnail.jpg" alt="content Thumbnail">
                 </div>
-                <h1 class="article-title">Article Title Goes Here</h1>
-                <div class="article-meta">
-                    <span class="article-date">April 15, 2025</span>
-                    <span class="article-author">By Author Name</span>
+                <h1 class="content-title">content Title Goes Here</h1>
+                <div class="content-meta">
+                    <span class="content-date">April 15, 2025</span>
+                    <span class="content-author">By Author Name</span>
                 </div>
 
-                  <!-- Article Categories -->
-                  <div class="article-categories">
+                  <!-- content Categories -->
+                  <div class="content-categories">
                     <a href="#">News</a> | <a href="#">Stories</a> | <a href="#">Update</a>
                 </div>
               
             </header>
 
-            <!-- Article Body -->
-            <div class="article-body">
-                <p>Your article content goes here...</p>
+            <!-- content Body -->
+            <div class="content-body">
+                <p>Your content content goes here...</p>
             </div>
 
-            <!-- Article Tags -->
-            <div class="article-tags">
+            <!-- content Tags -->
+            <div class="content-tags">
                 <span class="tag">#tag1</span>
                 <span class="tag">#tag2</span>
                 <span class="tag">#tag3</span>
             </div>
 
             <!-- Navigation -->
-            <nav class="article-navigation">
+            <nav class="content-navigation">
                 <div class="prev-post">
                     <span class="nav-label">Previous Post</span>
-                    <a href="#" class="nav-link">Previous Article Title</a>
+                    <a href="#" class="nav-link">Previous content Title</a>
                 </div>
                 <div class="next-post">
                     <span class="nav-label">Next Post</span>
-                    <a href="#" class="nav-link">Next Article Title</a>
+                    <a href="#" class="nav-link">Next content Title</a>
                 </div>
             </nav>
 
@@ -254,7 +254,7 @@
                                 <div class="similar-post-card">
                                     <img src="/TSPI/src/assets/similar-post-1.jpg" alt="Similar Post 4" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
-                                        <h3 class="similar-post-title">Another Great Article Title Goes Here</h3>
+                                        <h3 class="similar-post-title">Another Great content Title Goes Here</h3>
                                         <p class="similar-post-meta">By Jane Doe • 2024-10-01</p>
                                     </div>
                                 </div>
@@ -290,7 +290,7 @@
                                 <span class="comment-date">October 12, 2024 at 9:30 AM</span>
                             </div>
                             <div class="comment-body">
-                                <p>This article really resonated with me. As a developer with 10+ years of experience, I've seen how the "architect mindset" has improved my productivity and code quality. Great insights!</p>
+                                <p>This content really resonated with me. As a developer with 10+ years of experience, I've seen how the "architect mindset" has improved my productivity and code quality. Great insights!</p>
                             </div>
                         </div>
                     </div>
@@ -348,7 +348,7 @@
                     </form>
                 </div>
             </section>
-        </article>
+        </content>
     </main>
 
     <!-- Scroll to Top Button -->

@@ -4,11 +4,11 @@ $page_description = "Explore the range of financial and social programs offered 
 $body_class = "offers-page";
 include 'includes/header.php';
 
-// Fetch 3 Client Story articles for the carousel
+// Fetch 3 Client Story contents for the carousel
 try {
     $stmt_stories = $pdo->query("SELECT a.title, a.slug, a.thumbnail, a.content 
-                                 FROM articles a
-                                 JOIN article_categories ac ON a.id = ac.article_id
+                                 FROM content a
+                                 JOIN content_categories ac ON a.id = ac.content_id
                                  JOIN categories c ON ac.category_id = c.id
                                  WHERE a.status = 'published' AND c.slug = 'cli_stories'
                                  ORDER BY a.published_at DESC
@@ -18,6 +18,14 @@ try {
     $client_stories = []; // Default to empty array on error
     // Optionally log error: error_log('Error fetching client stories: ' . $e->getMessage());
 }
+
+// Build query
+$sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.author_id, u.name as author_name 
+        FROM content a 
+        JOIN users u ON a.author_id = u.id
+        JOIN content_categories ac ON a.id = ac.content_id
+        JOIN categories c ON ac.category_id = c.id
+        WHERE a.status = 'published' AND c.slug IN ('offer_cards', 'offer_loans', 'offer_insure')"
 
 ?>
 
@@ -365,7 +373,7 @@ try {
                                 <img src="<?php echo htmlspecialchars($img_url); ?>" alt="<?php echo htmlspecialchars($story['title']); ?>" class="story-card-thumbnail">
                                 <h4 class="story-card-title"><?php echo htmlspecialchars($story['title']); ?></h4>
                                 <p class="story-card-excerpt"><?php echo htmlspecialchars(substr(strip_tags($story['content']), 0, 80)); ?>...</p> 
-                                <a href="<?php echo SITE_URL; ?>/article.php?slug=<?php echo htmlspecialchars($story['slug']); ?>" class="story-card-link">Read More &rarr;</a>
+                                <a href="<?php echo SITE_URL; ?>/content.php?slug=<?php echo htmlspecialchars($story['slug']); ?>" class="story-card-link">Read More &rarr;</a>
                             </div>
                         </div>
                     <?php endforeach; ?>

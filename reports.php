@@ -27,9 +27,9 @@ $current_sort = isset($_GET['sort']) && array_key_exists($_GET['sort'], $sort_op
 
 // Build query
 $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.author_id, u.name as author_name 
-        FROM articles a 
+        FROM content a 
         JOIN users u ON a.author_id = u.id
-        JOIN article_categories ac ON a.id = ac.article_id
+        JOIN content_categories ac ON a.id = ac.content_id
         JOIN categories c ON ac.category_id = c.id
         WHERE a.status = 'published' AND c.slug = ?";
 
@@ -71,8 +71,8 @@ $reports = $stmt->fetchAll();
             </select>
         </form>
 
-        <!-- Articles Grid -->
-        <div class="articles-grid">
+        <!-- contents Grid -->
+        <div class="contents-grid">
             <?php if (count($reports) > 0): ?>
                 <?php foreach ($reports as $report): ?>
                     <?php
@@ -86,7 +86,7 @@ $reports = $stmt->fetchAll();
                         $img = SITE_URL . '/assets/default-thumbnail.jpg';
                     }
                     ?>
-                    <a href="<?php echo SITE_URL; ?>/article.php?slug=<?php echo $report['slug']; ?>" class="similar-post-card">
+                    <a href="<?php echo SITE_URL; ?>/content.php?slug=<?php echo $report['slug']; ?>" class="similar-post-card">
                         <div class="similar-post-thumbnail-container">
                             <img src="<?php echo $img; ?>" alt="<?php echo sanitize($report['title']); ?>" class="similar-post-thumbnail">
                         </div>
@@ -105,7 +105,7 @@ $reports = $stmt->fetchAll();
                     </a>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="no-articles-message">
+                <div class="no-contents-message">
                     <p>No annual reports found.</p>
                 </div>
             <?php endif; ?>

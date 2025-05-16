@@ -55,9 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Basic rich text editor for article content
-    const editor = document.getElementById('article-content-editor');
-    const contentInput = document.getElementById('article-content');
+    // Basic rich text editor for content content
+    const editor = document.getElementById('content-content-editor');
+    const contentInput = document.getElementById('content-content');
     
     if (editor && contentInput) {
         // Track last clicked image for resizing
@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Show existing thumbnail preview on page load (for edit-article page)
+    // Show existing thumbnail preview on page load (for edit-content page)
     const thumbnailSelectInput = document.getElementById('thumbnail_select');
     const thumbnailPreview = document.getElementById('thumbnail-preview');
     if (thumbnailSelectInput && thumbnailSelectInput.value && thumbnailPreview) {
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialize live searches
-    setupLiveSearch('liveSearchArticles', 'articlesTableBody', 0); // Search by Title (index 0)
+    setupLiveSearch('liveSearchcontents', 'contentsTableBody', 0); // Search by Title (index 0)
     setupLiveSearch('liveSearchMedia', 'mediaTableBody', 2);    // Search by Filename (index 2)
     setupLiveSearch('liveSearchPages', 'pagesTableBody', 0);     // Search by Title (index 0)
 
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     setupAuthorInfoPreview(); // Initialize author info preview
-    setupUserInfoPreview(); // Initialize user info preview for article authors
+    setupUserInfoPreview(); // Initialize user info preview for content authors
     setupEditProfileModal(); // Initialize edit profile modal
 });
 
@@ -423,7 +423,7 @@ function setupUserInfoPreview() {
     const userRoleEl = document.getElementById('userModalRole');
     const closeButton = modal.querySelector('.close-button');
 
-    document.querySelectorAll('.article-author-name').forEach(element => {
+    document.querySelectorAll('.content-author-name').forEach(element => {
         element.addEventListener('click', function() {
             userNameEl.textContent = this.dataset.name || 'N/A';
             userEmailEl.textContent = this.dataset.email || 'N/A';

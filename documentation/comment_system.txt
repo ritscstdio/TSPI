@@ -27,34 +27,34 @@ CREATE TABLE comment_votes (
 );
 ```
 
-- (Optional) To enable the new article voting system for trending, update the `articles` table and recreate `article_votes`:
+- (Optional) To enable the new content voting system for trending, update the `contents` table and recreate `content_votes`:
 ```sql
-ALTER TABLE articles
+ALTER TABLE contents
   DROP COLUMN IF EXISTS upvotes,
   DROP COLUMN IF EXISTS downvotes,
   ADD COLUMN vote_score INT NOT NULL DEFAULT 0;
 
-DROP TABLE IF EXISTS article_votes;
-CREATE TABLE article_votes (
+DROP TABLE IF EXISTS content_votes;
+CREATE TABLE content_votes (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  article_id INT NOT NULL,
+  content_id INT NOT NULL,
   user_id INT NOT NULL,
   vote TINYINT(1) NOT NULL COMMENT '1 for upvote, -1 for downvote',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY unique_article_vote (article_id, user_id),
-  FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_content_vote (content_id, user_id),
+  FOREIGN KEY (content_id) REFERENCES contents(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
-## Frontend (article.php)
+## Frontend (content.php)
 
 - Updated the comment fetching query to:
   ```sql
   ORDER BY pinned DESC, upvotes DESC, posted_at DESC
   ```
-- Added an AJAX endpoint at the top of `article.php` to handle `vote_action` (upvote) and return the updated `upvotes` count.
+- Added an AJAX endpoint at the top of `content.php` to handle `vote_action` (upvote) and return the updated `upvotes` count.
 - In each top-level comment, inserted upvote controls (an up arrow button and the current count).
 - Implemented JavaScript to send AJAX requests on upvote clicks and update the display without reloading the page.
 - Limited reply forms to only top-level comments; nested replies are not supported.
@@ -77,4 +77,4 @@ CREATE TABLE article_votes (
 ## Notes & Next Steps
 
 - Consider implementing a dedicated votes table for tracking individual user votes and preventing multiple votes from the same user.
-- Styling of upvote buttons and counts can be customized via CSS in `article.php` or an external stylesheet. 
+- Styling of upvote buttons and counts can be customized via CSS in `content.php` or an external stylesheet. 

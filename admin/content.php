@@ -1,42 +1,42 @@
 <?php
-$page_title = "Articles";
-$body_class = "admin-articles-page";
+$page_title = "Content";
+$body_class = "admin-content-page";
 require_once '../includes/config.php';
 require_login();
 require_role(['admin','editor']);
 
-// Delete article if requested
+// Delete content if requested
 if (isset($_GET['delete'])) {
-    $article_id = (int) $_GET['delete'];
+    $content_id = (int) $_GET['delete'];
     
-    // Delete article and all related records
+    // Delete content and all related records
     $pdo->beginTransaction();
     
     try {
-        // Delete article tags
-        $stmt = $pdo->prepare("DELETE FROM article_tags WHERE article_id = ?");
-        $stmt->execute([$article_id]);
+        // Delete content tags
+        $stmt = $pdo->prepare("DELETE FROM content_tags WHERE content_id = ?");
+        $stmt->execute([$content_id]);
         
-        // Delete article categories
-        $stmt = $pdo->prepare("DELETE FROM article_categories WHERE article_id = ?");
-        $stmt->execute([$article_id]);
+        // Delete content categories
+        $stmt = $pdo->prepare("DELETE FROM content_categories WHERE content_id = ?");
+        $stmt->execute([$content_id]);
         
         // Delete comments
-        $stmt = $pdo->prepare("DELETE FROM comments WHERE article_id = ?");
-        $stmt->execute([$article_id]);
+        $stmt = $pdo->prepare("DELETE FROM comments WHERE content_id = ?");
+        $stmt->execute([$content_id]);
         
-        // Delete the article
-        $stmt = $pdo->prepare("DELETE FROM articles WHERE id = ?");
-        $stmt->execute([$article_id]);
+        // Delete the content
+        $stmt = $pdo->prepare("DELETE FROM content WHERE id = ?");
+        $stmt->execute([$content_id]);
         
         $pdo->commit();
-        $_SESSION['message'] = "Article deleted successfully.";
+        $_SESSION['message'] = "Content deleted successfully.";
     } catch (Exception $e) {
         $pdo->rollBack();
         $_SESSION['message'] = "Error: " . $e->getMessage();
     }
     
-    redirect('/admin/articles.php');
+    redirect('/admin/content.php');
 }
 
 // Pagination
@@ -107,30 +107,30 @@ if (!empty($where_clauses)) {
     $where_sql = " WHERE " . implode(" AND ", $where_clauses);
 }
 
-// Get total articles count
-$count_sql = "SELECT COUNT(DISTINCT a.id) FROM articles a";
+// Get total contents count
+$count_sql = "SELECT COUNT(DISTINCT a.id) FROM content a";
 if ($filter_category) {
-    $count_sql .= " JOIN article_categories ac ON a.id = ac.article_id";
+    $count_sql .= " JOIN content_categories ac ON a.id = ac.content_id";
 }
 $count_sql .= $where_sql;
 $stmt = $pdo->prepare($count_sql);
 $stmt->execute($params);
-$total_articles = $stmt->fetchColumn();
-$total_pages = ceil($total_articles / $items_per_page);
+$total_contents = $stmt->fetchColumn();
+$total_pages = ceil($total_contents / $items_per_page);
 
-// Get articles for current page
-$articles_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role FROM articles a JOIN users u ON a.author_id = u.id";
+// Get contents for current page
+$contents_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role FROM content a JOIN users u ON a.author_id = u.id";
 if ($filter_category) {
-    $articles_sql .= " JOIN article_categories ac ON a.id = ac.article_id";
+    $contents_sql .= " JOIN content_categories ac ON a.id = ac.content_id";
 }
-$articles_sql .= $where_sql;
-$articles_sql .= " $order_by_clause LIMIT ? OFFSET ?";
+$contents_sql .= $where_sql;
+$contents_sql .= " $order_by_clause LIMIT ? OFFSET ?";
 
 $current_page_params = array_merge($params, [$items_per_page, $offset]);
 
-$stmt = $pdo->prepare($articles_sql);
+$stmt = $pdo->prepare($contents_sql);
 $stmt->execute($current_page_params);
-$articles = $stmt->fetchAll();
+$contents = $stmt->fetchAll();
 
 ?>
 <!DOCTYPE html>
@@ -152,9 +152,9 @@ $articles = $stmt->fetchAll();
             
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Articles</h1>
+                    <h1>Content</h1>
                     <div class="search-container" style="margin-left: auto;">
-                        <input type="search" id="liveSearchArticles" class="form-control" placeholder="Search by Title...">
+                        <input type="search" id="liveSearchcontents" class="form-control" placeholder="Search by Title...">
                     </div>
                 </div>
                 
@@ -191,7 +191,7 @@ $articles = $stmt->fetchAll();
 
                 <div class="dashboard-section">
                     <div class="table-responsive">
-                        <table id="articlesTable">
+                        <table id="contentsTable">
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -201,32 +201,32 @@ $articles = $stmt->fetchAll();
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="articlesTableBody">
-                                <?php if (empty($articles)): ?>
+                            <tbody id="contentsTableBody">
+                                <?php if (empty($contents)): ?>
                                     <tr>
-                                        <td colspan="5">No articles found.</td>
+                                        <td colspan="5">No contents found.</td>
                                     </tr>
                                 <?php else: ?>
-                                    <?php foreach ($articles as $article): ?>
+                                    <?php foreach ($contents as $content): ?>
                                         <tr>
-                                            <td><?php echo sanitize($article['title']); ?></td>
-                                            <td class="article-author-name" 
-                                                data-name="<?php echo sanitize($article['author_name']); ?>" 
-                                                data-email="<?php echo sanitize($article['author_email'] ?? 'N/A'); ?>" 
-                                                data-role="<?php echo sanitize(ucfirst($article['author_role'] ?? 'N/A')); ?>"
+                                            <td><?php echo sanitize($content['title']); ?></td>
+                                            <td class="content-author-name" 
+                                                data-name="<?php echo sanitize($content['author_name']); ?>" 
+                                                data-email="<?php echo sanitize($content['author_email'] ?? 'N/A'); ?>" 
+                                                data-role="<?php echo sanitize(ucfirst($content['author_role'] ?? 'N/A')); ?>"
                                                 style="cursor: pointer; text-decoration: underline; color: var(--primary-blue);">
-                                                <?php echo sanitize($article['author_name']); ?>
+                                                <?php echo sanitize($content['author_name']); ?>
                                             </td>
                                             <td>
-                                                <span class="status-badge status-<?php echo $article['status']; ?>">
-                                                    <?php echo ucfirst($article['status']); ?>
+                                                <span class="status-badge status-<?php echo $content['status']; ?>">
+                                                    <?php echo ucfirst($content['status']); ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo date('M j, Y', strtotime($article['published_at'])); ?></td>
+                                            <td><?php echo date('M j, Y', strtotime($content['published_at'])); ?></td>
                                             <td class="actions">
-                                                <a href="edit-article.php?id=<?php echo $article['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
-                                                <a href="../article.php?slug=<?php echo $article['slug']; ?>" target="_blank" class="btn-icon" title="View"><i class="fas fa-eye"></i></a>
-                                                <a href="articles.php?delete=<?php echo $article['id']; ?>" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this article?"><i class="fas fa-trash"></i></a>
+                                                <a href="edit-content.php?id=<?php echo $content['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
+                                                <a href="../content.php?slug=<?php echo $content['slug']; ?>" target="_blank" class="btn-icon" title="View"><i class="fas fa-eye"></i></a>
+                                                <a href="contents.php?delete=<?php echo $content['id']; ?>" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this content?"><i class="fas fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -261,8 +261,8 @@ $articles = $stmt->fetchAll();
                     <?php endif; ?>
                 </div>
             </div>
-            <a href="add-article.php" class="fab-add-button">
-                <i class="fas fa-plus"></i> Add Article
+            <a href="add-content.php" class="fab-add-button">
+                <i class="fas fa-plus"></i> Add Content
             </a>
         </main>
     </div>
