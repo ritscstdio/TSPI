@@ -57,7 +57,7 @@ $recent_comments = $stmt->fetchAll();
                     <div class="message"><?php echo $message; ?></div>
                 <?php endif; ?>
                 
-                <div class="dashboard-stats">
+                <div class="stat-boxes">
                     <div class="stat-box" data-link="content.php">
                         <div class="stat-content">
                             <i class="fas fa-file-alt stat-icon"></i>
@@ -88,16 +88,16 @@ $recent_comments = $stmt->fetchAll();
                     </div>
                     
                     <div class="stat-box" data-link="comments.php?status_filter=pending">
-                        <div class="stat-icon"><i class="fas fa-comment-dots"></i></div>
-                        <div class="stat-info">
+                        <div class="stat-content">
+                            <i class="fas fa-comment-dots stat-icon"></i>
                             <h3>Pending Comments</h3>
                             <p class="stat-number"><?php echo $stats['pending_comments']; ?></p>
                         </div>
                     </div>
 
                     <div class="stat-box" data-link="comments.php">
-                        <div class="stat-icon"><i class="fas fa-comments"></i></div>
-                        <div class="stat-info">
+                        <div class="stat-content">
+                            <i class="fas fa-comments stat-icon"></i>
                             <h3>Total Comments</h3>
                             <p class="stat-number"><?php echo $stats['total_comments']; ?></p>
                         </div>

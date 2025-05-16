@@ -287,3 +287,93 @@ The website includes a comprehensive membership form for users to join TSPI. Thi
 - Form state is managed through URL parameters (`verified=true` or `join=true`) to track entry point
 
 This feature enhances user onboarding by providing a seamless path from account verification or homepage interest to full membership application.
+
+## Project Documentation
+
+### General Flow
+
+The project is a web application for TSPI, likely involving member registration, information management, and potentially other services. Key components include:
+- User authentication (login, registration).
+- Membership form with multiple sections and pages.
+- Dynamic form elements (e.g., conditional spouse section, address selectors, dynamic income source fields).
+
+### Key Technologies/Libraries Used:
+- PHP for backend logic.
+- HTML, CSS, JavaScript for frontend.
+- jQuery for simplified JavaScript DOM manipulation and AJAX.
+- `wilfredpine/philippine-address-selector` for Philippine address dropdowns (via CDN and direct jQuery AJAX calls to `ph-json` data).
+- Pikaday.js for custom, consistent date picker UI across all date input fields.
+
+### Membership Form (`user/membership-form.php`)
+
+**Features:**
+- Multi-page layout for better user experience.
+    - Page 1: Personal Information.
+    - Page 2: Addresses, Business/Source of Funds, Spouse Info (conditional), Beneficiaries, Trustee, Signature.
+- Navigation: "Previous" (bottom-left), Page Indicator (bottom-center), "Next"/"Submit Application" (bottom-right).
+- **Personal Information (Page 1):**
+    - Branch dropdown (options to be provided by user).
+    - CID No. (numeric input).
+    - Available Plans and Member Classification (checkboxes).
+    - Name fields (Last, First, Middle) - stacked.
+    - Gender and Civil Status (dropdowns); Main gender select has Male/Female options.
+    - Birthday: Custom date picker (Pikaday), format `MM/DD/YYYY`, defaults to 18 years prior to current date.
+    - Age: Auto-calculated from birthday, `readonly`, visually greyed out.
+    - Birth Place.
+    - Nationality.
+    - Telephone no./Landline: `+63` prefix, 7-digit input.
+    - Phone no./SIM: `+63` prefix with 🇵🇭 flag, 10-digit input (value stored as continuous digits, no spaces).
+    - TIN/SSS/GSIS Number: Original input field becomes `readonly` if "Other Valid ID" is added.
+        - Button "Do you have other Valid IDs?" dynamically adds one "Other Valid ID" text field with a removal button. Button hides after one is added.
+    - Mother's Maiden Name: Split into three stacked fields (Last Name, First Name, Middle Name).
+- Conditional display of "Spouse Information" section based on "Civil Status" (Married).
+    - Spouse Birthday: Custom date picker (Pikaday), format `MM/DD/YYYY`.
+    - Spouse Age: Auto-calculated, `readonly`.
+- Dynamic addition/removal of "Other Sources of Income" fields (up to 4).
+- **Beneficiaries and Dependents (Page 2):**
+    - Starts with one beneficiary row.
+    - "Add Beneficiary" button dynamically adds more rows (up to 4 total).
+    - Each added row has a "Remove" button.
+    - Date of Birth fields use Pikaday (`MM/DD/YYYY`).
+    - Gender dropdown is blank by default, with options M/F.
+    - Column widths adjusted for M.I., Date of Birth, Gender, Relationship, Dependent.
+- Philippine address selection for Present, Permanent, and Business addresses using `wilfredpine/philippine-address-selector`.
+    - Requires `ph-json` data to be placed in `ROOT/assets/ph-json/`.
+    - Hidden input fields store the text values of selected address components.
+- Custom-styled date pickers using Pikaday.js for all date inputs (except removed ones), ensuring a consistent UI.
+    - Date format: `MM/DD/YYYY`.
+    - Trustee DOB uses Pikaday.
+- **Signature (Page 2):** (Section renamed from "Signatures and Dates")
+    - Upload Member's Signature: File input for image upload.
+    - Upload Beneficiary's Signature: File input for image upload.
+    - Name of Member (Borrower or Kapamilya) (Optional).
+    - Removed fields: Date of Signing.
+
+**Styling:**
+- Based on a Figma design (details in initial prompts).
+- Primary color: `#1B3FAB`.
+- Fixed navbar offset rule implemented for in-page navigation targets (`scroll-margin-top: var(--navbar-scroll-offset)`).
+
+**Validation (Client-side - basic):**
+- Checks for at least one plan selected.
+- Checks for at least one member classification selected.
+- Checks for at least one beneficiary added.
+- HTML5 validation attributes for specific fields (e.g., `pattern`, `maxlength`).
+
+**Data Handling (Server-side - PHP):**
+- Placeholder for form submission processing and validation in `user/membership-form.php`.
+- All new and modified fields need to be handled in the backend PHP script.
+
+### Database
+- Existing database (details to be provided by the user for any changes/additions).
+- SQL queries related to database structure changes should be provided by the user.
+
+### Installation/Setup (User Guide - `README.md`)
+- Standard web server (e.g., XAMPP, WAMP, LAMP) with PHP and MySQL.
+- Place project files in the web server's document root (e.g., `htdocs`).
+- Ensure the `ph-json` data from `wilfredpine/philippine-address-selector` is correctly placed in `assets/ph-json/` relative to the project root.
+- Configure database connection in `includes/config.php` (assumption, needs verification).
+
+### Developer Notes:
+- **Navbar Offset:** `scroll-margin-top: var(--navbar-scroll-offset);` MUST be applied to elements used as anchor link targets. `--navbar-height` and `--navbar-scroll-offset` are defined in `src/css/mainstyles.css` (assumption, verify path or implement).
+- **SQL Changes:** Any database schema modifications or new table additions must be reflected by updating or providing new SQL, which will be manually applied via phpMyAdmin or a similar tool.

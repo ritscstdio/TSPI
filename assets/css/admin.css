@@ -458,7 +458,7 @@ body {
 
 .stat-boxes {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr; /* Mobile first: 1 column */
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -876,17 +876,25 @@ tbody tr:hover {
     }
 }
 
+@media (min-width: 576px) {
+    .stat-boxes {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (min-width: 768px) { /* Adjusted breakpoint for 3-column stat boxes */
     .stat-boxes {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 992px) {
     .stat-boxes {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(4, 1fr);
     }
-    
+}
+
+@media (max-width: 768px) {
     .actions {
         flex-direction: column;
         gap: 0.3rem;
@@ -1129,4 +1137,98 @@ tbody tr:hover {
 .modal[style*="display: flex;"] .modal-content,
 .modal.show .modal-content {
     animation: commentModalPopupAnimation 0.2s ease-out;
+}
+
+/* Category Page Dropdowns */
+.category-groups-container .dashboard-section {
+    padding: 0; /* Remove padding from parent if dropdowns handle it */
+    box-shadow: none; /* Remove shadow from parent if dropdowns have their own */
+    background: none; /* Remove background from parent */
+}
+
+.category-group-dropdown {
+    margin-bottom: 1rem; /* Spacing between dropdowns */
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    overflow: hidden; /* Ensures border-radius is respected by children */
+}
+
+.category-group-dropdown .dropdown-toggle {
+    background-color: var(--lighter-blue); /* Subtle background for the toggle */
+    color: var(--primary-blue);
+    padding: 0.9rem 1.25rem;
+    width: 100%;
+    text-align: left;
+    border: none;
+    /* border-bottom: 1px solid #e0e0e0; */ /* Optional: if content has no top border */
+    cursor: pointer;
+    font-size: 1.1rem; /* Slightly smaller than page H2s */
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.category-group-dropdown .dropdown-toggle:hover {
+    background-color: #e9eef5;
+}
+
+.category-group-dropdown .dropdown-toggle .fa-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 0.9em;
+}
+
+.category-group-dropdown .dropdown-toggle.active .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+.category-group-dropdown .dropdown-content {
+    padding: 0.5rem 1.25rem 1rem; /* Top, LR, Bottom padding */
+    border-top: 1px solid #e7e7e7;
+    background-color: var(--white);
+}
+
+.category-group-dropdown .dropdown-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-group-dropdown .dropdown-content li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.category-group-dropdown .dropdown-content li:last-child {
+    border-bottom: none;
+}
+
+.category-group-dropdown .dropdown-content li .category-name {
+    flex-grow: 1;
+    font-weight: 500;
+    color: var(--text-gray);
+}
+
+.category-group-dropdown .dropdown-content li .category-details {
+    font-size: 0.9em;
+    color: #777;
+    margin-left: 1rem;
+    margin-right: 1rem; /* Space before actions */
+    white-space: nowrap;
+}
+
+.category-group-dropdown .dropdown-content li .actions {
+    /* Styles for .actions are already defined, but you can add specifics if needed */
+    /* e.g., flex-shrink: 0; */
+}
+
+.category-group-dropdown .empty-group-message {
+    padding: 0.7rem 0;
+    color: #777;
+    font-style: italic;
 }

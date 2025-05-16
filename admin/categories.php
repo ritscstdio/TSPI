@@ -45,33 +45,64 @@ $categories = $stmt->fetchAll();
                 foreach ($groups as $slugs) { $all_slugs = array_merge($all_slugs, $slugs); }
                 $groups['Other'] = array_values(array_filter(array_column($categories, 'slug'), fn($s) => !in_array($s, $all_slugs)));
                 ?>
-                <div class="dashboard-section">
-                    <?php foreach ($groups as $label => $slugs): ?>
-                        <h2><?php echo $label; ?></h2>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr><th>Name</th><th>contents</th><th>Actions</th></tr>
-                                </thead>
-                                <tbody>
-                                <?php foreach ($categories as $cat): if (in_array($cat['slug'], $slugs)): ?>
-                                    <tr>
-                                        <td><?php echo sanitize($cat['name']); ?></td>
-                                        <td><?php echo $cat['content_count']; ?></td>
-                                        <td class="actions">
-                                            <a href="edit-category.php?id=<?php echo $cat['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
-                                        </td>
-                                    </tr>
-                                <?php endif; endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endforeach; ?>
+                <div class="dashboard-section category-groups-container">
+                    <?php if (empty($categories)): ?>
+                        <p>No categories found.</p>
+                    <?php else: ?>
+                        <?php foreach ($groups as $label => $slugs): ?>
+                            <?php
+                            $categories_in_group = array_filter($categories, fn($cat) => in_array($cat['slug'], $slugs));
+                            if (empty($categories_in_group) && $label !== 'Other') continue; // Skip empty predefined groups, but always show 'Other' if it exists for potential uncategorized items
+                            if ($label === 'Other' && empty($categories_in_group)) continue; // Skip 'Other' if it's also empty
+                            ?>
+                            <div class="category-group-dropdown">
+                                <button class="dropdown-toggle" type="button">
+                                    <span><?php echo sanitize($label); ?></span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="dropdown-content" style="display: none;">
+                                    <?php if (empty($categories_in_group)): ?>
+                                        <p class="empty-group-message">No categories in this group.</p>
+                                    <?php else: ?>
+                                        <ul>
+                                            <?php foreach ($categories_in_group as $cat): ?>
+                                                <li>
+                                                    <span class="category-name"><?php echo sanitize($cat['name']); ?></span>
+                                                    <span class="category-details">
+                                                        (<?php echo $cat['content_count']; ?> content<?php echo ($cat['content_count'] != 1) ? 's' : ''; ?>)
+                                                    </span>
+                                                    <span class="actions">
+                                                        <a href="edit-category.php?id=<?php echo $cat['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
+                                                    </span>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php // 'Add Category' and delete functionality removed ?>
         </main>
     </div>
     <?php include 'includes/footer.php'; ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdownToggles = document.querySelectorAll('.category-group-dropdown .dropdown-toggle');
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active'); // For icon rotation
+                const content = this.nextElementSibling;
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                } else {
+                    content.style.display = 'block';
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html> 
