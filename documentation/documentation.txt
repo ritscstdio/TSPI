@@ -377,3 +377,15 @@ The project is a web application for TSPI, likely involving member registration,
 ### Developer Notes:
 - **Navbar Offset:** `scroll-margin-top: var(--navbar-scroll-offset);` MUST be applied to elements used as anchor link targets. `--navbar-height` and `--navbar-scroll-offset` are defined in `src/css/mainstyles.css` (assumption, verify path or implement).
 - **SQL Changes:** Any database schema modifications or new table additions must be reflected by updating or providing new SQL, which will be manually applied via phpMyAdmin or a similar tool.
+
+## Membership Form Submissions and Signatures
+
+A new `members` database table has been introduced to store multi-page membership form data, including:
+- Personal info and birthdate
+- Computed `age` column generated from `birthdate`
+- Address, business, spouse, beneficiaries, trustee details
+- Paths to signature image files (`member_signature` and `beneficiary_signature`)
+
+SQL for creating this table is documented in `documentation/members_table.txt`.
+
+Signature images are exported as Base64-encoded PNGs via the Signature Pad API and saved under `/uploads/signatures`. PHP code ensures the directory exists and decodes/stores the image files, with file paths stored in the `members` table.

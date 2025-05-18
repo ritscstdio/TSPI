@@ -91,6 +91,21 @@ These instructions will guide you to get a copy of the project up and running on
     );
     ```
 
+4.3. **Signature Pad Setup and Upload Directory:**
+    *   Add the Signature Pad library by including in your HTML (e.g., before closing `</body>`):
+    ```html
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    ```
+    *   Ensure the upload directory for signatures exists with write permissions:
+    ```bash
+    mkdir -p uploads/signatures
+    ```
+    On Windows (PowerShell):
+    ```powershell
+    New-Item -ItemType Directory -Force uploads\signatures
+    ```
+    *   On the server side (e.g., in `membership-form.php`), decode the Base64-encoded signature (from a hidden input like `member_signature_data`) and save to `uploads/signatures`, storing the filepath (e.g., `uploads/signatures/member_<timestamp>.png`) in the database.
+
 5.  **Access the website:**
     *   Open your web browser and navigate to the project's URL (e.g., `http://localhost/your-project-folder-name/` if using XAMPP/WAMP).
 

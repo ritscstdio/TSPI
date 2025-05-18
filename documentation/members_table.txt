@@ -1,0 +1,26 @@
+-- SQL to create the members table for storing membership form submissions
+CREATE TABLE `members_information` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `first_name` VARCHAR(100) NOT NULL,
+  `middle_name` VARCHAR(100) DEFAULT NULL,
+  `last_name` VARCHAR(100) NOT NULL,
+  `birthdate` DATE NOT NULL,
+  `age` INT GENERATED ALWAYS AS (TIMESTAMPDIFF(YEAR, birthdate, CURDATE())) STORED,
+  `email` VARCHAR(255) NOT NULL,
+  `phone` VARCHAR(50) DEFAULT NULL,
+  `region` VARCHAR(100) DEFAULT NULL,
+  `province` VARCHAR(100) DEFAULT NULL,
+  `city` VARCHAR(100) DEFAULT NULL,
+  `barangay` VARCHAR(100) DEFAULT NULL,
+  `business_name` VARCHAR(255) DEFAULT NULL,
+  `business_address` TEXT DEFAULT NULL,
+  `spouse_name` VARCHAR(255) DEFAULT NULL,
+  `spouse_birthdate` DATE DEFAULT NULL,
+  `beneficiaries` JSON DEFAULT NULL,
+  `trustee_name` VARCHAR(255) DEFAULT NULL,
+  `trustee_birthdate` DATE DEFAULT NULL,
+  `member_signature` VARCHAR(255) DEFAULT NULL,
+  `beneficiary_signature` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 

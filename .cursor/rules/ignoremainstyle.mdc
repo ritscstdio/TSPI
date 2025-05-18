@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+COMPLETELY IGNORE ALL OTHER EXTERNAL CSS FILES(EXCEPT THE STYLE REFERENCED IN .PHP FILE). We want to focus on 

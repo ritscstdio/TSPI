@@ -47,6 +47,12 @@ include '../includes/header.php';
             <?php endif; ?>
             
             <form method="post" action="" id="membership-form">
+                <!-- Reload Notice -->
+                <div id="reload-notice">
+                    <span>Welcome back! We've remembered your previously entered information.</span>
+                    <button type="button" class="close-notice" aria-label="Close notice">&times;</button>
+                </div>
+
                 <!-- All Form Content -->
                 <div class="form-page-content active" id="form-page-1">
                     <h2>Personal Information</h2>
@@ -199,12 +205,6 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="age">Age</label>
-                                <input type="number" id="age" name="age" min="18" max="100" required readonly>
-                            </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
                                 <label for="birth_place">Birth Place</label>
                                 <input type="text" id="birth_place" name="birth_place" required placeholder="Enter Place of Birth">
                             </div>
@@ -224,10 +224,7 @@ include '../includes/header.php';
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="contact_no">Telephone no./ Landline</label>
-                                <div class="phone-input-group">
-                                    <span class="phone-prefix">+63</span>
-                                    <input type="text" id="contact_no" name="contact_no" required pattern="[0-9]{7}" maxlength="7" title="7-digit landline number">
-                                </div>
+                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="7" title="7-digit landline number" placeholder="Optional">
                             </div>
                         </div>
                     </div>
@@ -244,7 +241,7 @@ include '../includes/header.php';
                             <div class="form-group">
                                 <label for="id_number">TIN/SSS/GSIS Number</label>
                                 <input type="text" id="id_number" name="id_number" required placeholder="Enter Valid ID Number">
-                                <button type="button" id="add_other_valid_id_btn" class="btn btn-secondary btn-sm" style="margin-top: 8px;">Do you have other Valid IDs?</button>
+                                <button type="button" id="add_other_valid_id_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Do you have other Valid IDs?</button>
                             </div>
                             <div id="other_valid_ids_container" style="margin-top:10px; margin-bottom: 24px;">
                                 <!-- Other valid IDs will be added here -->
@@ -282,7 +279,6 @@ include '../includes/header.php';
                     </div>
                     <!-- End Mother's Maiden Name -->
 
-                    <div class="section-divider"></div>
                 </div> <!-- End of Page 1 -->
 
                 <div class="form-page-content" id="form-page-2">
@@ -426,11 +422,11 @@ include '../includes/header.php';
                             <div class="form-group">
                                 <label for="primary_business">Primary Business</label>
                                 <input type="text" id="primary_business" name="primary_business" required placeholder="Enter Primary Business">
-                                <button type="button" id="add_other_income_source_btn" class="btn btn-secondary btn-sm" style="margin-top: 8px;">Got other source of income?</button>
+                                <button type="button" id="add_other_income_source_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Got other source of income?</button>
                             </div>
                             <div id="other_income_sources_container">
-                                <!-- Other income sources will be added here by JS -->
-                            </div>
+                        <!-- Other income sources will be added here by JS -->
+                        </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
@@ -469,7 +465,7 @@ include '../includes/header.php';
                                 <select id="business_city" name="business_city" class="form-control address-city" required></select>
                             </div>
                         </div>
-                        <div class="form-col-3">
+                        <div class="form-col-3">        
                             <div class="form-group">
                                 <label for="business_barangay">Barangay</label>
                                 <select id="business_barangay" name="business_barangay" class="form-control address-barangay" required></select>
@@ -487,11 +483,10 @@ include '../includes/header.php';
                             <!-- Empty div to maintain 2-column layout -->
                         </div>
                     </div>
-                    <div class="section-divider"></div>
                     <!-- Spouse Information -->
                     <div id="spouse_information_section" style="display: none;">
                         <h2>Spouse Information</h2>
-                        <div class="form-row">
+                         <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_last_name">Spouse's Last Name</label>
@@ -544,7 +539,7 @@ include '../includes/header.php';
                                 <!-- Empty div to maintain 2-column layout -->
                             </div>
                         </div>
-                        <div class="section-divider"></div>
+                     
                     </div>
                 </div> <!-- End of Page 2 -->
 
@@ -594,7 +589,7 @@ include '../includes/header.php';
                             <?php // End of initial row ?>
                         </tbody>
                     </table>
-                    <button type="button" id="add_beneficiary_btn" class="btn btn-secondary btn-sm">Add Beneficiary</button>
+                    <button type="button" id="add_beneficiary_btn" class="btn btn-secondary btn-add btn-sm"><span class="btn-icon">+</span> Add Beneficiary</button>
                     
                     <div class="section-divider"></div>
                     
@@ -623,7 +618,7 @@ include '../includes/header.php';
                     <div class="section-divider"></div>
                     
                     <h2>Signature</h2>
-                    <div class="form-row">
+                    <div class="form-row signature-section-row">
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="member_signature">Member's Signature</label>
@@ -631,7 +626,7 @@ include '../includes/header.php';
                                     <canvas id="member_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="member_signature" name="member_signature">
                                     <div class="signature-buttons" style="margin-top: 10px;">
-                                        <button type="button" id="clear_member_signature" class="btn btn-sm btn-secondary">Clear</button>
+                                        <button type="button" id="clear_member_signature" class="btn btn-secondary btn-clear btn-sm"><span class="btn-icon">↻</span> Clear</button>
                                     </div>
                                 </div>
                             </div>
@@ -643,7 +638,7 @@ include '../includes/header.php';
                                     <canvas id="beneficiary_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
                                     <div class="signature-buttons" style="margin-top: 10px;">
-                                        <button type="button" id="clear_beneficiary_signature" class="btn btn-sm btn-secondary">Clear</button>
+                                        <button type="button" id="clear_beneficiary_signature" class="btn btn-secondary btn-clear btn-sm"><span class="btn-icon">↻</span> Clear</button>
                                     </div>
                                 </div>
                             </div>
@@ -662,6 +657,17 @@ include '../includes/header.php';
                         </div>
                     </div>
                     
+                    <!-- Name of Beneficiary under signatures -->
+                    <div class="form-row">
+                        <div class="form-col-2">
+                            <div class="form-group">
+                                <label for="sig_beneficiary_name">Name of Beneficiary</label>
+                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name">
+                            </div>
+                        </div>
+                        <div class="form-col-2"></div>
+                    </div>
+                    
                     <div class="section-divider"></div>
                     
                     <div class="form-group disclaimer-box">
@@ -673,16 +679,15 @@ include '../includes/header.php';
                         </div>
                     </div>
                     
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button type="submit" id="submit_application_btn" class="btn btn-primary" disabled>Submit Application</button>
-                    </div>
+                    <!-- Submit button is now moved to form-navigation-controls -->
                 </div> <!-- End of Page 3 -->
 
                 <!-- Form Navigation -->
                 <div class="form-navigation-controls">
-                    <button type="button" id="prev_page_btn" class="btn btn-secondary" style="display: none;">Previous</button>
+                    <button type="button" id="prev_page_btn" class="btn btn-previous"><span class="btn-icon">←</span> Previous</button>
                     <div class="page-indicator" id="page_indicator">Page 1 of 3</div>
-                    <button type="button" id="next_page_btn" class="btn btn-primary">Next</button>
+                    <button type="button" id="next_page_btn" class="btn btn-primary btn-next"><span class="btn-icon">→</span> Next</button>
+                    <button type="submit" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none;" disabled><span class="btn-icon">✓</span> Submit Application</button> 
                 </div>
             </form>
         <?php endif; ?>
@@ -703,6 +708,23 @@ include '../includes/header.php';
                 
                 <h3>CONSENT UNDER THE DATA PRIVACY ACT</h3>
                 <p>Pursuant to the Data Privacy Act, I hereby give my consent to TSPI and TSPI MBAI, to collect, store, use, or process within the country, my recorded personal data. I give my consent for my personal data to be shared by TSPI and TSPI MBAI with its business partners, as well as its service providers, so that they can provide quality services, and for other legitimate purposes appropriate for these services.</p>
+                <h3>PROOF OF MEMBER'S AGREEMENT AND CONSENT TO TSPI MBAI POLICIES</h3>
+                <p>As a member, I understand and agree to the following:</p>
+                <p>A- TSPI MBAI has explained to me the importance of having Micro Insurance with a contribution/premium of:</p>
+                <p>PHP 5.00 per week or PHP 240.00 per year for the BASIC LIFE INSURANCE PLAN (BLIP);<br>
+                PHP 1.00 per thousand per week of my borrowed amount for the CREDIT LIFE INSURANCE PLAN (CLIP); or<br>
+                PHP 10 per thousand per year of my borrowed amount for the MORTGAGE REDEMPTION INSURANCE (MRI).</p>
+                <p>B- That if the cause of death is a serious illness or Pre-Existing Condition (PEC) within the first year of membership, only the amount paid for the Micro Insurance will be returned.</p>
+                <p>C- It has also been explained to me that microinsurance at TSPI MBAI is for members aged 18 to 60 years old, renewable up to age 65. However, the benefit for BLIP is reduced to half when the member's age is between 61 and 65 years old.</p>
+                <p>D- That I and my legitimate heirs are covered by a one (1) year contestability period. If I leave the program and decide to REJOIN TSPI, I and my legitimate heirs will again be covered by a one (1) year contestability period.</p>
+                <p>E- That my primary beneficiary for CLIP / MRI is TSPI (A Microfinance NGO) and the secondary beneficiaries are those stated in this form.</p>
+                <p><strong>1. Proof of Consent to Premium Collection (for Borrower only)</strong><br>
+                This is to authorize TSPI MBAI to charge TULAY SA PAG-UNLAD, INC. (TSPI) the corresponding premium amount for BLIP and CLIP by deducting it from my loan proceeds or from my Capital Build Up (CBU) if the premium is not included in my regular payments. I understand that with my payment to TSPI (weekly, twice a month, or monthly), my Micro Insurance premium is paid first before the interest and the borrowed amount.</p>
+                <p><strong>2. Proof of Agreement to the Grace Period for Contribution/Premium Payment (for Borrower and Family Member)</strong><br>
+                a. BLIP - If I am unable to pay my BLIP contribution, I have a 45-day grace period for my insurance coverage to continue. If I fail to pay my BLIP contribution or renew after the 45-day grace period, my life plus and life max, if any, will become invalid.<br>
+                b. CLIP/MRI - If I am unable to pay my CLIP/MRI contribution until the loan maturity, I have a 45-day grace period for my insurance coverage to continue. The end or maturity date of my loan is the end of my CLIP/MRI coverage. I understand that there is no grace period for this. I understand that the insurance coverage for CLIP or MRI will begin on the day I receive the loan from TSPI and will end on the maturity date of my loan. Therefore, if I decide to take a break from borrowing or undergo a resting period, I will no longer have insurance coverage for CLIP or MRI, and I will no longer have to pay contributions for it.</p>
+                <p><strong>3. Proof of Consent to Return of Equity Value (for Borrower and Family Member)</strong><br>
+                In the event that my coverage ends or lapses on any date, I authorize TSPI MBAI to: Transfer my Equity Value to my CBU or to the CBU of my recruiter at TSPI (A Microfinance NGO) to pay for my remaining debt or the debt of my Recruiter, ___________________, to TSPI. If I have no debt or my Recruiter has no debt, transfer my EV to my CBU or to the CBU of my Recruiter to be added to my/his/her savings. The recoverable amount of the EQUITY VALUE according to the aforementioned conditions is the full and final payment to me by TSPI MBAI. This also serves as a quitclaim, or a release or discharge/waiver of any action I may have against TSPI MBAI.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" id="disagree_btn" class="btn btn-secondary">I Disagree</button>
@@ -727,25 +749,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const infoModal = document.getElementById('infoModal');
     const agreeBtn = document.getElementById('agree_btn');
     const disagreeBtn = document.getElementById('disagree_btn');
+    const modalBody = infoModal ? infoModal.querySelector('.modal-body') : null;
 
     // Show modal on page load
     if (infoModal) {
         infoModal.style.display = 'block';
+        // Prevent background scroll
+        document.body.classList.add('modal-open');
+        // Disable buttons until user scrolls bottom (if scrollable)
+        if (agreeBtn) agreeBtn.disabled = true;
+        if (disagreeBtn) disagreeBtn.disabled = true;
+        if (modalBody) {
+            // If content fits, enable immediately
+            if (modalBody.scrollHeight <= modalBody.clientHeight) {
+                agreeBtn.disabled = false;
+                disagreeBtn.disabled = false;
+            }
+            modalBody.addEventListener('scroll', function() {
+                if (modalBody.scrollHeight > modalBody.clientHeight &&
+                    modalBody.scrollTop + modalBody.clientHeight >= modalBody.scrollHeight - 10) {
+                    if (agreeBtn) agreeBtn.disabled = false;
+                    if (disagreeBtn) disagreeBtn.disabled = false;
+                }
+            });
+        }
     }
 
     if (agreeBtn) {
         agreeBtn.addEventListener('click', function() {
             infoModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
             // Potentially enable form interaction here if it was disabled
         });
     }
 
     if (disagreeBtn) {
         disagreeBtn.addEventListener('click', function() {
-            // Option 1: Redirect (Example: to homepage or an info page)
-            // window.location.href = '/'; 
-            // Option 2: Disable the form / show a message
             infoModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
             alert('You must agree to the terms to proceed with the application.');
             // Disable all form inputs and buttons if user disagrees
             if (form) {
@@ -822,47 +863,78 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleSpouseSection(civilStatusSelect.value === 'Married');
     }
     
-    // Form validation before submit
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            let isValid = true;
-            const errorMessages = [];
-            
-            // Check if at least one plan is selected
-            const planCheckboxes = document.querySelectorAll('input[name="plans[]"]:checked');
-            if (planCheckboxes.length === 0) {
-                isValid = false;
-                errorMessages.push('Please select at least one plan');
-            }
-            
-            // Check if at least one classification is selected
-            const classificationCheckboxes = document.querySelectorAll('input[name="classification[]"]:checked');
-            if (classificationCheckboxes.length === 0) {
-                isValid = false;
-                errorMessages.push('Please select at least one member classification');
-            }
-            
-            // Check if at least one beneficiary is added
-            let hasBeneficiary = false;
-            for (let i = 1; i <= 5; i++) {
-                const lastName = document.getElementById(`beneficiary_last_name_${i}`).value;
-                const firstName = document.getElementById(`beneficiary_first_name_${i}`).value;
-                
-                if (lastName || firstName) {
-                    hasBeneficiary = true;
-                    break;
+    // Form validation before submit OR page next
+    function validateCurrentPageFields() {
+        let isValid = true;
+        let invalidElements = [];
+        const activePage = document.querySelector('.form-page-content.active');
+        if (!activePage) return true;
+        const inputs = activePage.querySelectorAll('input[required], select[required], textarea[required]');
+        inputs.forEach(input => {
+            const val = input.value.trim();
+            if ((input.type === 'checkbox' || input.type === 'radio')) {
+                if (!document.querySelector(`input[name="${input.name}"]:checked`)) {
+                    isValid = false;
+                    invalidElements.push(input);
+                }
+            } else {
+                if (!val) {
+                    isValid = false;
+                    invalidElements.push(input);
                 }
             }
-            
-            if (!hasBeneficiary) {
+        });
+        if (activePage.id === 'form-page-1') {
+            const planChecked = document.querySelectorAll('input[name="plans[]"]:checked');
+            if (planChecked.length === 0) {
                 isValid = false;
-                errorMessages.push('Please add at least one beneficiary');
+                invalidElements.push(document.getElementById('plan_blip'));
             }
-            
-            // Display custom error messages if validation fails
-            if (!isValid) {
-                event.preventDefault();
-                alert('Please correct the following errors:\n- ' + errorMessages.join('\n- '));
+            const classChecked = document.querySelectorAll('input[name="classification[]"]:checked');
+            if (classChecked.length === 0) {
+                isValid = false;
+                invalidElements.push(document.getElementById('class_borrower'));
+            }
+            const cellPhone = document.getElementById('cell_phone');
+            const contactNo = document.getElementById('contact_no');
+            if (!cellPhone.value.trim() && !contactNo.value.trim()) {
+                isValid = false;
+                invalidElements.push(cellPhone);
+            }
+        }
+        if (!isValid) {
+            alert('Please fill out required fields.');
+            if (invalidElements.length) {
+                invalidElements[0].scrollIntoView({behavior:'smooth', block:'center'});
+                invalidElements[0].focus();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    // Modify form submission event listener
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            // Validate all fields from all pages before final submission
+            currentPage = 0; // Reset to check all pages, or iterate through them
+            let allValid = true;
+            for (let i = 0; i < totalPages; i++) {
+                // Temporarily activate each page for validation to pick up its fields
+                pages.forEach((p, idx) => p.classList.toggle('active', idx === i));
+                if (!validateCurrentPageFields()) {
+                    allValid = false;
+                    updatePageDisplay(); // Show the page with the first error
+                    event.preventDefault();
+                    return; // Stop submission
+                }
+            }
+            // Restore actual current page display if all valid (though not strictly necessary on submit)
+            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages -1) ));
+            updatePageDisplay();
+
+            if (!allValid) { // Should be caught by loop above, but as a safeguard
+                 event.preventDefault();
             }
         });
     }
@@ -957,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td><div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_${beneficiaryRowCount}" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div></td>
                     <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_${beneficiaryRowCount}" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div></td>
                     <td><div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_${beneficiaryRowCount}" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div></td>
-                    <td><button type="button" class="remove-beneficiary-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold;">X</button></td>
+                    <td><button type="button" class="remove-beneficiary-btn btn btn-danger btn-remove btn-sm"><span class="btn-icon">×</span></button></td>
                 `;
                 beneficiariesTbody.appendChild(newRow);
 
@@ -1105,7 +1177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label for="other_income_source_${incomeSourceCount}" class="sr-only">Other Source of Income ${incomeSourceCount}</label>
                         <input type="text" id="other_income_source_${incomeSourceCount}" name="other_income_source[]" placeholder="Other Source of Income ${incomeSourceCount}" style="flex-grow: 1;">
                     </div>
-                    <button type="button" class="remove-income-source-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold; margin-left: 5px;">X</button>
+                    <button type="button" class="remove-income-source-btn btn btn-danger btn-remove btn-sm"><span class="btn-icon">×</span></button>
                 `;
                 incomeSourcesContainer.appendChild(newIncomeSourceDiv);
 
@@ -1167,7 +1239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             otherIdRow.style.alignItems = 'center';
             otherIdRow.innerHTML = `
                 <input type="text" id="other_valid_id_${otherValidIdCount}" name="other_valid_id[]" placeholder="Other Valid ID" style="flex-grow: 1;">
-                <button type="button" class="remove-other-id-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold; margin-left: 5px;">X</button>
+                <button type="button" class="remove-other-id-btn btn btn-danger btn-remove btn-sm"><span class="btn-icon">×</span></button>
             `;
             
             const container = document.getElementById('other_valid_ids_container');
@@ -1273,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevBtn = document.getElementById('prev_page_btn');
     const nextBtn = document.getElementById('next_page_btn');
     const pageIndicator = document.getElementById('page_indicator');
-    const submitBtnContainer = document.querySelector('#submit_application_btn').parentElement;
+    const submitApplicationBtn = document.getElementById('submit_application_btn'); // Direct reference
 
 
     let currentPage = 0;
@@ -1285,21 +1357,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         if (pageIndicator) pageIndicator.textContent = `Page ${currentPage + 1} of ${totalPages}`;
         
-        if (prevBtn) prevBtn.style.display = currentPage === 0 ? 'none' : 'inline-block';
-        if (nextBtn) nextBtn.style.display = currentPage === totalPages - 1 ? 'none' : 'inline-block';
+        if (prevBtn) {
+            prevBtn.style.visibility = currentPage === 0 ? 'hidden' : 'visible';
+        }
+        if (nextBtn) {
+            nextBtn.style.display = currentPage === totalPages - 1 ? 'none' : 'inline-flex'; // use inline-flex to match .btn
+        }
+        if (submitApplicationBtn) {
+            submitApplicationBtn.style.display = currentPage === totalPages - 1 ? 'inline-flex' : 'none'; // use inline-flex
+        }
         
-        // Show submit button only on the last page's navigation area
-        // The submit button itself is already on page 3's content.
-        // We hide the "Next" button on the last page.
-        // The submit button is part of page 3 content.
-        // Let's ensure the disclaimer and submit button are *only* visible if page 3 is active.
         const disclaimerBox = document.querySelector('.disclaimer-box');
-        const submitButtonActual = document.getElementById('submit_application_btn');
+        // const submitButtonActual = document.getElementById('submit_application_btn'); // Already have submitApplicationBtn
 
         if (currentPage === totalPages - 1) {
             if (disclaimerBox) disclaimerBox.style.display = 'block';
-            if (submitButtonActual) submitButtonActual.style.display = 'inline-block';
-            if (submitBtnContainer) submitBtnContainer.style.display = 'flex';
+           // if (submitApplicationBtn) submitApplicationBtn.style.display = 'inline-flex'; // Already handled above
+             // if (submitBtnContainer) submitBtnContainer.style.display = 'flex'; // Not needed
 
 
              // Attempt to resize signature canvases if they are on this page and now visible
@@ -1318,13 +1392,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         } else {
             if (disclaimerBox) disclaimerBox.style.display = 'none';
-            if (submitButtonActual) submitButtonActual.style.display = 'none';
-             if (submitBtnContainer) submitBtnContainer.style.display = 'none';
+           // if (submitApplicationBtn) submitApplicationBtn.style.display = 'none'; // Already handled above
+            // if (submitBtnContainer) submitBtnContainer.style.display = 'none'; // Not needed
         }
     }
     
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
+            if (!validateCurrentPageFields()) {
+                return; // Stop navigation if current page is invalid
+            }
             if (currentPage < totalPages - 1) {
                 currentPage++;
                 updatePageDisplay();
@@ -1381,6 +1458,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!formToSave) return;
         const savedData = localStorage.getItem('membershipFormData');
         if (savedData) {
+            // Show reload notice as a toast at bottom-left
+            const reloadNotice = document.getElementById('reload-notice');
+            const closeNoticeBtn = reloadNotice ? reloadNotice.querySelector('.close-notice') : null;
+            if (reloadNotice) {
+                reloadNotice.classList.add('show');
+                setTimeout(() => {
+                    reloadNotice.classList.add('fade-out');
+                    setTimeout(() => {
+                        reloadNotice.classList.remove('show', 'fade-out');
+                    }, 500);
+                }, 4000);
+            }
+            if (closeNoticeBtn) {
+                closeNoticeBtn.addEventListener('click', () => {
+                    reloadNotice.classList.add('fade-out');
+                    setTimeout(() => {
+                        reloadNotice.classList.remove('show', 'fade-out');
+                    }, 500);
+                });
+            }
             const formData = JSON.parse(savedData);
             for (const element of formElements) {
                 if (element.name) {
@@ -1450,15 +1547,69 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update disclaimer checkbox and submit button state
             if (disclaimerCheckbox && formData['disclaimer_agreement']) {
                 disclaimerCheckbox.checked = formData['disclaimer_agreement'];
-                if (submitButton) submitButton.disabled = !disclaimerCheckbox.checked;
+                if (submitApplicationBtn) submitApplicationBtn.disabled = !disclaimerCheckbox.checked;
             }
 
+            // Dynamically add placeholder tooltips to each checkbox-item
+            document.querySelectorAll('.checkbox-item').forEach(item => {
+                if (!item.querySelector('.tooltip-text')) {
+                    const tooltip = document.createElement('span');
+                    tooltip.className = 'tooltip-text';
+                    tooltip.textContent = 'Additional info';
+                    item.appendChild(tooltip);
+                }
+            });
+
+            // Restore dynamic rows - this is more complex and might need specific handling for each type
+            // For now, just logging the counts. Full restoration would involve recreating rows.
+            // console.log("Saved beneficiary rows:", formData['beneficiary_row_count']);
+            // console.log("Saved income sources:", formData['other_income_source_count']);
+            // console.log("Saved other IDs:", formData['other_valid_id_count']);
+
+            // Special handling for address dropdowns if their text values were saved
+            ['present', 'permanent', 'business'].forEach(prefix => {
+                const regionCode = formData[`${prefix}_region`];
+                if (regionCode) {
+                    const regionEl = document.getElementById(`${prefix}_region`);
+                    regionEl.value = regionCode;
+                    regionEl.dispatchEvent(new Event('change'));
+                    setTimeout(() => {
+                        const provCode = formData[`${prefix}_province`];
+                        if (provCode) {
+                            const provEl = document.getElementById(`${prefix}_province`);
+                            provEl.value = provCode;
+                            provEl.dispatchEvent(new Event('change'));
+                        }
+                        setTimeout(() => {
+                            const cityCode = formData[`${prefix}_city`];
+                            if (cityCode) {
+                                const cityEl = document.getElementById(`${prefix}_city`);
+                                cityEl.value = cityCode;
+                                cityEl.dispatchEvent(new Event('change'));
+                            }
+                            setTimeout(() => {
+                                const brgyCode = formData[`${prefix}_barangay`];
+                                if (brgyCode) {
+                                    document.getElementById(`${prefix}_barangay`).value = brgyCode;
+                                }
+                            }, 300);
+                        }, 300);
+                    }, 300);
+                }
+            });
 
         }
     }
 
     // Load saved data when page loads
     loadFormFromLocalStorage();
+
+    // Clear remembered checkboxes and signatures
+    // Remove checkbox states
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    // Clear signature pads
+    if (typeof memberSignaturePad !== 'undefined' && memberSignaturePad) memberSignaturePad.clear();
+    if (typeof beneficiarySignaturePad !== 'undefined' && beneficiarySignaturePad) beneficiarySignaturePad.clear();
 
     // Save data when form inputs change
     if (formToSave) {
@@ -1497,6 +1648,15 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // Restrict phone inputs to numeric only
+    [document.getElementById('cell_phone'), document.getElementById('contact_no')]
+    .forEach(input => {
+        if (input) {
+            input.addEventListener('input', e => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+    });
 
 });
 </script>

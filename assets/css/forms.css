@@ -3,8 +3,54 @@ h1, h2 {
     scroll-margin-top: var(--navbar-scroll-offset);
 }
 
+/* Define --W-Background if not globally available */
+:root {
+    --W-Background: #FFFFFF;
+    --primary-blue: #1B3FAB; /* Ensure primary blue is defined */
+    --light-gray-form-bg: #f8f9fa; /* For subtle backgrounds */
+    --input-border-color: #ced4da;
+    --input-focus-border-color: #80bdff;
+    --input-focus-box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 .membership-form-container {
-    padding-top: 2rem;
+    padding-top: 2rem; /* Spacing within the <main> tag */
+    padding-bottom: 4rem; /* Space for footer or end of content */
+}
+
+/* Styling for the main content box holding the form */
+.membership-form-page .auth-box {
+    width: 90%; /* More responsive width */
+    max-width: 1000px; /* Increased max-width */
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 13rem; /* Further increased margin-top, was 11rem */
+    margin-bottom: 5rem;
+    background: var(--W-Background);
+    padding: 1rem; /* User changed from 2.5rem */
+    border-radius: 12px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+}
+
+.membership-form-page .auth-box h1 {
+    font-size: 2rem; /* Slightly larger main title */
+    color: var(--primary-blue);
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+.membership-form-page .auth-box h2 {
+    font-size: 1.6rem; /* Consistent section headers */
+    color: var(--primary-blue);
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.75rem;
+}
+
+/* Pikaday z-index fix */
+.pika-single {
+    z-index: 10050 !important; /* Ensure Pikaday is above other elements, including modals (increased from 10000) */
 }
 
 /* Form styling based on Figma design */
@@ -91,6 +137,7 @@ h1, h2 {
     display: flex;
     align-items: center;
     gap: 16px;
+    position: relative;
 }
 
 .checkbox-item input[type="checkbox"] {
@@ -112,6 +159,41 @@ h1, h2 {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B3FAB'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
     background-size: contain;
     background-repeat: no-repeat;
+}
+
+/* Re-add Checkbox Tooltip Styles */
+.checkbox-item .tooltip-text {
+    visibility: hidden;
+    width: 180px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 100;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    font-size: 0.85rem;
+}
+
+.checkbox-item:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.checkbox-item .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
 }
 
 /* Disclaimer styling */
@@ -271,34 +353,76 @@ input[readonly]:hover {
 
 /* Button styling */
 .btn {
-    display: inline-block;
+    display: inline-flex; /* Changed to inline-flex for icon alignment */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em; /* Space between text and icon */
     border: none;
     border-radius: 8px;
-    padding: 16px 32px;
-    font-size: 16px;
+    padding: 12px 24px; /* Adjusted padding */
+    font-size: 1rem; /* Standardized font size */
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease-in-out; /* Smooth transition for all properties */
+    text-decoration: none; /* Remove underline if it's an <a> tag styled as button */
 }
 
-/* Primary button (blue) */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Primary button (blue) - Used for Next, Submit */
 .btn-primary {
     background-color: var(--primary-blue, #1B3FAB);
     color: white;
 }
 
 .btn-primary:hover {
-    background-color: #142b73;
+    background-color: #142b73; /* Darker shade */
 }
 
-/* Secondary button (grey) */
-.btn-secondary {
-    background-color: #6c757d;
+/* New Previous button style */
+.btn-previous {
+    background-color: #6c757d; /* Grey */
     color: white;
+}
+.btn-previous:hover {
+    background-color: #5a6268;
+}
+
+/* Secondary button (light grey outline or subtle background) - Used for Add, Clear */
+.btn-secondary {
+    background-color: #f0f0f0; /* Light grey */
+    color: #333; /* Darker text for contrast */
+    border: 1px solid #ddd;
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: #e0e0e0;
+    border-color: #ccc;
+}
+
+/* Danger/Remove button style */
+.btn-danger {
+    background-color: #ff6b6b;
+    color: white;
+    padding: 6px 10px; /* Smaller padding for icon-like buttons */
+    font-size: 0.9rem;
+}
+.btn-danger:hover {
+    background-color: #e04f4f;
+}
+
+/* Small button styling - can be combined with other btn types */
+.btn-sm {
+    padding: 8px 16px; /* Adjusted for consistency */
+    font-size: 0.9rem;
 }
 
 /* Error and success messages */
@@ -330,6 +454,20 @@ input[readonly]:hover {
 }
 
 /* Responsive adjustments */
+@media (max-width: 992px) { /* Tablet and smaller */
+    .membership-form-page .auth-box {
+        width: 95%;
+        margin-top: 9rem;
+        padding: 1.5rem;
+    }
+    .membership-form-page .auth-box h1 {
+        font-size: 1.8rem;
+    }
+    .membership-form-page .auth-box h2 {
+        font-size: 1.4rem;
+    }
+}
+
 @media (max-width: 768px) {
     .form-row {
         flex-direction: column;
@@ -339,26 +477,31 @@ input[readonly]:hover {
     .form-col-2,
     .form-col-3 {
         flex: 1 1 100%;
+        margin-bottom: 10px; /* Add some space between stacked columns */
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="date"],
+    .form-group input[type="email"],
+    .form-group select {
+        height: 50px; /* Slightly reduce height on mobile */
+        padding: 12px;
     }
     
     .checkbox-group,
     .radio-group {
         flex-direction: column;
+        align-items: flex-start; /* Align items to the start */
     }
 
     .signature-container canvas {
         width: 100% !important; 
-        height: 150px !important; /* Fixed height for smaller screens or adjust as needed */
-    }
-    .form-navigation-controls .page-indicator {
-        position: static; 
-        transform: none;   
-        margin-top: 10px;  
-        order: -1; 
-        width: 100%; 
+        height: 150px !important;
     }
     .form-navigation-controls {
         flex-direction: column;
+        padding: 15px 0;
     }
      .form-navigation-controls .btn {
         width: 100%;
@@ -366,6 +509,336 @@ input[readonly]:hover {
     }
     .form-navigation-controls .btn:last-child {
         margin-bottom: 0;
+    }
+    .form-navigation-controls .page-indicator {
+       margin-bottom: 10px;  
+       order: -1; /* Show page indicator on top on mobile */
+       width: 100%; 
+       flex-grow: 0; /* Reset flex-grow */
+    }
+    .form-navigation-controls .btn#prev_page_btn {
+        margin-right: 0;
+    }
+    .form-navigation-controls .btn#next_page_btn,
+    .form-navigation-controls .btn#submit_application_btn {
+        margin-left: 0;
+    }
+
+    .membership-form-page .auth-box {
+        margin-top: 7rem; /* Adjust for smaller screens */
+        padding: 1rem;
+    }
+
+    .available-plans-group .checkbox-group {
+        padding-top: 8px; /* Add some space between label and checkboxes */
+    }
+
+    .phone-input-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .phone-input-group .phone-prefix {
+        padding: 0 12px;
+        height: 56px;
+        line-height: 56px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        white-space: nowrap;
+    }
+
+    .phone-input-group.with-flag .phone-prefix {
+        display: flex;
+        align-items: center;
+    }
+
+    .phone-input-group .country-flag {
+        margin-right: 8px;
+        font-size: 1.5em; /* Adjust flag size as needed */
+    }
+
+    .phone-input-group input[type="text"] {
+        border-radius: 0 8px 8px 0;
+        flex-grow: 1;
+    }
+
+    /* Form pagination buttons - this class might be redundant if .form-navigation-controls is used everywhere */
+    .form-navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 24px;
+        margin-bottom: 24px; 
+    }
+
+    .other-income-source-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .other-income-source-item input {
+        flex-grow: 1;
+    }
+
+    .other-income-source-item .remove-income-btn {
+        background-color: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* Form navigation controls styling */
+    .form-navigation-controls {
+        margin-top: 20px; 
+        display: flex; 
+        align-items: center; 
+        /* justify-content: space-between; Will be handled by flex properties of children */
+        position: relative; 
+        padding: 20px 0; /* Adjusted padding */
+        border-top: 1px solid #eee; 
+        margin-bottom: 24px;
+    }
+
+    .form-navigation-controls .btn#prev_page_btn {
+        margin-right: auto; /* Pushes page indicator and next/submit to the right */
+    }
+
+    .form-navigation-controls .page-indicator {
+        /* position: absolute; */ /* No longer absolute */
+        /* left: 50%; */
+        /* transform: translateX(-50%); */
+        text-align: center;
+        font-weight: 500;
+        flex-grow: 1; /* Allows it to take space in the middle */
+    }
+
+    .form-navigation-controls .btn#next_page_btn,
+    .form-navigation-controls .btn#submit_application_btn {
+        margin-left: auto; /* Pushes this button to the far right */
+    }
+
+    /* Ensure empty form-col-2 is still visible for spacing */
+    .form-col-2:empty {
+        display: block;
+    }
+
+    /* Styles for form pages (pagination) */
+    .form-page-content {
+        display: none; /* Hide all pages by default */
+    }
+
+    .form-page-content.active {
+        display: block; /* Show active page */
+    }
+
+
+    /* Modal Styles */
+    #infoModal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1050; /* Sit on top - higher than most elements */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto; /* Adjusted margin for better centering */
+        padding: 2rem;
+        border: 1px solid #ddd;
+        width: 80vw; /* Decreased width by 10% */
+        max-width: 800px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        position: relative; /* For potential close button positioning */
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.6em;
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+        font-size: 1em; /* Increased base font size */
+        line-height: 1.6;
+        color: #555;
+        max-height: 60vh; /* Limit height and enable scroll within modal body if content is too long */
+        overflow-y: auto;
+    }
+
+    .modal-body h3 {
+        font-size: 1.2em;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: var(--primary-blue, #1B3FAB);
+    }
+
+    .modal-body p {
+        margin-bottom: 15px;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        text-align: right; /* Align buttons to the right */
+        display: flex; /* Use flexbox for button alignment */
+        justify-content: flex-end; /* Align buttons to the end (right) */
+    }
+
+    .modal-footer .btn {
+        margin-left: 10px;
+        padding: 10px 20px; /* Slightly smaller padding for modal buttons */
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .signature-container {
+        width: 100%; /* Make container responsive */
+        max-width: 400px; /* Maintain current max sizing */
+        margin-bottom: 20px; /* Add some space below */
+    }
+
+    .signature-container canvas {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        width: 100%; /* Canvas takes full width of its container */
+        height: 200px; /* Fixed height, or make it responsive with JS aspect ratio */
+        display: block; /* Remove extra space below canvas */
+    }
+
+    /* Responsive adjustments for signature canvas are in the general @media query */ 
+
+    /* Styling for Other Valid ID dynamically added rows */
+    .other-valid-id-row {
+        display: flex;
+        align-items: center; /* Vertically align items */
+        gap: 8px; /* Space between input and button */
+        margin-bottom: 8px; /* Space between rows */
+    }
+    .other-valid-id-row input[type="text"] {
+        flex-grow: 1; /* Allow input to take available space */
+        margin-bottom: 0; /* Override general form-group margin if any conflict */
+        height: auto; /* Adjust height to be more inline with button */
+        padding: 8px 12px; /* Match btn-sm padding */
+    }
+    .other-valid-id-row .btn-sm {
+        flex-shrink: 0; /* Prevent button from shrinking */
+        height: 38px; /* Match typical small input height */
+        line-height: normal; /* Adjust line height for button text */
+    }
+
+    /* Modal Button Specific Colors */
+    #infoModal .modal-footer #agree_btn {
+        background-color: #28a745; /* Green */
+        border-color: #28a745;
+        color: white;
+    }
+    #infoModal .modal-footer #agree_btn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    #infoModal .modal-footer #disagree_btn {
+        background-color: #dc3545; /* Red */
+        border-color: #dc3545;
+        color: white;
+    }
+    #infoModal .modal-footer #disagree_btn:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    /* Signature section layout - stack signature pads */
+    .signature-section-row {
+        display: flex;
+        flex-direction: column; /* Stack children (form-col-2) vertically */
+        gap: 20px; /* Add some space between the stacked signature pads */
+    }
+
+    .signature-section-row .form-col-2 {
+        width: 100%; /* Make each signature container take full width */
+        max-width: 450px; /* Optional: Limit max width of individual pad */
+        margin: 0 auto; /* Center if max-width is applied */
+    }
+
+    /* Reload Notice Style - Changed to bottom toast */
+    #reload-notice {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        transform: none;
+        background-color: var(--primary-blue, #1B3FAB);
+        color: white;
+        padding: 12px 25px;
+        border-radius: 25px; /* Pill shape */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 10060; /* Above Pikaday and Modals */
+        font-size: 0.95rem;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out, bottom 0.5s ease-in-out;
+    }
+
+    #reload-notice.show {
+        display: block;
+        opacity: 1;
+        bottom: 30px;
+    }
+
+    #reload-notice.fade-out {
+        opacity: 0;
+        bottom: 20px;
+    }
+
+    #reload-notice .close-notice {
+        /* position: absolute; Not needed for this layout */
+        /* top: 10px; */
+        /* right: 15px; */
+        background: none;
+        border: none;
+        font-size: 1.2rem; /* Smaller close icon */
+        color: white;
+        cursor: pointer;
+        padding: 0 0 0 15px; /* Space to the left of close icon */
+        line-height: 1;
+        margin-left: 10px; /* Space between text and close icon */
+    }
+
+    /* Hide Pikaday calendars when modal is open */
+    body.modal-open .pika-single {
+        display: none !important;
     }
 }
 
@@ -412,12 +885,6 @@ input[readonly]:hover {
     margin-bottom: 24px; 
 }
 
-/* Small button styling */
-.btn-sm {
-    padding: 8px 12px;
-    font-size: 14px;
-}
-
 .other-income-source-item {
     display: flex;
     align-items: center;
@@ -447,25 +914,29 @@ input[readonly]:hover {
     margin-top: 20px; 
     display: flex; 
     align-items: center; 
-    justify-content: space-between; 
+    /* justify-content: space-between; Will be handled by flex properties of children */
     position: relative; 
-    padding: 0 20px; 
+    padding: 20px 0; /* Adjusted padding */
     border-top: 1px solid #eee; 
-    padding-top: 20px;
-    margin-bottom: 24px; /* Added margin for spacing before next section or footer */
+    margin-bottom: 24px;
 }
 
-.form-navigation-controls .btn {
-    min-width: 100px;
-    text-align: center;
+.form-navigation-controls .btn#prev_page_btn {
+    margin-right: auto; /* Pushes page indicator and next/submit to the right */
 }
 
 .form-navigation-controls .page-indicator {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    /* position: absolute; */ /* No longer absolute */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
     text-align: center;
     font-weight: 500;
+    flex-grow: 1; /* Allows it to take space in the middle */
+}
+
+.form-navigation-controls .btn#next_page_btn,
+.form-navigation-controls .btn#submit_application_btn {
+    margin-left: auto; /* Pushes this button to the far right */
 }
 
 /* Ensure empty form-col-2 is still visible for spacing */
@@ -500,10 +971,10 @@ input[readonly]:hover {
 .modal-content {
     background-color: #fefefe;
     margin: 5% auto; /* Adjusted margin for better centering */
-    padding: 25px;
+    padding: 2rem;
     border: 1px solid #ddd;
-    width: 90%; 
-    max-width: 700px; /* Maximum width for readability */
+    width: 80vw; /* Decreased width by 10% */
+    max-width: 800px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: relative; /* For potential close button positioning */
@@ -524,7 +995,7 @@ input[readonly]:hover {
 .modal-body {
     padding: 20px;
     font-size: 1em; /* Increased base font size */
-    line-height: 1.7;
+    line-height: 1.6;
     color: #555;
     max-height: 60vh; /* Limit height and enable scroll within modal body if content is too long */
     overflow-y: auto;
@@ -620,4 +1091,70 @@ input[readonly]:hover {
 #infoModal .modal-footer #disagree_btn:hover {
     background-color: #c82333;
     border-color: #bd2130;
+}
+
+/* Signature section layout - stack signature pads */
+.signature-section-row {
+    display: flex;
+    flex-direction: column; /* Stack children (form-col-2) vertically */
+    gap: 20px; /* Add some space between the stacked signature pads */
+}
+
+.signature-section-row .form-col-2 {
+    width: 100%; /* Make each signature container take full width */
+    max-width: 450px; /* Optional: Limit max width of individual pad */
+    margin: 0 auto; /* Center if max-width is applied */
+}
+
+/* Reload Notice Style - Changed to bottom toast */
+#reload-notice {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    transform: none;
+    background-color: var(--primary-blue, #1B3FAB);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px; /* Pill shape */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 10060; /* Above Pikaday and Modals */
+    font-size: 0.95rem;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out, bottom 0.5s ease-in-out;
+}
+
+#reload-notice.show {
+    display: block;
+    opacity: 1;
+    bottom: 30px;
+}
+
+#reload-notice.fade-out {
+    opacity: 0;
+    bottom: 20px;
+}
+
+#reload-notice .close-notice {
+    /* position: absolute; Not needed for this layout */
+    /* top: 10px; */
+    /* right: 15px; */
+    background: none;
+    border: none;
+    font-size: 1.2rem; /* Smaller close icon */
+    color: white;
+    cursor: pointer;
+    padding: 0 0 0 15px; /* Space to the left of close icon */
+    line-height: 1;
+    margin-left: 10px; /* Space between text and close icon */
+}
+
+/* Hide Pikaday calendars when modal is open */
+body.modal-open .pika-single {
+    display: none !important;
+}
+
+/* Prevent background scroll when modal open */
+body.modal-open {
+    overflow: hidden;
 } 
