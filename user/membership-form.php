@@ -13,12 +13,178 @@ if (!is_logged_in()) {
 $errors = [];
 $success = false;
 
+// Prevent duplicate application submission
+$stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
+$stmtDup->execute([get_logged_in_user()['email']]);
+if ($stmtDup->fetch()) {
+    include '../includes/header.php';
+    echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
+    echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
+    include '../includes/footer.php';
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Process form data
-    // Form validation will be implemented here
+    $user = get_logged_in_user();
+    $email = sanitize($user['email']);
+    // Names
+    $first_name = sanitize($_POST['first_name']);
+    $middle_name = sanitize($_POST['middle_name']);
+    $last_name = sanitize($_POST['last_name']);
+    // Birthday and age (input format MM/DD/YYYY)
+    $birthDateObj = DateTime::createFromFormat('m/d/Y', $_POST['birthday']);
+    if ($birthDateObj) {
+        $birthdate = $birthDateObj->format('Y-m-d');
+        $age = $birthDateObj->diff(new DateTime('today'))->y;
+    } else {
+        $birthdate = null;
+        $age = 0;
+    }
+    // Contact
+    $phone = sanitize($_POST['cell_phone']);
+    // Present address components
+    $region = sanitize($_POST['present_region_text']);
+    $province = sanitize($_POST['present_province_text']);
+    $city = sanitize($_POST['present_city_text']);
+    $barangay = sanitize($_POST['present_barangay_text']);
+    // Business info
+    $business_name = sanitize($_POST['primary_business']);
+    $business_address = sanitize(
+        $_POST['business_address_unit'] . ', ' .
+        $_POST['business_barangay_text'] . ', ' .
+        $_POST['business_city_text'] . ', ' .
+        $_POST['business_province_text'] . ', ' .
+        $_POST['business_region_text']
+    );
+    // Other sources of income
+    $other_income_source_1 = sanitize($_POST['other_income_source_1'] ?? '');
+    $other_income_source_2 = sanitize($_POST['other_income_source_2'] ?? '');
+    $other_income_source_3 = sanitize($_POST['other_income_source_3'] ?? '');
+    $other_income_source_4 = sanitize($_POST['other_income_source_4'] ?? '');
     
-    // If validation passes, save data
-    // This will be implemented later
+    // Spouse (if married)
+    $spouse_name = '';
+    $spouse_birthdate = null;
+    if (isset($_POST['civil_status']) && $_POST['civil_status'] === 'Married') {
+        $spouse_name = sanitize(
+            trim(
+                ($_POST['spouse_first_name'] ?? '') . ' ' .
+                ($_POST['spouse_middle_name'] ?? '') . ' ' .
+                ($_POST['spouse_last_name'] ?? '')
+            )
+        );
+        $spDate = DateTime::createFromFormat('m/d/Y', $_POST['spouse_birthday']);
+        if ($spDate) {
+            $spouse_birthdate = $spDate->format('Y-m-d');
+        }
+    }
+    // Beneficiary 1
+    $beneficiary_1_firstname = sanitize($_POST['beneficiary_first_name'][0] ?? '');
+    $beneficiary_1_lastname  = sanitize($_POST['beneficiary_last_name'][0] ?? '');
+    $beneficiary_1_dependent = isset($_POST['beneficiary_dependent'][0]) ? 1 : 0;
+    // Beneficiary 2
+    $beneficiary_2_firstname = sanitize($_POST['beneficiary_first_name'][1] ?? '');
+    $beneficiary_2_lastname  = sanitize($_POST['beneficiary_last_name'][1] ?? '');
+    $beneficiary_2_dependent = isset($_POST['beneficiary_dependent'][1]) ? 1 : 0;
+    // Beneficiary 3
+    $beneficiary_3_firstname = sanitize($_POST['beneficiary_first_name'][2] ?? '');
+    $beneficiary_3_lastname  = sanitize($_POST['beneficiary_last_name'][2] ?? '');
+    $beneficiary_3_dependent = isset($_POST['beneficiary_dependent'][2]) ? 1 : 0;
+    // Beneficiary 4
+    $beneficiary_4_firstname = sanitize($_POST['beneficiary_first_name'][3] ?? '');
+    $beneficiary_4_lastname  = sanitize($_POST['beneficiary_last_name'][3] ?? '');
+    $beneficiary_4_dependent = isset($_POST['beneficiary_dependent'][3]) ? 1 : 0;
+
+    // Trustee
+    $trustee_name = sanitize($_POST['trustee_name'] ?? '');
+    $tDate = DateTime::createFromFormat('m/d/Y', $_POST['trustee_dob'] ?? '');
+    $trustee_birthdate = $tDate ? $tDate->format('Y-m-d') : null;
+    // Signature uploads
+    $uploadsDir = UPLOADS_DIR . '/signatures';
+    if (!is_dir($uploadsDir)) mkdir($uploadsDir, 0755, true);
+    // Member signature
+    $memberSignaturePath = null;
+    if (!empty($_POST['member_signature'])) {
+        [$meta, $data] = explode(',', $_POST['member_signature']);
+        $decoded = base64_decode($data);
+        $fname = 'member_' . time() . '.png';
+        file_put_contents($uploadsDir . '/' . $fname, $decoded);
+        $memberSignaturePath = 'uploads/signatures/' . $fname;
+    }
+    // Beneficiary signature
+    $beneficiarySignaturePath = null;
+    if (!empty($_POST['beneficiary_signature'])) {
+        [, $data] = explode(',', $_POST['beneficiary_signature']);
+        $decoded = base64_decode($data);
+        $fname2 = 'beneficiary_' . time() . '.png';
+        file_put_contents($uploadsDir . '/' . $fname2, $decoded);
+        $beneficiarySignaturePath = 'uploads/signatures/' . $fname2;
+    }
+    // Insert into database
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO members_information
+            (first_name, middle_name, last_name, birthdate, age, email, phone, region, province, city, barangay,
+             business_name, business_address, other_income_source_1, other_income_source_2, other_income_source_3, other_income_source_4,
+             spouse_name, spouse_birthdate,
+             beneficiary_1_firstname, beneficiary_1_lastname, beneficiary_1_dependent,
+             beneficiary_2_firstname, beneficiary_2_lastname, beneficiary_2_dependent,
+             beneficiary_3_firstname, beneficiary_3_lastname, beneficiary_3_dependent,
+             beneficiary_4_firstname, beneficiary_4_lastname, beneficiary_4_dependent,
+             trustee_name, trustee_birthdate, member_signature, beneficiary_signature)
+            VALUES
+            (:first_name, :middle_name, :last_name, :birthdate, :age, :email, :phone, :region, :province, :city, :barangay,
+             :business_name, :business_address, :other_income_source_1, :other_income_source_2, :other_income_source_3, :other_income_source_4,
+             :spouse_name, :spouse_birthdate,
+             :beneficiary_1_firstname, :beneficiary_1_lastname, :beneficiary_1_dependent,
+             :beneficiary_2_firstname, :beneficiary_2_lastname, :beneficiary_2_dependent,
+             :beneficiary_3_firstname, :beneficiary_3_lastname, :beneficiary_3_dependent,
+             :beneficiary_4_firstname, :beneficiary_4_lastname, :beneficiary_4_dependent,
+             :trustee_name, :trustee_birthdate, :member_signature, :beneficiary_signature)"
+        );
+        $stmt->execute([
+            ':first_name'    => $first_name,
+            ':middle_name'   => $middle_name,
+            ':last_name'     => $last_name,
+            ':birthdate'     => $birthdate,
+            ':age'           => $age,
+            ':email'         => $email,
+            ':phone'         => $phone,
+            ':region'        => $region,
+            ':province'      => $province,
+            ':city'          => $city,
+            ':barangay'      => $barangay,
+            ':business_name'     => $business_name,
+            ':business_address'  => $business_address,
+            ':other_income_source_1' => $other_income_source_1,
+            ':other_income_source_2' => $other_income_source_2,
+            ':other_income_source_3' => $other_income_source_3,
+            ':other_income_source_4' => $other_income_source_4,
+            ':spouse_name'       => $spouse_name,
+            ':spouse_birthdate'  => $spouse_birthdate,
+            ':beneficiary_1_firstname' => $beneficiary_1_firstname,
+            ':beneficiary_1_lastname'  => $beneficiary_1_lastname,
+            ':beneficiary_1_dependent' => $beneficiary_1_dependent,
+            ':beneficiary_2_firstname' => $beneficiary_2_firstname,
+            ':beneficiary_2_lastname'  => $beneficiary_2_lastname,
+            ':beneficiary_2_dependent' => $beneficiary_2_dependent,
+            ':beneficiary_3_firstname' => $beneficiary_3_firstname,
+            ':beneficiary_3_lastname'  => $beneficiary_3_lastname,
+            ':beneficiary_3_dependent' => $beneficiary_3_dependent,
+            ':beneficiary_4_firstname' => $beneficiary_4_firstname,
+            ':beneficiary_4_lastname'  => $beneficiary_4_lastname,
+            ':beneficiary_4_dependent' => $beneficiary_4_dependent,
+            ':trustee_name'      => $trustee_name,
+            ':trustee_birthdate' => $trustee_birthdate,
+            ':member_signature'  => $memberSignaturePath,
+            ':beneficiary_signature' => $beneficiarySignaturePath
+        ]);
+        $success = true;
+    } catch (Exception $e) {
+        $errors[] = 'Submission error: ' . $e->getMessage();
+    }
 }
 
 include '../includes/header.php';
@@ -35,6 +201,11 @@ include '../includes/header.php';
                 <p>Your membership application has been submitted successfully.</p>
                 <p>One of our representatives will contact you soon.</p>
             </div>
+            <script>
+                setTimeout(function() {
+                    window.location.href = '<?php echo SITE_URL; ?>/homepage.php';
+                }, 10000);
+            </script>
         <?php else: ?>
             <?php if (!empty($errors)): ?>
                 <div class="message error">
@@ -47,12 +218,6 @@ include '../includes/header.php';
             <?php endif; ?>
             
             <form method="post" action="" id="membership-form">
-                <!-- Reload Notice -->
-                <div id="reload-notice">
-                    <span>Welcome back! We've remembered your previously entered information.</span>
-                    <button type="button" class="close-notice" aria-label="Close notice">&times;</button>
-                </div>
-
                 <!-- All Form Content -->
                 <div class="form-page-content active" id="form-page-1">
                     <h2>Personal Information</h2>
@@ -693,46 +858,6 @@ include '../includes/header.php';
         <?php endif; ?>
     </div>
 
-    <!-- Information Modal -->
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Important Information</h2>
-            </div>
-            <div class="modal-body">
-                <h3>CERTIFICATION OF HEALTH CONDITION</h3>
-                <p>I hereby declare that I am in good health at present to the best of my knowledge. I have no physical disability or any defect. I have not been hospitalized in the last year and I do not expect to be hospitalized in the near future for any illness. I declare that I have not experienced any illness requiring treatment for a week or more, nor have I undergone any surgery, accident, or injury in the past year.</p>
-                
-                <h3>DECLARATION OF TRUTH</h3>
-                <p>I hereby declare and affirm that the information provided in this application is true and correct. I agree that the information I have provided is part of my insurance contract with TSPI MBAI. Any false or incorrect information provided herein may be a cause for cancellation of the insurance and membership in TSPI MBAI. In this event, I understand that TSPI MBAI shall not be liable for any benefits intended for me, except only for the return of the amount paid for the insurance.</p>
-                
-                <h3>CONSENT UNDER THE DATA PRIVACY ACT</h3>
-                <p>Pursuant to the Data Privacy Act, I hereby give my consent to TSPI and TSPI MBAI, to collect, store, use, or process within the country, my recorded personal data. I give my consent for my personal data to be shared by TSPI and TSPI MBAI with its business partners, as well as its service providers, so that they can provide quality services, and for other legitimate purposes appropriate for these services.</p>
-                <h3>PROOF OF MEMBER'S AGREEMENT AND CONSENT TO TSPI MBAI POLICIES</h3>
-                <p>As a member, I understand and agree to the following:</p>
-                <p>A- TSPI MBAI has explained to me the importance of having Micro Insurance with a contribution/premium of:</p>
-                <p>PHP 5.00 per week or PHP 240.00 per year for the BASIC LIFE INSURANCE PLAN (BLIP);<br>
-                PHP 1.00 per thousand per week of my borrowed amount for the CREDIT LIFE INSURANCE PLAN (CLIP); or<br>
-                PHP 10 per thousand per year of my borrowed amount for the MORTGAGE REDEMPTION INSURANCE (MRI).</p>
-                <p>B- That if the cause of death is a serious illness or Pre-Existing Condition (PEC) within the first year of membership, only the amount paid for the Micro Insurance will be returned.</p>
-                <p>C- It has also been explained to me that microinsurance at TSPI MBAI is for members aged 18 to 60 years old, renewable up to age 65. However, the benefit for BLIP is reduced to half when the member's age is between 61 and 65 years old.</p>
-                <p>D- That I and my legitimate heirs are covered by a one (1) year contestability period. If I leave the program and decide to REJOIN TSPI, I and my legitimate heirs will again be covered by a one (1) year contestability period.</p>
-                <p>E- That my primary beneficiary for CLIP / MRI is TSPI (A Microfinance NGO) and the secondary beneficiaries are those stated in this form.</p>
-                <p><strong>1. Proof of Consent to Premium Collection (for Borrower only)</strong><br>
-                This is to authorize TSPI MBAI to charge TULAY SA PAG-UNLAD, INC. (TSPI) the corresponding premium amount for BLIP and CLIP by deducting it from my loan proceeds or from my Capital Build Up (CBU) if the premium is not included in my regular payments. I understand that with my payment to TSPI (weekly, twice a month, or monthly), my Micro Insurance premium is paid first before the interest and the borrowed amount.</p>
-                <p><strong>2. Proof of Agreement to the Grace Period for Contribution/Premium Payment (for Borrower and Family Member)</strong><br>
-                a. BLIP - If I am unable to pay my BLIP contribution, I have a 45-day grace period for my insurance coverage to continue. If I fail to pay my BLIP contribution or renew after the 45-day grace period, my life plus and life max, if any, will become invalid.<br>
-                b. CLIP/MRI - If I am unable to pay my CLIP/MRI contribution until the loan maturity, I have a 45-day grace period for my insurance coverage to continue. The end or maturity date of my loan is the end of my CLIP/MRI coverage. I understand that there is no grace period for this. I understand that the insurance coverage for CLIP or MRI will begin on the day I receive the loan from TSPI and will end on the maturity date of my loan. Therefore, if I decide to take a break from borrowing or undergo a resting period, I will no longer have insurance coverage for CLIP or MRI, and I will no longer have to pay contributions for it.</p>
-                <p><strong>3. Proof of Consent to Return of Equity Value (for Borrower and Family Member)</strong><br>
-                In the event that my coverage ends or lapses on any date, I authorize TSPI MBAI to: Transfer my Equity Value to my CBU or to the CBU of my recruiter at TSPI (A Microfinance NGO) to pay for my remaining debt or the debt of my Recruiter, ___________________, to TSPI. If I have no debt or my Recruiter has no debt, transfer my EV to my CBU or to the CBU of my Recruiter to be added to my/his/her savings. The recoverable amount of the EQUITY VALUE according to the aforementioned conditions is the full and final payment to me by TSPI MBAI. This also serves as a quitclaim, or a release or discharge/waiver of any action I may have against TSPI MBAI.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="disagree_btn" class="btn btn-secondary">I Disagree</button>
-                <button type="button" id="agree_btn" class="btn btn-primary">I Agree</button>
-            </div>
-        </div>
-    </div>
-
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
@@ -744,64 +869,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('membership-form');
     const submitButton = document.getElementById('submit_application_btn');
     const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
-    
-    // Modal elements
-    const infoModal = document.getElementById('infoModal');
-    const agreeBtn = document.getElementById('agree_btn');
-    const disagreeBtn = document.getElementById('disagree_btn');
-    const modalBody = infoModal ? infoModal.querySelector('.modal-body') : null;
-
-    // Show modal on page load
-    if (infoModal) {
-        infoModal.style.display = 'block';
-        // Prevent background scroll
-        document.body.classList.add('modal-open');
-        // Disable buttons until user scrolls bottom (if scrollable)
-        if (agreeBtn) agreeBtn.disabled = true;
-        if (disagreeBtn) disagreeBtn.disabled = true;
-        if (modalBody) {
-            // If content fits, enable immediately
-            if (modalBody.scrollHeight <= modalBody.clientHeight) {
-                agreeBtn.disabled = false;
-                disagreeBtn.disabled = false;
-            }
-            modalBody.addEventListener('scroll', function() {
-                if (modalBody.scrollHeight > modalBody.clientHeight &&
-                    modalBody.scrollTop + modalBody.clientHeight >= modalBody.scrollHeight - 10) {
-                    if (agreeBtn) agreeBtn.disabled = false;
-                    if (disagreeBtn) disagreeBtn.disabled = false;
-                }
-            });
-        }
-    }
-
-    if (agreeBtn) {
-        agreeBtn.addEventListener('click', function() {
-            infoModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-            // Potentially enable form interaction here if it was disabled
-        });
-    }
-
-    if (disagreeBtn) {
-        disagreeBtn.addEventListener('click', function() {
-            infoModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-            alert('You must agree to the terms to proceed with the application.');
-            // Disable all form inputs and buttons if user disagrees
-            if (form) {
-                const elements = form.elements;
-                for (let i = 0, len = elements.length; i < len; ++i) {
-                    elements[i].disabled = true;
-                }
-            }
-            if (submitButton) submitButton.disabled = true;
-            // Disable pagination buttons as well
-            if (document.getElementById('prev_page_btn')) document.getElementById('prev_page_btn').disabled = true;
-            if (document.getElementById('next_page_btn')) document.getElementById('next_page_btn').disabled = true;
-
-        });
-    }
     
     // Handle submit button based on disclaimer checkbox
     if (submitButton && disclaimerCheckbox) {
