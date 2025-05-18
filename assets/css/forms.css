@@ -1,0 +1,623 @@
+/* Apply the fixed navbar offset rule */
+h1, h2 {
+    scroll-margin-top: var(--navbar-scroll-offset);
+}
+
+.membership-form-container {
+    padding-top: 2rem;
+}
+
+/* Form styling based on Figma design */
+.form-group {
+    margin-bottom: 4px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group input[type="email"],
+.form-group select {
+    width: 100%;
+    height: 56px;
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border: 2px solid var(--primary-blue, #1B3FAB);
+    outline: none;
+}
+
+/* Radio buttons styling */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.radio-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.radio-item input[type="radio"] {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    position: relative;
+}
+
+.radio-item input[type="radio"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--primary-blue, #1B3FAB);
+    border-radius: 50%;
+}
+
+.radio-item label {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 0;
+}
+
+/* Checkbox styling */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.checkbox-item input[type="checkbox"] {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    position: relative;
+}
+
+.checkbox-item input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 4px;
+    width: 16px;
+    height: 12px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B3FAB'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+/* Disclaimer styling */
+.disclaimer-box {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 24px;
+}
+
+#disclaimer_agreement + label {
+    font-style: italic;
+    color: #555;
+}
+
+/* Specific styling for the disclaimer checkbox */
+#disclaimer_agreement {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border: 2px solid #1B3FAB;
+}
+
+#disclaimer_agreement:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B3FAB'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+/* Styling for disclaimer checkbox container */
+.disclaimer-checkbox-container {
+    gap: 15px !important;
+}
+
+.disclaimer-checkbox-container label {
+    max-width: calc(100% - 45px);
+}
+
+/* Disabled button styling */
+button[type="submit"]:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.checkbox-item label {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 0;
+}
+
+/* Form layout */
+.form-row {
+    display: flex;
+    margin-bottom: 4px;
+    gap: 16px;
+}
+
+.form-col-2 {
+    flex: 1 1 calc(50% - 8px);
+}
+
+.form-col-3 {
+    flex: 1 1 calc(33.33% - 11px);
+}
+
+/* Section divider */
+.section-divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 32px 0;
+}
+
+/* Beneficiaries table */
+.beneficiaries-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 24px;
+}
+
+.beneficiaries-table th {
+    background-color: #f9f9f9;
+    padding: 12px;
+    text-align: left;
+    font-weight: 500;
+    border-bottom: 1px solid #eee;
+    color: #666;
+}
+
+.beneficiaries-table td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.beneficiaries-table input,
+.beneficiaries-table select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.beneficiaries-table th:nth-child(3), /* M.I. */
+.beneficiaries-table td:nth-child(3) {
+    width: 8%; /* Increased width for M.I. */
+    min-width: 60px;
+}
+
+.beneficiaries-table th:nth-child(4), /* Date of Birth */
+.beneficiaries-table td:nth-child(4) {
+    width: 18%; /* Adjusted Date of Birth width */
+}
+
+.beneficiaries-table th:nth-child(5), /* Gender */
+.beneficiaries-table td:nth-child(5) {
+    width: 8%; /* Decreased Gender width */
+}
+
+.beneficiaries-table th:nth-child(6), /* Relationship */
+.beneficiaries-table td:nth-child(6) {
+    width: 12%; /* Adjusted Relationship width (approx 20% reduction from a typical larger share) */
+}
+
+.beneficiaries-table th:last-child, /* Dependent */
+.beneficiaries-table td:last-child {
+    width: 8%; /* Adjust as needed for Dependent */
+    text-align: center;
+}
+
+.beneficiaries-table td:last-child input[type="checkbox"] {
+    margin: 0 auto; /* Center checkbox in the cell */
+    display: block;
+}
+
+input[readonly] {
+    background-color: #e9ecef !important; 
+    opacity: 1 !important; 
+    cursor: not-allowed !important;
+    pointer-events: none; /* Prevents click events */
+    transition: none !important; 
+}
+
+input[readonly]:focus,
+input[readonly]:hover {
+    border: 1px solid #ccc !important; 
+    outline: none !important; 
+    box-shadow: none !important; 
+}
+
+
+/* Button styling */
+.btn {
+    display: inline-block;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Primary button (blue) */
+.btn-primary {
+    background-color: var(--primary-blue, #1B3FAB);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #142b73;
+}
+
+/* Secondary button (grey) */
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Error and success messages */
+.message {
+    padding: 16px;
+    margin-bottom: 24px;
+    border-radius: 8px;
+}
+
+.message.success {
+    background-color: #e6f7e6;
+    border: 1px solid #b8e5b8;
+    color: #2e7d32;
+}
+
+.message.error {
+    background-color: #ffebee;
+    border: 1px solid #ffcdd2;
+    color: #c62828;
+}
+
+.message p {
+    margin: 0 0 8px 0;
+}
+
+.message ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .form-col-2,
+    .form-col-3 {
+        flex: 1 1 100%;
+    }
+    
+    .checkbox-group,
+    .radio-group {
+        flex-direction: column;
+    }
+
+    .signature-container canvas {
+        width: 100% !important; 
+        height: 150px !important; /* Fixed height for smaller screens or adjust as needed */
+    }
+    .form-navigation-controls .page-indicator {
+        position: static; 
+        transform: none;   
+        margin-top: 10px;  
+        order: -1; 
+        width: 100%; 
+    }
+    .form-navigation-controls {
+        flex-direction: column;
+    }
+     .form-navigation-controls .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .form-navigation-controls .btn:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.available-plans-group .checkbox-group {
+    padding-top: 8px; /* Add some space between label and checkboxes */
+}
+
+.phone-input-group {
+    display: flex;
+    align-items: center;
+}
+
+.phone-input-group .phone-prefix {
+    padding: 0 12px;
+    height: 56px;
+    line-height: 56px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    white-space: nowrap;
+}
+
+.phone-input-group.with-flag .phone-prefix {
+    display: flex;
+    align-items: center;
+}
+
+.phone-input-group .country-flag {
+    margin-right: 8px;
+    font-size: 1.5em; /* Adjust flag size as needed */
+}
+
+.phone-input-group input[type="text"] {
+    border-radius: 0 8px 8px 0;
+    flex-grow: 1;
+}
+
+/* Form pagination buttons - this class might be redundant if .form-navigation-controls is used everywhere */
+.form-navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+    margin-bottom: 24px; 
+}
+
+/* Small button styling */
+.btn-sm {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.other-income-source-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.other-income-source-item input {
+    flex-grow: 1;
+}
+
+.other-income-source-item .remove-income-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Form navigation controls styling */
+.form-navigation-controls {
+    margin-top: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    position: relative; 
+    padding: 0 20px; 
+    border-top: 1px solid #eee; 
+    padding-top: 20px;
+    margin-bottom: 24px; /* Added margin for spacing before next section or footer */
+}
+
+.form-navigation-controls .btn {
+    min-width: 100px;
+    text-align: center;
+}
+
+.form-navigation-controls .page-indicator {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Ensure empty form-col-2 is still visible for spacing */
+.form-col-2:empty {
+    display: block;
+}
+
+/* Styles for form pages (pagination) */
+.form-page-content {
+    display: none; /* Hide all pages by default */
+}
+
+.form-page-content.active {
+    display: block; /* Show active page */
+}
+
+
+/* Modal Styles */
+#infoModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1050; /* Sit on top - higher than most elements */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* Adjusted margin for better centering */
+    padding: 25px;
+    border: 1px solid #ddd;
+    width: 90%; 
+    max-width: 700px; /* Maximum width for readability */
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative; /* For potential close button positioning */
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.6em;
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+    font-size: 1em; /* Increased base font size */
+    line-height: 1.7;
+    color: #555;
+    max-height: 60vh; /* Limit height and enable scroll within modal body if content is too long */
+    overflow-y: auto;
+}
+
+.modal-body h3 {
+    font-size: 1.2em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--primary-blue, #1B3FAB);
+}
+
+.modal-body p {
+    margin-bottom: 15px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    text-align: right; /* Align buttons to the right */
+    display: flex; /* Use flexbox for button alignment */
+    justify-content: flex-end; /* Align buttons to the end (right) */
+}
+
+.modal-footer .btn {
+    margin-left: 10px;
+    padding: 10px 20px; /* Slightly smaller padding for modal buttons */
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.signature-container {
+    width: 100%; /* Make container responsive */
+    max-width: 400px; /* Maintain current max sizing */
+    margin-bottom: 20px; /* Add some space below */
+}
+
+.signature-container canvas {
+    border: 1px solid #ddd;
+    background-color: #fff;
+    width: 100%; /* Canvas takes full width of its container */
+    height: 200px; /* Fixed height, or make it responsive with JS aspect ratio */
+    display: block; /* Remove extra space below canvas */
+}
+
+/* Responsive adjustments for signature canvas are in the general @media query */ 
+
+/* Styling for Other Valid ID dynamically added rows */
+.other-valid-id-row {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 8px; /* Space between input and button */
+    margin-bottom: 8px; /* Space between rows */
+}
+.other-valid-id-row input[type="text"] {
+    flex-grow: 1; /* Allow input to take available space */
+    margin-bottom: 0; /* Override general form-group margin if any conflict */
+    height: auto; /* Adjust height to be more inline with button */
+    padding: 8px 12px; /* Match btn-sm padding */
+}
+.other-valid-id-row .btn-sm {
+    flex-shrink: 0; /* Prevent button from shrinking */
+    height: 38px; /* Match typical small input height */
+    line-height: normal; /* Adjust line height for button text */
+}
+
+/* Modal Button Specific Colors */
+#infoModal .modal-footer #agree_btn {
+    background-color: #28a745; /* Green */
+    border-color: #28a745;
+    color: white;
+}
+#infoModal .modal-footer #agree_btn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+#infoModal .modal-footer #disagree_btn {
+    background-color: #dc3545; /* Red */
+    border-color: #dc3545;
+    color: white;
+}
+#infoModal .modal-footer #disagree_btn:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+} 

@@ -344,11 +344,7 @@ h1 {
             
             <?php if (isset($user) && isset($new_verification_code)): ?>
                 <div class="dev-verification-link">
-                    <p><strong>Development Testing Only:</strong> Email sending may not work in local environment.</p>
-                    <p>Use this link to verify your account:</p>
-                    <a href="<?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>" target="_blank">
-                        <?php echo SITE_URL . "/user/verify.php?code=" . $new_verification_code; ?>
-                    </a>
+                
                 </div>
                 <style>
                     .dev-verification-link {

@@ -24,467 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include '../includes/header.php';
 ?>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
-
-<style>
-/* Apply the fixed navbar offset rule */
-h1, h2 {
-    scroll-margin-top: var(--navbar-scroll-offset);
-}
-
-.membership-form-container {
-    padding-top: 2rem;
-}
-
-/* Form styling based on Figma design */
-.form-group {
-    margin-bottom: 4px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group input[type="date"],
-.form-group input[type="email"],
-.form-group select {
-    width: 100%;
-    height: 56px;
-    padding: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    font-size: 16px;
-    transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    border: 2px solid var(--primary-blue, #1B3FAB);
-    outline: none;
-}
-
-/* Radio buttons styling */
-.radio-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.radio-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.radio-item input[type="radio"] {
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    position: relative;
-}
-
-.radio-item input[type="radio"]:checked::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
-    background-color: var(--primary-blue, #1B3FAB);
-    border-radius: 50%;
-}
-
-.radio-item label {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 0;
-}
-
-/* Checkbox styling */
-.checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.checkbox-item input[type="checkbox"] {
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    position: relative;
-}
-
-.checkbox-item input[type="checkbox"]:checked::after {
-    content: "";
-    position: absolute;
-    top: 6px;
-    left: 4px;
-    width: 16px;
-    height: 12px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B3FAB'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-/* Disclaimer styling */
-.disclaimer-box {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 16px;
-    margin-top: 24px;
-}
-
-#disclaimer_agreement + label {
-    font-style: italic;
-    color: #555;
-}
-
-/* Specific styling for the disclaimer checkbox */
-#disclaimer_agreement {
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
-    border: 2px solid #1B3FAB;
-}
-
-#disclaimer_agreement:checked::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B3FAB'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-/* Styling for disclaimer checkbox container */
-.disclaimer-checkbox-container {
-    gap: 15px !important;
-}
-
-.disclaimer-checkbox-container label {
-    max-width: calc(100% - 45px);
-}
-
-/* Disabled button styling */
-button[type="submit"]:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
-.checkbox-item label {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 0;
-}
-
-/* Form layout */
-.form-row {
-    display: flex;
-    margin-bottom: 4px;
-    gap: 16px;
-}
-
-.form-col-2 {
-    flex: 1 1 calc(50% - 8px);
-}
-
-.form-col-3 {
-    flex: 1 1 calc(33.33% - 11px);
-}
-
-/* Section divider */
-.section-divider {
-    height: 1px;
-    background-color: #eee;
-    margin: 32px 0;
-}
-
-/* Beneficiaries table */
-.beneficiaries-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 24px;
-}
-
-.beneficiaries-table th {
-    background-color: #f9f9f9;
-    padding: 12px;
-    text-align: left;
-    font-weight: 500;
-    border-bottom: 1px solid #eee;
-    color: #666;
-}
-
-.beneficiaries-table td {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-}
-
-.beneficiaries-table input,
-.beneficiaries-table select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-}
-
-.beneficiaries-table th:nth-child(3), /* M.I. */
-.beneficiaries-table td:nth-child(3) {
-    width: 7%; /* Adjusted M.I. width */
-    min-width: 50px;
-}
-
-.beneficiaries-table th:nth-child(4), /* Date of Birth */
-.beneficiaries-table td:nth-child(4) {
-    width: 18%; /* Adjusted Date of Birth width */
-}
-
-.beneficiaries-table th:nth-child(5), /* Gender */
-.beneficiaries-table td:nth-child(5) {
-    width: 8%; /* Decreased Gender width */
-}
-
-.beneficiaries-table th:nth-child(6), /* Relationship */
-.beneficiaries-table td:nth-child(6) {
-    width: 12%; /* Adjusted Relationship width (approx 20% reduction from a typical larger share) */
-}
-
-.beneficiaries-table th:last-child, /* Dependent */
-.beneficiaries-table td:last-child {
-    width: 6%; /* Adjusted Dependent width */
-    text-align: center;
-}
-
-.beneficiaries-table td:last-child input[type="checkbox"] {
-    margin: 0 auto; /* Center checkbox in the cell */
-    display: block;
-}
-
-input[readonly] {
-    background-color: #e9ecef; /* Standard grey for disabled/readonly inputs */
-    opacity: 1; /* Ensure text is readable */
-    cursor: not-allowed;
-}
-
-/* Button styling */
-.btn {
-    display: inline-block;
-    border: none;
-    border-radius: 8px;
-    padding: 16px 32px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-/* Primary button (blue) */
-.btn-primary {
-    background-color: var(--primary-blue, #1B3FAB);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #142b73;
-}
-
-/* Secondary button (grey) */
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-/* Error and success messages */
-.message {
-    padding: 16px;
-    margin-bottom: 24px;
-    border-radius: 8px;
-}
-
-.message.success {
-    background-color: #e6f7e6;
-    border: 1px solid #b8e5b8;
-    color: #2e7d32;
-}
-
-.message.error {
-    background-color: #ffebee;
-    border: 1px solid #ffcdd2;
-    color: #c62828;
-}
-
-.message p {
-    margin: 0 0 8px 0;
-}
-
-.message ul {
-    margin: 0;
-    padding-left: 20px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .form-col-2,
-    .form-col-3 {
-        flex: 1 1 100%;
-    }
-    
-    .checkbox-group,
-    .radio-group {
-        flex-direction: column;
-    }
-}
-
-.available-plans-group .checkbox-group {
-    padding-top: 8px; /* Add some space between label and checkboxes */
-}
-
-.phone-input-group {
-    display: flex;
-    align-items: center;
-}
-
-.phone-input-group .phone-prefix {
-    padding: 0 12px;
-    height: 56px;
-    line-height: 56px;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-right: none;
-    border-radius: 8px 0 0 8px;
-    white-space: nowrap;
-}
-
-.phone-input-group.with-flag .phone-prefix {
-    display: flex;
-    align-items: center;
-}
-
-.phone-input-group .country-flag {
-    margin-right: 8px;
-    font-size: 1.5em; /* Adjust flag size as needed */
-}
-
-.phone-input-group input[type="text"] {
-    border-radius: 0 8px 8px 0;
-    flex-grow: 1;
-}
-
-/* Form pagination buttons */
-.form-navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 24px;
-    margin-bottom: 24px; /* Added margin for spacing before next section */
-}
-
-/* Small button styling */
-.btn-sm {
-    padding: 8px 12px;
-    font-size: 14px;
-}
-
-.other-income-source-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.other-income-source-item input {
-    flex-grow: 1;
-}
-
-.other-income-source-item .remove-income-btn {
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.beneficiaries-table th:nth-child(3), /* M.I. */
-.beneficiaries-table td:nth-child(3) {
-    width: 8%; /* Increased width for M.I. */
-    min-width: 60px;
-}
-
-.beneficiaries-table th:last-child, /* Dependent */
-.beneficiaries-table td:last-child {
-    width: 8%; /* Adjust as needed for Dependent */
-    text-align: center;
-}
-
-.beneficiaries-table td:last-child input[type="checkbox"] {
-    margin: 0 auto; /* Center checkbox in the cell */
-    display: block;
-}
-
-/* Form navigation controls styling */
-.form-navigation-controls {
-    margin-top: 20px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    position: relative; 
-    padding: 0 20px; 
-    border-top: 1px solid #eee; 
-    padding-top: 20px;
-}
-
-.form-navigation-controls .btn {
-    min-width: 100px;
-    text-align: center;
-}
-
-.form-navigation-controls .page-indicator {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    font-weight: 500;
-}
-
-/* Ensure empty form-col-2 is still visible for spacing */
-.form-col-2:empty {
-    display: block;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="../assets/css/forms.css">
 
 <main class="container membership-form-container">
     <div class="auth-box fade-up-on-load">
@@ -508,7 +48,7 @@ input[readonly] {
             
             <form method="post" action="" id="membership-form">
                 <!-- All Form Content -->
-                <div class="form-page">
+                <div class="form-page-content active" id="form-page-1">
                     <h2>Personal Information</h2>
                     
                     <div class="form-row">
@@ -517,8 +57,17 @@ input[readonly] {
                                 <label for="branch">Branch</label>
                                 <select id="branch" name="branch" required>
                                     <option value="" disabled selected>Select Branch</option>
-                                    <option value="branch1">Branch 1</option>
-                                    <option value="branch2">Branch 2</option>
+                                    <?php
+                                    // Fetch branches from the database
+                                    $branch_query = "SELECT id, branch FROM branches ORDER BY branch";
+                                    $branch_result = mysqli_query($conn, $branch_query);
+                                    
+                                    if ($branch_result && mysqli_num_rows($branch_result) > 0) {
+                                        while ($branch_row = mysqli_fetch_assoc($branch_result)) {
+                                            echo '<option value="' . $branch_row['branch'] . '">' . $branch_row['branch'] . '</option>';
+                                        }
+                                    }
+                                    ?>
                                 </select>
                             </div>
                         </div>
@@ -734,7 +283,9 @@ input[readonly] {
                     <!-- End Mother's Maiden Name -->
 
                     <div class="section-divider"></div>
+                </div> <!-- End of Page 1 -->
 
+                <div class="form-page-content" id="form-page-2">
                     <h2>Present Address</h2>
                      <div class="form-group">
                         <label for="present_address">Unit / Address</label>
@@ -787,6 +338,7 @@ input[readonly] {
 
                     <div class="section-divider"></div>
 
+                    <!-- Permanent Address -->
                     <h2>Permanent Address</h2>
                     <div class="form-group">
                         <label for="permanent_address">Unit / Address</label>
@@ -836,7 +388,8 @@ input[readonly] {
                             <!-- Empty div to maintain 2-column layout -->
                         </div>
                     </div>
-                    
+                    <div class="section-divider"></div>
+                    <!-- Home Ownership -->
                     <div class="form-group">
                         <label>Home Ownership</label>
                         <div class="radio-group">
@@ -865,25 +418,20 @@ input[readonly] {
                             <!-- Empty div to maintain 2-column layout -->
                         </div>
                     </div>
-
                     <div class="section-divider"></div>
-                
+                    <!-- Business/Source of Funds -->
                     <h2>Business/Source of Funds</h2>
-                    
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="primary_business">Primary Business</label>
                                 <input type="text" id="primary_business" name="primary_business" required placeholder="Enter Primary Business">
                                 <button type="button" id="add_other_income_source_btn" class="btn btn-secondary btn-sm" style="margin-top: 8px;">Got other source of income?</button>
-
                             </div>
                             <div id="other_income_sources_container">
-                        <!-- Other income sources will be added here by JS -->
+                                <!-- Other income sources will be added here by JS -->
+                            </div>
                         </div>
-                        </div>
-                        
-                      
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="years_in_business">Years in Business</label>
@@ -891,7 +439,6 @@ input[readonly] {
                             </div>
                         </div>
                     </div>
-                 
                     <div class="form-group">
                         <label for="business_address_unit">Unit / Address</label>
                         <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Building, Street Name" required>
@@ -922,7 +469,7 @@ input[readonly] {
                                 <select id="business_city" name="business_city" class="form-control address-city" required></select>
                             </div>
                         </div>
-                        <div class="form-col-3">        
+                        <div class="form-col-3">
                             <div class="form-group">
                                 <label for="business_barangay">Barangay</label>
                                 <select id="business_barangay" name="business_barangay" class="form-control address-barangay" required></select>
@@ -940,14 +487,11 @@ input[readonly] {
                             <!-- Empty div to maintain 2-column layout -->
                         </div>
                     </div>
-                    
-                    
-                    
                     <div class="section-divider"></div>
-                    
+                    <!-- Spouse Information -->
                     <div id="spouse_information_section" style="display: none;">
                         <h2>Spouse Information</h2>
-                         <div class="form-row">
+                        <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_last_name">Spouse's Last Name</label>
@@ -1002,7 +546,9 @@ input[readonly] {
                         </div>
                         <div class="section-divider"></div>
                     </div>
+                </div> <!-- End of Page 2 -->
 
+                <div class="form-page-content" id="form-page-3">
                     <h2>Beneficiaries and Dependents</h2>
                     <table class="beneficiaries-table">
                         <thead>
@@ -1082,7 +628,7 @@ input[readonly] {
                             <div class="form-group">
                                 <label for="member_signature">Member's Signature</label>
                                 <div class="signature-container">
-                                    <canvas id="member_signature_canvas" width="400" height="200" style="border: 1px solid #ddd; background-color: #fff;"></canvas>
+                                    <canvas id="member_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="member_signature" name="member_signature">
                                     <div class="signature-buttons" style="margin-top: 10px;">
                                         <button type="button" id="clear_member_signature" class="btn btn-sm btn-secondary">Clear</button>
@@ -1094,7 +640,7 @@ input[readonly] {
                             <div class="form-group">
                                 <label for="beneficiary_signature">Beneficiary's Signature</label>
                                 <div class="signature-container">
-                                    <canvas id="beneficiary_signature_canvas" width="400" height="200" style="border: 1px solid #ddd; background-color: #fff;"></canvas>
+                                    <canvas id="beneficiary_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
                                     <div class="signature-buttons" style="margin-top: 10px;">
                                         <button type="button" id="clear_beneficiary_signature" class="btn btn-sm btn-secondary">Clear</button>
@@ -1130,11 +676,40 @@ input[readonly] {
                     <div style="display: flex; justify-content: flex-end;">
                         <button type="submit" id="submit_application_btn" class="btn btn-primary" disabled>Submit Application</button>
                     </div>
+                </div> <!-- End of Page 3 -->
+
+                <!-- Form Navigation -->
+                <div class="form-navigation-controls">
+                    <button type="button" id="prev_page_btn" class="btn btn-secondary" style="display: none;">Previous</button>
+                    <div class="page-indicator" id="page_indicator">Page 1 of 3</div>
+                    <button type="button" id="next_page_btn" class="btn btn-primary">Next</button>
                 </div>
             </form>
         <?php endif; ?>
     </div>
 
+    <!-- Information Modal -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Important Information</h2>
+            </div>
+            <div class="modal-body">
+                <h3>CERTIFICATION OF HEALTH CONDITION</h3>
+                <p>I hereby declare that I am in good health at present to the best of my knowledge. I have no physical disability or any defect. I have not been hospitalized in the last year and I do not expect to be hospitalized in the near future for any illness. I declare that I have not experienced any illness requiring treatment for a week or more, nor have I undergone any surgery, accident, or injury in the past year.</p>
+                
+                <h3>DECLARATION OF TRUTH</h3>
+                <p>I hereby declare and affirm that the information provided in this application is true and correct. I agree that the information I have provided is part of my insurance contract with TSPI MBAI. Any false or incorrect information provided herein may be a cause for cancellation of the insurance and membership in TSPI MBAI. In this event, I understand that TSPI MBAI shall not be liable for any benefits intended for me, except only for the return of the amount paid for the insurance.</p>
+                
+                <h3>CONSENT UNDER THE DATA PRIVACY ACT</h3>
+                <p>Pursuant to the Data Privacy Act, I hereby give my consent to TSPI and TSPI MBAI, to collect, store, use, or process within the country, my recorded personal data. I give my consent for my personal data to be shared by TSPI and TSPI MBAI with its business partners, as well as its service providers, so that they can provide quality services, and for other legitimate purposes appropriate for these services.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="disagree_btn" class="btn btn-secondary">I Disagree</button>
+                <button type="button" id="agree_btn" class="btn btn-primary">I Agree</button>
+            </div>
+        </div>
+    </div>
 
 </main>
 
@@ -1144,14 +719,51 @@ input[readonly] {
 <script src="https://cdn.jsdelivr.net/npm/philippine-address-selector@latest/dist/philippine-address-selector.bundle.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle submit button based on disclaimer checkbox
-    const submitButton = document.querySelector('#submit_application_btn');
-    const disclaimerCheckbox = document.querySelector('#disclaimer_agreement');
+    const form = document.getElementById('membership-form');
+    const submitButton = document.getElementById('submit_application_btn');
+    const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
     
+    // Modal elements
+    const infoModal = document.getElementById('infoModal');
+    const agreeBtn = document.getElementById('agree_btn');
+    const disagreeBtn = document.getElementById('disagree_btn');
+
+    // Show modal on page load
+    if (infoModal) {
+        infoModal.style.display = 'block';
+    }
+
+    if (agreeBtn) {
+        agreeBtn.addEventListener('click', function() {
+            infoModal.style.display = 'none';
+            // Potentially enable form interaction here if it was disabled
+        });
+    }
+
+    if (disagreeBtn) {
+        disagreeBtn.addEventListener('click', function() {
+            // Option 1: Redirect (Example: to homepage or an info page)
+            // window.location.href = '/'; 
+            // Option 2: Disable the form / show a message
+            infoModal.style.display = 'none';
+            alert('You must agree to the terms to proceed with the application.');
+            // Disable all form inputs and buttons if user disagrees
+            if (form) {
+                const elements = form.elements;
+                for (let i = 0, len = elements.length; i < len; ++i) {
+                    elements[i].disabled = true;
+                }
+            }
+            if (submitButton) submitButton.disabled = true;
+            // Disable pagination buttons as well
+            if (document.getElementById('prev_page_btn')) document.getElementById('prev_page_btn').disabled = true;
+            if (document.getElementById('next_page_btn')) document.getElementById('next_page_btn').disabled = true;
+
+        });
+    }
+    
+    // Handle submit button based on disclaimer checkbox
     if (submitButton && disclaimerCheckbox) {
-        // Initially the button is disabled (set in HTML)
-        
-        // Add event listener to enable/disable button based on checkbox
         disclaimerCheckbox.addEventListener('change', function() {
             submitButton.disabled = !this.checked;
         });
@@ -1161,45 +773,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const birthdayField = document.getElementById('birthday');
     const ageField = document.getElementById('age');
     
-    if (birthdayField && ageField) {
-        // birthdayField.addEventListener('change', function() { // Original event listener
-        //     if (this.value) {
-        //         const birthDate = new Date(this.value);
-        //         const today = new Date();
-        //         let age = today.getFullYear() - birthDate.getFullYear();
-        //         const monthDiff = today.getMonth() - birthDate.getMonth();
+    function calculateAge(birthDateValue, targetAgeField) {
+        if (birthDateValue && targetAgeField) {
+            const birthDate = new Date(birthDateValue);
+            if (!isNaN(birthDate.getTime())) { // Check if date is valid
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
                 
-        //         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        //             age--;
-        //         }
-                
-        //         ageField.value = age;
-        //     }
-        // });
-        // Pikaday initialization for birthday will handle this
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                targetAgeField.value = age >= 0 ? age : ''; // Ensure age is not negative
+            } else {
+                targetAgeField.value = '';
+            }
+        }
     }
     
     // Auto-calculate spouse age from spouse birthday
     const spouseBirthdayField = document.getElementById('spouse_birthday');
     const spouseAgeField = document.getElementById('spouse_age');
-    
-    if (spouseBirthdayField && spouseAgeField) {
-        // spouseBirthdayField.addEventListener('change', function() { // Original event listener
-        //     if (this.value) {
-        //         const birthDate = new Date(this.value);
-        //         const today = new Date();
-        //         let age = today.getFullYear() - birthDate.getFullYear();
-        //         const monthDiff = today.getMonth() - birthDate.getMonth();
-                
-        //         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        //             age--;
-        //         }
-                
-        //         spouseAgeField.value = age;
-        //     }
-        // });
-        // Pikaday initialization for spouse_birthday will handle this
-    }
     
     // Toggle visibility of spouse fields based on civil status
     const civilStatusSelect = document.getElementById('civil_status');
@@ -1229,10 +823,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Form validation before submit
-    const membershipForm = document.getElementById('membership-form');
-    
-    if (membershipForm) {
-        membershipForm.addEventListener('submit', function(event) {
+    if (form) {
+        form.addEventListener('submit', function(event) {
             let isValid = true;
             const errorMessages = [];
             
@@ -1298,36 +890,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const eighteenYearsAgo = new Date();
         eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
 
-        const birthdayPicker = new Pikaday({ // Assign to variable
+        const birthdayPicker = new Pikaday({ 
             field: birthdayField,
             ...pikadayConfig,
-            defaultDate: eighteenYearsAgo, // Set default to 18 years ago
-            setDefaultDate: true, // Make sure defaultDate is used
+            defaultDate: eighteenYearsAgo, 
+            setDefaultDate: true, 
             onSelect: function() {
                 if (this.getMoment().isValid()) {
-                    const birthDate = this.getDate();
-                    const today = new Date();
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const monthDiff = today.getMonth() - birthDate.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
-                    if(ageField) ageField.value = age;
+                    calculateAge(this.getDate(), ageField);
                 } else {
                     if(ageField) ageField.value = '';
                 }
             }
         });
         // Trigger age calculation on initial load if default date is set
-        if (birthdayPicker.getDate()) {
-            const birthDate = birthdayPicker.getDate();
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            if(ageField) ageField.value = age;
+        if (birthdayField.value) { // Check if field has a value (could be from localStorage later)
+             calculateAge(birthdayPicker.getDate(), ageField); // Use picker's date
+        } else if (birthdayPicker.getDate()){ // Or if picker set a default
+             calculateAge(birthdayPicker.getDate(), ageField);
         }
     }
 
@@ -1337,19 +917,15 @@ document.addEventListener('DOMContentLoaded', function() {
             ...pikadayConfig,
             onSelect: function() {
                 if (this.getMoment().isValid()) {
-                    const birthDate = this.getDate();
-                    const today = new Date();
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const monthDiff = today.getMonth() - birthDate.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
-                    if(spouseAgeField) spouseAgeField.value = age;
+                    calculateAge(this.getDate(), spouseAgeField);
                 } else {
                     if(spouseAgeField) spouseAgeField.value = '';
                 }
             }
         });
+         if (spouseBirthdayField.value) { // For localStorage refill
+            calculateAge(spouseBirthdayField.value, spouseAgeField);
+        }
     }
 
     // Initialize for Beneficiary DOBs - Initial Row
@@ -1559,19 +1135,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // Other Valid IDs Logic
     const idNumberField = document.getElementById('id_number');
     const addOtherValidIdBtn = document.getElementById('add_other_valid_id_btn');
-    const otherValidIdsContainer = document.getElementById('other_valid_ids_container');
+    let otherValidIdsContainer = document.getElementById('other_valid_ids_container'); // Ensure it's correctly targeted
     let otherValidIdCount = 0;
     
     if (idNumberField && addOtherValidIdBtn) {
-        // Create the container if it doesn't exist
-        if (!otherValidIdsContainer) {
+        // Create the container if it doesn't exist and is still null
+        if (!otherValidIdsContainer && idNumberField.parentNode) {
             const container = document.createElement('div');
             container.id = 'other_valid_ids_container';
             container.style.marginTop = '10px';
-            idNumberField.parentNode.insertBefore(container, addOtherValidIdBtn.nextSibling);
+            // Insert after the button's parent div if the button is inside a div, or directly after the button
+            const buttonContainer = addOtherValidIdBtn.closest('.form-group') || addOtherValidIdBtn.parentNode;
+            if (buttonContainer.nextSibling) {
+                 buttonContainer.parentNode.insertBefore(container, buttonContainer.nextSibling);
+            } else {
+                 buttonContainer.parentNode.appendChild(container);
+            }
+            otherValidIdsContainer = container; // Update reference
         }
         
         addOtherValidIdBtn.addEventListener('click', function() {
+            if (!otherValidIdsContainer) { // Check again in case it was missed
+                console.error('other_valid_ids_container not found or created.');
+                return;
+            }
             otherValidIdCount++;
             const otherIdRow = document.createElement('div');
             otherIdRow.classList.add('other-valid-id-row');
@@ -1599,10 +1186,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const memberSignaturePad = initializeSignaturePad('member_signature_canvas', 'member_signature', 'clear_member_signature');
     const beneficiarySignaturePad = initializeSignaturePad('beneficiary_signature_canvas', 'beneficiary_signature', 'clear_beneficiary_signature');
 
-    // Function to initialize signature pads
     function initializeSignaturePad(canvasId, hiddenInputId, clearButtonId) {
         const canvas = document.getElementById(canvasId);
-        if (!canvas) return null;
+        if (!canvas) {
+            console.warn('Signature canvas not found:', canvasId);
+            return null;
+        }
+
+        // Set explicit width and height for signature pad to work correctly before CSS might resize it.
+        // CSS will handle the final display size.
+        const context = canvas.getContext('2d');
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        // canvas.width = canvas.offsetWidth * ratio; // This causes issues if offsetWidth is 0 initially
+        // canvas.height = canvas.offsetHeight * ratio;
+        // Use fixed initial dimensions that match the HTML attributes if present, or default
+        canvas.width = (canvas.getAttribute('width') || 400) * ratio;
+        canvas.height = (canvas.getAttribute('height') || 200) * ratio;
+        context.scale(ratio, ratio);
+
 
         const signaturePad = new SignaturePad(canvas, {
             backgroundColor: 'rgb(255, 255, 255)',
@@ -1613,20 +1214,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Handle canvas resize
         function resizeCanvas() {
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio;
-            canvas.height = canvas.offsetHeight * ratio;
-            canvas.getContext("2d").scale(ratio, ratio);
-            signaturePad.clear(); // Otherwise isEmpty() might return incorrect value
+            if (!canvas.offsetParent) return; // Don't resize if canvas is not visible (e.g. on non-active page)
+            const currentRatio = Math.max(window.devicePixelRatio || 1, 1);
+            const W = canvas.offsetWidth; // Get width from CSS-driven layout
+            // For height, you might want to maintain an aspect ratio or use a fixed height from CSS
+            // Here, we'll try to respect the initial aspect ratio from canvas attributes if possible,
+            // otherwise default to a common height or the one from CSS if it's set explicitly.
+            const initialCanvasWidth = parseFloat(canvas.getAttribute('data-initial-width') || canvas.width / currentRatio);
+            const initialCanvasHeight = parseFloat(canvas.getAttribute('data-initial-height') || canvas.height / currentRatio);
+
+            canvas.width = W * currentRatio;
+            // canvas.height = (W * (initialCanvasHeight / initialCanvasWidth)) * currentRatio; // Maintain aspect ratio
+            canvas.height = ( (canvas.parentElement.classList.contains('signature-container') ? canvas.parentElement.offsetHeight : 200)  || 200 ) * currentRatio ;
+
+
+            canvas.getContext("2d").scale(currentRatio, currentRatio);
+            const data = signaturePad.toData(); // Save current signature
+            signaturePad.clear(); // Clear before redrawing
+            signaturePad.fromData(data); // Redraw signature
         }
+        
+        // Store initial dimensions for aspect ratio
+        canvas.setAttribute('data-initial-width', canvas.width / ratio);
+        canvas.setAttribute('data-initial-height', canvas.height / ratio);
+
 
         window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
+        // Call resizeCanvas initially if canvas is visible.
+        // For paginated forms, this might need to be called when page becomes active.
+        // For now, let's call it once. If it's not visible, offsetWidth might be 0.
+        // We'll call it specifically when a page with a signature pad becomes active.
+        // resizeCanvas(); 
 
-        // Save signature data to hidden input when form is submitted
-        const form = document.getElementById('membership-form');
-        if (form) {
-            form.addEventListener('submit', function() {
+        const currentForm = document.getElementById('membership-form');
+        if (currentForm) {
+            currentForm.addEventListener('submit', function() {
                 if (!signaturePad.isEmpty()) {
                     const signatureData = signaturePad.toDataURL();
                     document.getElementById(hiddenInputId).value = signatureData;
@@ -1645,6 +1267,237 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return signaturePad;
     }
+
+    // Pagination Logic
+    const pages = document.querySelectorAll('.form-page-content');
+    const prevBtn = document.getElementById('prev_page_btn');
+    const nextBtn = document.getElementById('next_page_btn');
+    const pageIndicator = document.getElementById('page_indicator');
+    const submitBtnContainer = document.querySelector('#submit_application_btn').parentElement;
+
+
+    let currentPage = 0;
+    const totalPages = pages.length;
+
+    function updatePageDisplay() {
+        pages.forEach((page, index) => {
+            page.classList.toggle('active', index === currentPage);
+        });
+        if (pageIndicator) pageIndicator.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+        
+        if (prevBtn) prevBtn.style.display = currentPage === 0 ? 'none' : 'inline-block';
+        if (nextBtn) nextBtn.style.display = currentPage === totalPages - 1 ? 'none' : 'inline-block';
+        
+        // Show submit button only on the last page's navigation area
+        // The submit button itself is already on page 3's content.
+        // We hide the "Next" button on the last page.
+        // The submit button is part of page 3 content.
+        // Let's ensure the disclaimer and submit button are *only* visible if page 3 is active.
+        const disclaimerBox = document.querySelector('.disclaimer-box');
+        const submitButtonActual = document.getElementById('submit_application_btn');
+
+        if (currentPage === totalPages - 1) {
+            if (disclaimerBox) disclaimerBox.style.display = 'block';
+            if (submitButtonActual) submitButtonActual.style.display = 'inline-block';
+            if (submitBtnContainer) submitBtnContainer.style.display = 'flex';
+
+
+             // Attempt to resize signature canvases if they are on this page and now visible
+            const signatureCanvases = pages[currentPage].querySelectorAll('canvas[id*=\'_signature_canvas\']');
+            signatureCanvases.forEach(canvas => {
+                const pad = canvas._signaturePad; // Assuming we store the pad instance on the canvas element
+                if (pad) {
+                     // Call the resize function associated with this pad's canvas
+                    const resizeFn = window[`resize_${canvas.id}`]; // e.g., window.resize_member_signature_canvas
+                    if (typeof resizeFn === 'function') {
+                        resizeFn();
+                    }
+                }
+            });
+
+
+        } else {
+            if (disclaimerBox) disclaimerBox.style.display = 'none';
+            if (submitButtonActual) submitButtonActual.style.display = 'none';
+             if (submitBtnContainer) submitBtnContainer.style.display = 'none';
+        }
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updatePageDisplay();
+                 window.scrollTo(0, 0); // Scroll to top of page
+            }
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                updatePageDisplay();
+                window.scrollTo(0, 0); // Scroll to top of page
+            }
+        });
+    }
+    
+    // Initial page setup
+    updatePageDisplay();
+
+
+    // Save and Load form data from localStorage
+    const formToSave = document.getElementById('membership-form');
+    const formElements = formToSave ? formToSave.elements : [];
+
+    function saveFormToLocalStorage() {
+        if (!formToSave) return;
+        const formData = {};
+        for (const element of formElements) {
+            if (element.name) {
+                if (element.type === 'checkbox') {
+                    formData[element.name + (element.value ? `_${element.value}` : '')] = element.checked; // Store by name_value for multiple checkboxes with same name
+                } else if (element.type === 'radio') {
+                    if (element.checked) {
+                        formData[element.name] = element.value;
+                    }
+                } else if (element.tagName === 'SELECT' && element.multiple) {
+                    formData[element.name] = Array.from(element.selectedOptions).map(option => option.value);
+                } else {
+                    formData[element.name] = element.value;
+                }
+            }
+        }
+        // Save dynamic rows count
+        formData['beneficiary_row_count'] = beneficiaryRowCount;
+        formData['other_income_source_count'] = incomeSourceCount;
+        formData['other_valid_id_count'] = otherValidIdCount;
+
+        localStorage.setItem('membershipFormData', JSON.stringify(formData));
+    }
+
+    function loadFormFromLocalStorage() {
+        if (!formToSave) return;
+        const savedData = localStorage.getItem('membershipFormData');
+        if (savedData) {
+            const formData = JSON.parse(savedData);
+            for (const element of formElements) {
+                if (element.name) {
+                    const savedValueKey = element.type === 'checkbox' ? element.name + (element.value ? `_${element.value}` : '') : element.name;
+                    if (formData.hasOwnProperty(savedValueKey)) {
+                        if (element.type === 'checkbox') {
+                            element.checked = formData[savedValueKey];
+                        } else if (element.type === 'radio') {
+                            if (element.value === formData[savedValueKey]) {
+                                element.checked = true;
+                            }
+                        } else if (element.tagName === 'SELECT' && element.multiple) {
+                            const values = formData[savedValueKey];
+                            if (Array.isArray(values)) {
+                                Array.from(element.options).forEach(option => {
+                                    option.selected = values.includes(option.value);
+                                });
+                            }
+                        } else {
+                             // Skip address dropdowns that are dynamically populated by philippine-address-selector
+                            if (!element.classList.contains('address-region') &&
+                                !element.classList.contains('address-province') &&
+                                !element.classList.contains('address-city') &&
+                                !element.classList.contains('address-barangay')) {
+                                element.value = formData[savedValueKey];
+                            }
+                        }
+                         // Trigger change event for fields that might have dependent logic (like civil status)
+                        if (element.id === 'civil_status' || element.id === 'birthday' || element.id === 'spouse_birthday') {
+                            element.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }
+            }
+
+            // Restore dynamic rows - this is more complex and might need specific handling for each type
+            // For now, just logging the counts. Full restoration would involve recreating rows.
+            // console.log("Saved beneficiary rows:", formData['beneficiary_row_count']);
+            // console.log("Saved income sources:", formData['other_income_source_count']);
+            // console.log("Saved other IDs:", formData['other_valid_id_count']);
+
+            // Special handling for address dropdowns if their text values were saved
+            ['present', 'permanent', 'business'].forEach(prefix => {
+                if (formData[`${prefix}_region`]) {
+                    const regionSelect = document.getElementById(`${prefix}_region`);
+                    if (regionSelect) {
+                        regionSelect.value = formData[`${prefix}_region`];
+                        // Manually trigger change to load provinces, if not automatically handled by value set
+                        // This is tricky because the options might not be loaded yet.
+                        // It's often better to let the user re-select these or find a way to re-run the address selector logic with saved values.
+                        // For now, we're skipping direct value setting for these in the loop above.
+                        // We'll rely on saving the text fields and let the user re-select for full dependent dropdown functionality.
+                    }
+                }
+                 // Repopulate the hidden text fields for addresses
+                if (document.getElementById(`${prefix}_region_text`)) document.getElementById(`${prefix}_region_text`).value = formData[`${prefix}_region_text`] || '';
+                if (document.getElementById(`${prefix}_province_text`)) document.getElementById(`${prefix}_province_text`).value = formData[`${prefix}_province_text`] || '';
+                if (document.getElementById(`${prefix}_city_text`)) document.getElementById(`${prefix}_city_text`).value = formData[`${prefix}_city_text`] || '';
+                if (document.getElementById(`${prefix}_barangay_text`)) document.getElementById(`${prefix}_barangay_text`).value = formData[`${prefix}_barangay_text`] || '';
+
+            });
+
+            // Re-calculate age for birthday and spouse birthday after loading
+            if (birthdayField.value) calculateAge(birthdayField.value, ageField);
+            if (spouseBirthdayField.value) calculateAge(spouseBirthdayField.value, spouseAgeField);
+
+            // Update disclaimer checkbox and submit button state
+            if (disclaimerCheckbox && formData['disclaimer_agreement']) {
+                disclaimerCheckbox.checked = formData['disclaimer_agreement'];
+                if (submitButton) submitButton.disabled = !disclaimerCheckbox.checked;
+            }
+
+
+        }
+    }
+
+    // Load saved data when page loads
+    loadFormFromLocalStorage();
+
+    // Save data when form inputs change
+    if (formToSave) {
+        formToSave.addEventListener('input', saveFormToLocalStorage);
+        // Also save for select changes
+        const selects = formToSave.querySelectorAll('select');
+        selects.forEach(select => select.addEventListener('change', saveFormToLocalStorage));
+    }
+
+
+    // Ensure signature pad resize functions are globally accessible for updatePageDisplay
+    if (memberSignaturePad && memberSignaturePad.canvas) {
+        window[`resize_${memberSignaturePad.canvas.id}`] = () => {
+            if (!memberSignaturePad.canvas.offsetParent) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const W = memberSignaturePad.canvas.offsetWidth;
+            memberSignaturePad.canvas.width = W * ratio;
+            memberSignaturePad.canvas.height = ( (memberSignaturePad.canvas.parentElement.classList.contains('signature-container') ? memberSignaturePad.canvas.parentElement.offsetHeight : 200)  || 200 ) * ratio ;
+            memberSignaturePad.canvas.getContext("2d").scale(ratio, ratio);
+            const data = memberSignaturePad.toData();
+            memberSignaturePad.clear();
+            memberSignaturePad.fromData(data);
+        };
+    }
+    if (beneficiarySignaturePad && beneficiarySignaturePad.canvas) {
+         window[`resize_${beneficiarySignaturePad.canvas.id}`] = () => {
+            if (!beneficiarySignaturePad.canvas.offsetParent) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const W = beneficiarySignaturePad.canvas.offsetWidth;
+            beneficiarySignaturePad.canvas.width = W * ratio;
+            beneficiarySignaturePad.canvas.height = ( (beneficiarySignaturePad.canvas.parentElement.classList.contains('signature-container') ? beneficiarySignaturePad.canvas.parentElement.offsetHeight : 200)  || 200 ) * ratio ;
+            beneficiarySignaturePad.canvas.getContext("2d").scale(ratio, ratio);
+            const data = beneficiarySignaturePad.toData();
+            beneficiarySignaturePad.clear();
+            beneficiarySignaturePad.fromData(data);
+        };
+    }
+
+
 });
 </script>
 

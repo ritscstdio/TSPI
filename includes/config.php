@@ -7,6 +7,7 @@ define('DB_PASS', '');     // Change in production
 define('DB_NAME', 'tspi_blog');
 define('DB_PORT', '3306');
 
+// RAILWAY DATABASE
 // define('DB_HOST', 'crossover.proxy.rlwy.net');
 // define('DB_USER', 'root'); // Change in production
 // define('DB_PASS', 'mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt');     // Change in production
@@ -15,7 +16,8 @@ define('DB_PORT', '3306');
 
 // Site configuration
 define('SITE_URL', 'http://localhost/TSPI'); // Project base URL
-define('SITE_NAME', 'TSPI Blog');
+// define('SITE_URL', 'http://www.tspi.site/'); // Preparing for deployment
+define('SITE_NAME', 'TSPI Site');
 define('ADMIN_EMAIL', 'no-reply@tspi.site');
 define('UPLOADS_DIR', __DIR__ . '/../uploads');
 define('ITEMS_PER_PAGE', 10);
@@ -25,7 +27,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Connect to database
+// Connect to database using PDO
 try {
     $pdo = new PDO(
         "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4",
@@ -39,6 +41,12 @@ try {
     );
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
+}
+
+// Add mysqli connection for compatibility
+$conn = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+if (!$conn) {
+    die("mysqli connection failed: " . mysqli_connect_error());
 }
 
 // Helper functions
