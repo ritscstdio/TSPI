@@ -5,4 +5,4 @@ node_modules
 user/email_secrets.php
 user/email_debug.txt
 user/email_log.txt
-vendor/phpmailer/phpmailer
+
