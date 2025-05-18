@@ -484,45 +484,6 @@ input[readonly] {
 .form-col-2:empty {
     display: block;
 }
-
-/* Signature Pad Styles */
-.signature-pad-container {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    position: relative;
-    margin-bottom: 10px;
-    background-color: #fff;
-}
-
-.signature-pad {
-    width: 100%;
-    height: 150px;
-    background-color: #fff;
-    position: relative;
-    touch-action: none; /* Prevent scrolling when signing on touch devices */
-    border-radius: 4px 4px 0 0;
-}
-
-.signature-pad canvas {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.signature-pad-actions {
-    text-align: right;
-    padding: 5px;
-    background-color: #f8f8f8;
-    border-top: 1px solid #eee;
-    border-radius: 0 0 4px 4px;
-}
-
-.clear-signature {
-    font-size: 12px;
-    padding: 3px 8px;
-}
 </style>
 
 <main class="container membership-form-container">
@@ -564,13 +525,13 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="cid_no">CID No.</label>
-                                <input type="text" id="cid_no" name="cid_no" required pattern="[0-9]*" inputmode="numeric">
+                                <input type="text" id="cid_no" name="cid_no" required pattern="[0-9]*" inputmode="numeric" placeholder="Enter Client ID Number">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="center_no">Center No. (for fillers)</label>
-                                <input type="text" id="center_no" name="center_no">
+                                <input type="text" id="center_no" name="center_no" placeholder="Enter Center Number">
                             </div>
                         </div>
                     </div>
@@ -635,13 +596,13 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="last_name">Last Name</label>
-                                <input type="text" id="last_name" name="last_name" required>
+                                <input type="text" id="last_name" name="last_name" required placeholder="Enter Last Name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="first_name">First Name</label>
-                                <input type="text" id="first_name" name="first_name" required>
+                                <input type="text" id="first_name" name="first_name" required placeholder="Enter First Name">
                             </div>
                         </div>
                     </div>
@@ -650,7 +611,7 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="middle_name">Middle Name</label>
-                                <input type="text" id="middle_name" name="middle_name">
+                                <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name (optional)">
                             </div>
                         </div>
                         <div class="form-col-3">
@@ -681,7 +642,7 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="birthday">Birthday (mm/dd/yyyy)</label>
-                                <input type="text" id="birthday" name="birthday" required>
+                                <input type="text" id="birthday" name="birthday" required placeholder="MM/DD/YYYY">
                             </div>
                         </div>
                     </div>
@@ -696,7 +657,7 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="birth_place">Birth Place</label>
-                                <input type="text" id="birth_place" name="birth_place" required>
+                                <input type="text" id="birth_place" name="birth_place" required placeholder="Enter Place of Birth">
                             </div>
                         </div>
                     </div>
@@ -726,14 +687,14 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="nationality">Nationality</label>
-                                <input type="text" id="nationality" name="nationality" required>
+                                <input type="text" id="nationality" name="nationality" required placeholder="Enter Nationality">
                             </div>
                         </div>
                        
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="id_number">TIN/SSS/GSIS Number</label>
-                                <input type="text" id="id_number" name="id_number" required>
+                                <input type="text" id="id_number" name="id_number" required placeholder="Enter Valid ID Number">
                                 <button type="button" id="add_other_valid_id_btn" class="btn btn-secondary btn-sm" style="margin-top: 8px;">Do you have other Valid IDs?</button>
                             </div>
                             <div id="other_valid_ids_container" style="margin-top:10px; margin-bottom: 24px;">
@@ -749,13 +710,13 @@ input[readonly] {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_last_name">Mother's Maiden Last Name</label>
-                                <input type="text" id="mothers_maiden_last_name" name="mothers_maiden_last_name" required>
+                                <input type="text" id="mothers_maiden_last_name" name="mothers_maiden_last_name" required placeholder="Enter Mother's Maiden Last Name">
                             </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_first_name">Mother's Maiden First Name</label>
-                                <input type="text" id="mothers_maiden_first_name" name="mothers_maiden_first_name" required>
+                                <input type="text" id="mothers_maiden_first_name" name="mothers_maiden_first_name" required placeholder="Enter Mother's Maiden First Name">
                             </div>
                         </div>
                     </div>
@@ -763,7 +724,7 @@ input[readonly] {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name</label>
-                                <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name">
+                                <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name (optional)">
                             </div>
                         </div>
                         <div class="form-col-2">
@@ -816,7 +777,7 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="present_zip_code">Zip Code</label>
-                                <input type="text" id="present_zip_code" name="present_zip_code" required>
+                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code">
                             </div>
                         </div>
                         <div class="form-col-3">
@@ -868,7 +829,7 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="permanent_zip_code">Zip Code</label>
-                                <input type="text" id="permanent_zip_code" name="permanent_zip_code" required>
+                                <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code">
                             </div>
                         </div>
                         <div class="form-col-2">
@@ -913,7 +874,7 @@ input[readonly] {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="primary_business">Primary Business</label>
-                                <input type="text" id="primary_business" name="primary_business" required>
+                                <input type="text" id="primary_business" name="primary_business" required placeholder="Enter Primary Business">
                                 <button type="button" id="add_other_income_source_btn" class="btn btn-secondary btn-sm" style="margin-top: 8px;">Got other source of income?</button>
 
                             </div>
@@ -972,7 +933,7 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="business_zip_code">Zip Code</label>
-                                <input type="text" id="business_zip_code" name="business_zip_code" required>
+                                <input type="text" id="business_zip_code" name="business_zip_code" required placeholder="Enter ZIP Code">
                             </div>
                         </div>
                         <div class="form-col-2">
@@ -990,13 +951,13 @@ input[readonly] {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_last_name">Spouse's Last Name</label>
-                                    <input type="text" id="spouse_last_name" name="spouse_last_name">
+                                    <input type="text" id="spouse_last_name" name="spouse_last_name" placeholder="Enter Spouse's Last Name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_first_name">Spouse's First Name</label>
-                                    <input type="text" id="spouse_first_name" name="spouse_first_name">
+                                    <input type="text" id="spouse_first_name" name="spouse_first_name" placeholder="Enter Spouse's First Name">
                                 </div>
                             </div>
                         </div>
@@ -1004,13 +965,13 @@ input[readonly] {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_middle_name">Spouse's Middle Name</label>
-                                    <input type="text" id="spouse_middle_name" name="spouse_middle_name">
+                                    <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name (optional)">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_birthday">Birthday (mm/dd/yyyy)</label>
-                                    <input type="text" id="spouse_birthday" name="spouse_birthday">
+                                    <input type="text" id="spouse_birthday" name="spouse_birthday" placeholder="MM/DD/YYYY">
                                 </div>
                             </div>
                         </div>
@@ -1024,7 +985,7 @@ input[readonly] {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_occupation">Occupation</label>
-                                    <input type="text" id="spouse_occupation" name="spouse_occupation">
+                                    <input type="text" id="spouse_occupation" name="spouse_occupation" placeholder="Enter Spouse's Occupation">
                                 </div>
                             </div>
                         </div>
@@ -1032,7 +993,7 @@ input[readonly] {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID</label>
-                                    <input type="text" id="spouse_id_number" name="spouse_id_number">
+                                    <input type="text" id="spouse_id_number" name="spouse_id_number" placeholder="Enter Spouse's ID Number">
                                 </div>
                             </div>
                             <div class="form-col-2">
@@ -1060,43 +1021,25 @@ input[readonly] {
                             <?php // Only render one row initially, rest will be added by JS ?>
                             <tr class="beneficiary-row">
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <input type="text" id="beneficiary_last_name_1" name="beneficiary_last_name[]">
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_1" name="beneficiary_last_name[]" placeholder="Enter Last Name"></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <input type="text" id="beneficiary_first_name_1" name="beneficiary_first_name[]">
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_1" name="beneficiary_first_name[]" placeholder="Enter First Name"></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <input type="text" id="beneficiary_mi_1" name="beneficiary_mi[]" maxlength="1">
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_1" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <input type="text" id="beneficiary_dob_1" name="beneficiary_dob[]" class="beneficiary-dob">
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_1" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <select id="beneficiary_gender_1" name="beneficiary_gender[]">
-                                            <option value="" selected></option> <!-- Blank default -->
-                                            <option value="M">M</option>
-                                            <option value="F">F</option>
-                                        </select>
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_1" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;">
-                                        <input type="text" id="beneficiary_relationship_1" name="beneficiary_relationship[]">
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_1" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0; text-align: center;">
-                                        <input type="checkbox" id="beneficiary_dependent_1" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;">
-                                    </div>
+                                    <div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_1" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div>
                                 </td>
                                 <td>
                                     <!-- Remove button placeholder for the first row, not typically removable unless it's the only one and empty? Or always not removable? For now, no remove on first static row -->
@@ -1114,19 +1057,19 @@ input[readonly] {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="trustee_name">Name of Trustee</label>
-                                <input type="text" id="trustee_name" name="trustee_name">
+                                <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="trustee_dob">Date of Birth</label>
-                                <input type="text" id="trustee_dob" name="trustee_dob">
+                                <input type="text" id="trustee_dob" name="trustee_dob" placeholder="MM/DD/YYYY">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="trustee_relationship">Relationship to Applicant</label>
-                                <input type="text" id="trustee_relationship" name="trustee_relationship">
+                                <input type="text" id="trustee_relationship" name="trustee_relationship" placeholder="Enter Relationship to Beneficiary">
                             </div>
                         </div>
                     </div>
@@ -1138,25 +1081,25 @@ input[readonly] {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="member_signature">Member's Signature</label>
-                                <div class="signature-pad-container">
-                                    <canvas id="member_signature_pad" class="signature-pad"></canvas>
-                                    <div class="signature-pad-actions">
-                                        <button type="button" class="btn btn-sm btn-secondary clear-signature" data-pad="member_signature_pad">Clear</button>
+                                <div class="signature-container">
+                                    <canvas id="member_signature_canvas" width="400" height="200" style="border: 1px solid #ddd; background-color: #fff;"></canvas>
+                                    <input type="hidden" id="member_signature" name="member_signature">
+                                    <div class="signature-buttons" style="margin-top: 10px;">
+                                        <button type="button" id="clear_member_signature" class="btn btn-sm btn-secondary">Clear</button>
                                     </div>
                                 </div>
-                                <input type="hidden" id="member_signature" name="member_signature">
                             </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="beneficiary_signature">Beneficiary's Signature</label>
-                                <div class="signature-pad-container">
-                                    <canvas id="beneficiary_signature_pad" class="signature-pad"></canvas>
-                                    <div class="signature-pad-actions">
-                                        <button type="button" class="btn btn-sm btn-secondary clear-signature" data-pad="beneficiary_signature_pad">Clear</button>
+                                <div class="signature-container">
+                                    <canvas id="beneficiary_signature_canvas" width="400" height="200" style="border: 1px solid #ddd; background-color: #fff;"></canvas>
+                                    <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
+                                    <div class="signature-buttons" style="margin-top: 10px;">
+                                        <button type="button" id="clear_beneficiary_signature" class="btn btn-sm btn-secondary">Clear</button>
                                     </div>
                                 </div>
-                                <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
                             </div>
                         </div>
                     </div>
@@ -1165,7 +1108,7 @@ input[readonly] {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="member_name">Name of Member (Borrower or Kapamilya)</label>
-                                <input type="text" id="member_name" name="member_name">
+                                <input type="text" id="member_name" name="member_name" placeholder="Enter Full Name as Signature">
                             </div>
                         </div>
                         <div class="form-col-2">
@@ -1324,21 +1267,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorMessages.push('Please add at least one beneficiary');
             }
             
-            // Save signature pad data to hidden inputs before submission
-            if (memberSignaturePad && !memberSignaturePad.isEmpty()) {
-                document.getElementById('member_signature').value = memberSignaturePad.toDataURL();
-            } else {
-                isValid = false;
-                errorMessages.push('Please provide member signature');
-            }
-            
-            if (beneficiarySignaturePad && !beneficiarySignaturePad.isEmpty()) {
-                document.getElementById('beneficiary_signature').value = beneficiarySignaturePad.toDataURL();
-            } else {
-                isValid = false;
-                errorMessages.push('Please provide beneficiary signature');
-            }
-            
             // Display custom error messages if validation fails
             if (!isValid) {
                 event.preventDefault();
@@ -1346,79 +1274,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Initialize Signature Pads
-    let memberSignaturePad = null;
-    let beneficiarySignaturePad = null;
-    
-    const memberSignaturePadElement = document.getElementById('member_signature_pad');
-    const beneficiarySignaturePadElement = document.getElementById('beneficiary_signature_pad');
-    
-    function resizeCanvas(canvas) {
-        // When zoomed out to less than 100%, for some very strange reason,
-        // some browsers report devicePixelRatio as less than 1
-        // and only part of the canvas is cleared then.
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        
-        const oldWidth = canvas.width;
-        const oldHeight = canvas.height;
-        
-        // This part causes the canvas to be cleared
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        
-        console.log(`Canvas resized: width=${canvas.width}, height=${canvas.height}, ratio=${ratio}, oldWidth=${oldWidth}, oldHeight=${oldHeight}`);
-    }
-    
-    // Initialize signature pads after a small delay to ensure the canvas elements are fully rendered
-    setTimeout(function() {
-        if (memberSignaturePadElement) {
-            console.log('Initializing member signature pad');
-            resizeCanvas(memberSignaturePadElement);
-            memberSignaturePad = new SignaturePad(memberSignaturePadElement, {
-                backgroundColor: 'rgb(255, 255, 255)',
-                penColor: 'rgb(0, 0, 0)'
-            });
-        } else {
-            console.error('Member signature pad element not found');
-        }
-        
-        if (beneficiarySignaturePadElement) {
-            console.log('Initializing beneficiary signature pad');
-            resizeCanvas(beneficiarySignaturePadElement);
-            beneficiarySignaturePad = new SignaturePad(beneficiarySignaturePadElement, {
-                backgroundColor: 'rgb(255, 255, 255)',
-                penColor: 'rgb(0, 0, 0)'
-            });
-        } else {
-            console.error('Beneficiary signature pad element not found');
-        }
-    }, 100);
-    
-    // Handle clear signature buttons
-    document.querySelectorAll('.clear-signature').forEach(button => {
-        button.addEventListener('click', function() {
-            const padId = this.getAttribute('data-pad');
-            if (padId === 'member_signature_pad' && memberSignaturePad) {
-                memberSignaturePad.clear();
-            } else if (padId === 'beneficiary_signature_pad' && beneficiarySignaturePad) {
-                beneficiarySignaturePad.clear();
-            }
-        });
-    });
-    
-    // Handle window resize to adjust signature pad
-    window.addEventListener('resize', function() {
-        if (memberSignaturePadElement && memberSignaturePad) {
-            resizeCanvas(memberSignaturePadElement);
-            memberSignaturePad.clear(); // Clear and resize
-        }
-        if (beneficiarySignaturePadElement && beneficiarySignaturePad) {
-            resizeCanvas(beneficiarySignaturePadElement);
-            beneficiarySignaturePad.clear(); // Clear and resize
-        }
-    });
     
     // Pikaday Initializations
     const pikadayConfig = {
@@ -1519,12 +1374,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const newRow = document.createElement('tr');
                 newRow.classList.add('beneficiary-row');
                 newRow.innerHTML = `
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_${beneficiaryRowCount}" name="beneficiary_last_name[]"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_${beneficiaryRowCount}" name="beneficiary_first_name[]"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_${beneficiaryRowCount}" name="beneficiary_mi[]" maxlength="1"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_${beneficiaryRowCount}" name="beneficiary_dob[]" class="beneficiary-dob"></div></td>
+                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_${beneficiaryRowCount}" name="beneficiary_last_name[]" placeholder="Enter Last Name"></div></td>
+                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_${beneficiaryRowCount}" name="beneficiary_first_name[]" placeholder="Enter First Name"></div></td>
+                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_${beneficiaryRowCount}" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div></td>
+                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_${beneficiaryRowCount}" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></div></td>
                     <td><div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_${beneficiaryRowCount}" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_${beneficiaryRowCount}" name="beneficiary_relationship[]"></div></td>
+                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_${beneficiaryRowCount}" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div></td>
                     <td><div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_${beneficiaryRowCount}" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div></td>
                     <td><button type="button" class="remove-beneficiary-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold;">X</button></td>
                 `;
@@ -1664,8 +1519,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxIncomeSources = 4;
 
     if (addIncomeSourceBtn && incomeSourcesContainer) {
-        addIncomeSourceBtn.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent form submission if button is inside form
+        addIncomeSourceBtn.addEventListener('click', function() {
             if (incomeSourceCount < maxIncomeSources) {
                 incomeSourceCount++;
                 const newIncomeSourceDiv = document.createElement('div');
@@ -1673,13 +1527,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 newIncomeSourceDiv.innerHTML = `
                     <div class="form-group" style="flex-grow: 1; margin-bottom: 0;">
                         <label for="other_income_source_${incomeSourceCount}" class="sr-only">Other Source of Income ${incomeSourceCount}</label>
-                        <input type="text" id="other_income_source_${incomeSourceCount}" name="other_income_source[]" placeholder="Other Source of Income ${incomeSourceCount}">
+                        <input type="text" id="other_income_source_${incomeSourceCount}" name="other_income_source[]" placeholder="Other Source of Income ${incomeSourceCount}" style="flex-grow: 1;">
                     </div>
-                    <button type="button" class="remove-income-btn">X</button>
+                    <button type="button" class="remove-income-source-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold; margin-left: 5px;">X</button>
                 `;
                 incomeSourcesContainer.appendChild(newIncomeSourceDiv);
 
-                newIncomeSourceDiv.querySelector('.remove-income-btn').addEventListener('click', function() {
+                newIncomeSourceDiv.querySelector('.remove-income-source-btn').addEventListener('click', function() {
                     newIncomeSourceDiv.remove();
                     incomeSourceCount--;
                     if (incomeSourceCount < maxIncomeSources) {
@@ -1702,44 +1556,94 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Logic for TIN/SSS/GSIS and Other Valid IDs
+    // Other Valid IDs Logic
     const idNumberField = document.getElementById('id_number');
     const addOtherValidIdBtn = document.getElementById('add_other_valid_id_btn');
     const otherValidIdsContainer = document.getElementById('other_valid_ids_container');
     let otherValidIdCount = 0;
-    const maxOtherValidIds = 1; // Changed max to 1
-
-    if (idNumberField && addOtherValidIdBtn && otherValidIdsContainer) {
-        addOtherValidIdBtn.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent form submission if button is inside form
-            if (otherValidIdCount < maxOtherValidIds) {
-                otherValidIdCount++;
-                const newValidIdDiv = document.createElement('div');
-                newValidIdDiv.classList.add('form-group', 'other-valid-id-item');
-                newValidIdDiv.style.display = 'flex';
-                newValidIdDiv.style.alignItems = 'center';
-                newValidIdDiv.style.gap = '8px';
-                newValidIdDiv.innerHTML = `
-                    <input type="text" id="other_valid_id_${otherValidIdCount}" name="other_valid_id[]" placeholder="Other Valid ID" style="flex-grow: 1;">
-                    <button type="button" class="remove-valid-id-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold;">X</button>
-                `;
-                otherValidIdsContainer.appendChild(newValidIdDiv);
-
-                idNumberField.readOnly = true;
-                idNumberField.required = false;
-                addOtherValidIdBtn.style.display = 'none'; // Hide button after adding one
-
-                newValidIdDiv.querySelector('.remove-valid-id-btn').addEventListener('click', function() {
-                    newValidIdDiv.remove();
-                    otherValidIdCount--;
-                    if (otherValidIdCount === 0) {
-                        idNumberField.readOnly = false;
-                        idNumberField.required = true;
-                        addOtherValidIdBtn.style.display = 'inline-block'; // Show button again
-                    }
-                });
-            }
+    
+    if (idNumberField && addOtherValidIdBtn) {
+        // Create the container if it doesn't exist
+        if (!otherValidIdsContainer) {
+            const container = document.createElement('div');
+            container.id = 'other_valid_ids_container';
+            container.style.marginTop = '10px';
+            idNumberField.parentNode.insertBefore(container, addOtherValidIdBtn.nextSibling);
+        }
+        
+        addOtherValidIdBtn.addEventListener('click', function() {
+            otherValidIdCount++;
+            const otherIdRow = document.createElement('div');
+            otherIdRow.classList.add('other-valid-id-row');
+            otherIdRow.style.display = 'flex';
+            otherIdRow.style.marginBottom = '5px';
+            otherIdRow.style.alignItems = 'center';
+            otherIdRow.innerHTML = `
+                <input type="text" id="other_valid_id_${otherValidIdCount}" name="other_valid_id[]" placeholder="Other Valid ID" style="flex-grow: 1;">
+                <button type="button" class="remove-other-id-btn btn-sm" style="background-color: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; cursor: pointer; font-weight: bold; margin-left: 5px;">X</button>
+            `;
+            
+            const container = document.getElementById('other_valid_ids_container');
+            container.appendChild(otherIdRow);
+            
+            otherIdRow.querySelector('.remove-other-id-btn').addEventListener('click', function() {
+                otherIdRow.remove();
+                otherValidIdCount--;
+                // Always show the button since we can have multiple IDs
+                addOtherValidIdBtn.style.display = 'inline-block';
+            });
         });
+    }
+
+    // Initialize signature pads
+    const memberSignaturePad = initializeSignaturePad('member_signature_canvas', 'member_signature', 'clear_member_signature');
+    const beneficiarySignaturePad = initializeSignaturePad('beneficiary_signature_canvas', 'beneficiary_signature', 'clear_beneficiary_signature');
+
+    // Function to initialize signature pads
+    function initializeSignaturePad(canvasId, hiddenInputId, clearButtonId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return null;
+
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)',
+            minWidth: 0.5,
+            maxWidth: 2.5
+        });
+
+        // Handle canvas resize
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear(); // Otherwise isEmpty() might return incorrect value
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        // Save signature data to hidden input when form is submitted
+        const form = document.getElementById('membership-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (!signaturePad.isEmpty()) {
+                    const signatureData = signaturePad.toDataURL();
+                    document.getElementById(hiddenInputId).value = signatureData;
+                }
+            });
+        }
+
+        // Clear button functionality
+        const clearButton = document.getElementById(clearButtonId);
+        if (clearButton) {
+            clearButton.addEventListener('click', function() {
+                signaturePad.clear();
+                document.getElementById(hiddenInputId).value = '';
+            });
+        }
+
+        return signaturePad;
     }
 });
 </script>

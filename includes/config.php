@@ -1,9 +1,17 @@
 <?php
 // Database configuration
+
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root'); // Change in production
 define('DB_PASS', '');     // Change in production
 define('DB_NAME', 'tspi_blog');
+define('DB_PORT', '3306');
+
+// define('DB_HOST', 'crossover.proxy.rlwy.net');
+// define('DB_USER', 'root'); // Change in production
+// define('DB_PASS', 'mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt');     // Change in production
+// define('DB_NAME', 'railway');
+// define('DB_PORT', '50379');
 
 // Site configuration
 define('SITE_URL', 'http://localhost/TSPI'); // Project base URL
@@ -20,7 +28,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Connect to database
 try {
     $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4",
         DB_USER,
         DB_PASS,
         [
