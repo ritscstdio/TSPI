@@ -5,7 +5,7 @@ CREATE TABLE `members_information` (
   `middle_name` VARCHAR(100) DEFAULT NULL,
   `last_name` VARCHAR(100) NOT NULL,
   `birthdate` DATE NOT NULL,
-  `age` INT GENERATED ALWAYS AS (TIMESTAMPDIFF(YEAR, birthdate, CURDATE())) STORED,
+  `age` INT NOT NULL DEFAULT 0,
   `email` VARCHAR(255) NOT NULL,
   `phone` VARCHAR(50) DEFAULT NULL,
   `region` VARCHAR(100) DEFAULT NULL,
@@ -23,4 +23,6 @@ CREATE TABLE `members_information` (
   `beneficiary_signature` VARCHAR(255) DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Note: The `age` field should be calculated in PHP before insertion (e.g., using DateTime diff), so no database triggers are required. 

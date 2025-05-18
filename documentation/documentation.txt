@@ -380,12 +380,17 @@ The project is a web application for TSPI, likely involving member registration,
 
 ## Membership Form Submissions and Signatures
 
-A new `members` database table has been introduced to store multi-page membership form data, including:
+A new `members_information` database table has been introduced to store multi-page membership form data, including:
 - Personal info and birthdate
-- Computed `age` column generated from `birthdate`
+- An `age` column computed in PHP before database insertion. For example:
+  ```php
+  $birthDate = new DateTime($_POST['birthdate']);
+  $today = new DateTime('today');
+  $age = $birthDate->diff($today)->y;
+  ```
 - Address, business, spouse, beneficiaries, trustee details
 - Paths to signature image files (`member_signature` and `beneficiary_signature`)
 
-SQL for creating this table is documented in `documentation/members_table.txt`.
+SQL for creating this table and associated triggers is documented in `documentation/members_table.txt`.
 
 Signature images are exported as Base64-encoded PNGs via the Signature Pad API and saved under `/uploads/signatures`. PHP code ensures the directory exists and decodes/stores the image files, with file paths stored in the `members` table.
