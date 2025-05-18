@@ -275,10 +275,17 @@ The website includes a comprehensive membership form for users to join TSPI. Thi
 4. **Form Validation**
    - Ensures at least one plan and one member classification are selected
    - Validates that at least one beneficiary is added
+   - Validates that both member and beneficiary signatures are provided
    - Displays error messages for invalid submissions
 
 5. **Default Values**
    - Sets the signing date to the current date by default
+
+6. **Signature Pad**
+   - Uses SignaturePad.js library to capture handwritten signatures
+   - Converts signatures to base64 data URLs for form submission
+   - Provides clear button functionality to reset signatures
+   - Handles window resize events to maintain signature pad integrity
 
 ### Integration:
 
@@ -303,6 +310,7 @@ The project is a web application for TSPI, likely involving member registration,
 - jQuery for simplified JavaScript DOM manipulation and AJAX.
 - `wilfredpine/philippine-address-selector` for Philippine address dropdowns (via CDN and direct jQuery AJAX calls to `ph-json` data).
 - Pikaday.js for custom, consistent date picker UI across all date input fields.
+- SignaturePad.js for capturing handwritten signatures directly on the form.
 
 ### Membership Form (`user/membership-form.php`)
 
@@ -344,10 +352,11 @@ The project is a web application for TSPI, likely involving member registration,
     - Date format: `MM/DD/YYYY`.
     - Trustee DOB uses Pikaday.
 - **Signature (Page 2):** (Section renamed from "Signatures and Dates")
-    - Upload Member's Signature: File input for image upload.
-    - Upload Beneficiary's Signature: File input for image upload.
+    - Member's Signature: Interactive signature pad for drawing signatures directly on the form.
+    - Beneficiary's Signature: Interactive signature pad for drawing signatures directly on the form.
     - Name of Member (Borrower or Kapamilya) (Optional).
     - Removed fields: Date of Signing.
+    - Each signature pad has a "Clear" button to reset the signature if needed.
 
 **Styling:**
 - Based on a Figma design (details in initial prompts).

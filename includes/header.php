@@ -282,10 +282,10 @@ if (!defined('DB_HOST')) {
         <div class="header-top">
             <div class="header-top-inner">
                 <div class="contact-info">
-                    <a href="tel:+63284038627" class="contact-link">
+                    <a href="#" class="contact-link">
                         <i class="fas fa-phone"></i> (02) 8-403-8627
                     </a>
-                    <a href="mailto:partners@tspi.org" class="contact-link">
+                    <a href="#" class="contact-link">
                         <i class="fas fa-envelope"></i> partners@tspi.org
                     </a>
                     <a href="https://maps.app.goo.gl/RdRgzFpL6f3BpZXd9" target="_blank" class="address-link">

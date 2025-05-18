@@ -611,6 +611,25 @@ include 'includes/header.php';
     opacity: 1;
 }
 
+/* Video embed container for responsive iframes */
+.video-embed-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.video-embed-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
 </style>
 
 <main>
@@ -648,14 +667,14 @@ include 'includes/header.php';
             <?php
                 // Wrap iframes in a responsive container
                 $bodyContent = $content['content'];
-                $bodyContent = preg_replace('/<iframe.*?>.*?<\/iframe>/is', '<div class="video-embed-container">$0<\/div>', $bodyContent);
+                $bodyContent = preg_replace('/<iframe(.*?)>(.*?)<\/iframe>/is', '<div class="video-embed-container"><iframe$1>$2</iframe></div>', $bodyContent);
                 echo $bodyContent;
             ?>
         </div>
 
         <!-- content Votes -->
         <div class="content-votes-container">
-            <h4>Did you like this content? </h4> 
+            <h4>Had a good read? </h4> 
             <div class="content-votes">
                 <button class="vote-btn content-upvote-btn <?php echo (isset($user_content_vote) && $user_content_vote == 1) ? 'active' : ''; ?>" 
                         data-content-id="<?php echo $content['id']; ?>"

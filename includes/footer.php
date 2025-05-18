@@ -17,8 +17,8 @@
                 <div class="connect-section">
                     <h3>Connect With Us</h3>
                     <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.facebook.com/TulaySaPagunladInc" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.youtube.com/channel/UCP6ZBA0jPQrWGTaIQuIVDeA" class="social-link"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
             </div>
@@ -27,7 +27,7 @@
                 <h3>Careers</h3>
                 <p><i class="fas fa-phone"></i> 09178786441</p>
                 <p><i class="fas fa-envelope"></i> hrg-mpm@tspi.org</p>
-                <a href="#careers" class="careers-link">View Job Openings</a>
+                <a href="<?php echo SITE_URL; ?>/careers.php" class="careers-link">View Job Openings</a>
             </div>
             
             <div class="footer-section app-download">
@@ -46,7 +46,7 @@
         </div>
         
         <div class="footer-bottom">
-            <p><a href="#privacy">TSPI Privacy Notice</a></p>
+            <p><a href="<?php echo SITE_URL; ?>/privacy.php">TSPI Privacy Notice</a></p>
             <p>&copy; <?php echo date('Y'); ?> TSPI - Tulay sa Pag-unlad, Inc. All rights reserved.</p>
         </div>
     </footer>

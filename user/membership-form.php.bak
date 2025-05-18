@@ -484,45 +484,6 @@ input[readonly] {
 .form-col-2:empty {
     display: block;
 }
-
-/* Signature Pad Styles */
-.signature-pad-container {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    position: relative;
-    margin-bottom: 10px;
-    background-color: #fff;
-}
-
-.signature-pad {
-    width: 100%;
-    height: 150px;
-    background-color: #fff;
-    position: relative;
-    touch-action: none; /* Prevent scrolling when signing on touch devices */
-    border-radius: 4px 4px 0 0;
-}
-
-.signature-pad canvas {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.signature-pad-actions {
-    text-align: right;
-    padding: 5px;
-    background-color: #f8f8f8;
-    border-top: 1px solid #eee;
-    border-radius: 0 0 4px 4px;
-}
-
-.clear-signature {
-    font-size: 12px;
-    padding: 3px 8px;
-}
 </style>
 
 <main class="container membership-form-container">
@@ -1137,26 +1098,14 @@ input[readonly] {
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="member_signature">Member's Signature</label>
-                                <div class="signature-pad-container">
-                                    <canvas id="member_signature_pad" class="signature-pad"></canvas>
-                                    <div class="signature-pad-actions">
-                                        <button type="button" class="btn btn-sm btn-secondary clear-signature" data-pad="member_signature_pad">Clear</button>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="member_signature" name="member_signature">
+                                <label for="member_signature_upload">Upload Member's Signature (Image File)</label>
+                                <input type="file" id="member_signature_upload" name="member_signature_upload" accept="image/*" class="form-control">
                             </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="beneficiary_signature">Beneficiary's Signature</label>
-                                <div class="signature-pad-container">
-                                    <canvas id="beneficiary_signature_pad" class="signature-pad"></canvas>
-                                    <div class="signature-pad-actions">
-                                        <button type="button" class="btn btn-sm btn-secondary clear-signature" data-pad="beneficiary_signature_pad">Clear</button>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
+                                <label for="beneficiary_signature_upload">Upload Beneficiary's Signature (Image File)</label>
+                                <input type="file" id="beneficiary_signature_upload" name="beneficiary_signature_upload" accept="image/*" class="form-control">
                             </div>
                         </div>
                     </div>
@@ -1195,7 +1144,6 @@ input[readonly] {
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/philippine-address-selector@latest/dist/philippine-address-selector.bundle.js"></script>
@@ -1324,21 +1272,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorMessages.push('Please add at least one beneficiary');
             }
             
-            // Save signature pad data to hidden inputs before submission
-            if (memberSignaturePad && !memberSignaturePad.isEmpty()) {
-                document.getElementById('member_signature').value = memberSignaturePad.toDataURL();
-            } else {
-                isValid = false;
-                errorMessages.push('Please provide member signature');
-            }
-            
-            if (beneficiarySignaturePad && !beneficiarySignaturePad.isEmpty()) {
-                document.getElementById('beneficiary_signature').value = beneficiarySignaturePad.toDataURL();
-            } else {
-                isValid = false;
-                errorMessages.push('Please provide beneficiary signature');
-            }
-            
             // Display custom error messages if validation fails
             if (!isValid) {
                 event.preventDefault();
@@ -1346,79 +1279,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Initialize Signature Pads
-    let memberSignaturePad = null;
-    let beneficiarySignaturePad = null;
-    
-    const memberSignaturePadElement = document.getElementById('member_signature_pad');
-    const beneficiarySignaturePadElement = document.getElementById('beneficiary_signature_pad');
-    
-    function resizeCanvas(canvas) {
-        // When zoomed out to less than 100%, for some very strange reason,
-        // some browsers report devicePixelRatio as less than 1
-        // and only part of the canvas is cleared then.
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        
-        const oldWidth = canvas.width;
-        const oldHeight = canvas.height;
-        
-        // This part causes the canvas to be cleared
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        
-        console.log(`Canvas resized: width=${canvas.width}, height=${canvas.height}, ratio=${ratio}, oldWidth=${oldWidth}, oldHeight=${oldHeight}`);
-    }
-    
-    // Initialize signature pads after a small delay to ensure the canvas elements are fully rendered
-    setTimeout(function() {
-        if (memberSignaturePadElement) {
-            console.log('Initializing member signature pad');
-            resizeCanvas(memberSignaturePadElement);
-            memberSignaturePad = new SignaturePad(memberSignaturePadElement, {
-                backgroundColor: 'rgb(255, 255, 255)',
-                penColor: 'rgb(0, 0, 0)'
-            });
-        } else {
-            console.error('Member signature pad element not found');
-        }
-        
-        if (beneficiarySignaturePadElement) {
-            console.log('Initializing beneficiary signature pad');
-            resizeCanvas(beneficiarySignaturePadElement);
-            beneficiarySignaturePad = new SignaturePad(beneficiarySignaturePadElement, {
-                backgroundColor: 'rgb(255, 255, 255)',
-                penColor: 'rgb(0, 0, 0)'
-            });
-        } else {
-            console.error('Beneficiary signature pad element not found');
-        }
-    }, 100);
-    
-    // Handle clear signature buttons
-    document.querySelectorAll('.clear-signature').forEach(button => {
-        button.addEventListener('click', function() {
-            const padId = this.getAttribute('data-pad');
-            if (padId === 'member_signature_pad' && memberSignaturePad) {
-                memberSignaturePad.clear();
-            } else if (padId === 'beneficiary_signature_pad' && beneficiarySignaturePad) {
-                beneficiarySignaturePad.clear();
-            }
-        });
-    });
-    
-    // Handle window resize to adjust signature pad
-    window.addEventListener('resize', function() {
-        if (memberSignaturePadElement && memberSignaturePad) {
-            resizeCanvas(memberSignaturePadElement);
-            memberSignaturePad.clear(); // Clear and resize
-        }
-        if (beneficiarySignaturePadElement && beneficiarySignaturePad) {
-            resizeCanvas(beneficiarySignaturePadElement);
-            beneficiarySignaturePad.clear(); // Clear and resize
-        }
-    });
     
     // Pikaday Initializations
     const pikadayConfig = {
@@ -1664,8 +1524,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxIncomeSources = 4;
 
     if (addIncomeSourceBtn && incomeSourcesContainer) {
-        addIncomeSourceBtn.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent form submission if button is inside form
+        addIncomeSourceBtn.addEventListener('click', function() {
             if (incomeSourceCount < maxIncomeSources) {
                 incomeSourceCount++;
                 const newIncomeSourceDiv = document.createElement('div');
@@ -1710,8 +1569,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxOtherValidIds = 1; // Changed max to 1
 
     if (idNumberField && addOtherValidIdBtn && otherValidIdsContainer) {
-        addOtherValidIdBtn.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent form submission if button is inside form
+        addOtherValidIdBtn.addEventListener('click', function() {
             if (otherValidIdCount < maxOtherValidIds) {
                 otherValidIdCount++;
                 const newValidIdDiv = document.createElement('div');
@@ -1735,9 +1593,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (otherValidIdCount === 0) {
                         idNumberField.readOnly = false;
                         idNumberField.required = true;
+                        addOtherValidIdBtn.textContent = 'Do you have other Valid IDs?';
                         addOtherValidIdBtn.style.display = 'inline-block'; // Show button again
                     }
                 });
+
             }
         });
     }
