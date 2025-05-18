@@ -17,7 +17,7 @@ $success = false;
 $stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
 $stmtDup->execute([get_logged_in_user()['email']]);
 if ($stmtDup->fetch()) {
-    include '../includes/header.php';
+include '../includes/header.php';
     echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
     echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
     include '../includes/footer.php';
@@ -32,6 +32,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first_name = sanitize($_POST['first_name']);
     $middle_name = sanitize($_POST['middle_name']);
     $last_name = sanitize($_POST['last_name']);
+    
+    // Initialize all form fields to prevent undefined variable warnings
+    $branch = sanitize($_POST['branch'] ?? '');
+    $cid_no = sanitize($_POST['cid_no'] ?? '');
+    $center_no = sanitize($_POST['center_no'] ?? '');
+    $gender = sanitize($_POST['gender'] ?? '');
+    $civil_status = sanitize($_POST['civil_status'] ?? '');
+    $birth_place = sanitize($_POST['birth_place'] ?? '');
+    $nationality = sanitize($_POST['nationality'] ?? '');
+    $id_number = sanitize($_POST['id_number'] ?? '');
+    $present_address = sanitize($_POST['present_address'] ?? '');
+    $present_zip_code = sanitize($_POST['present_zip_code'] ?? '');
+    $permanent_address = sanitize($_POST['permanent_address'] ?? '');
+    $permanent_zip_code = sanitize($_POST['permanent_zip_code'] ?? '');
+    $home_ownership = sanitize($_POST['home_ownership'] ?? '');
+    $length_of_stay = intval($_POST['length_of_stay'] ?? 0);
+    $years_in_business = intval($_POST['years_in_business'] ?? 0);
+    
     // Birthday and age (input format MM/DD/YYYY)
     $birthDateObj = DateTime::createFromFormat('m/d/Y', $_POST['birthday']);
     if ($birthDateObj) {
@@ -124,63 +142,147 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert into database
     global $pdo;
     try {
+        // Count placeholders carefully to match columns
         $stmt = $pdo->prepare(
             "INSERT INTO members_information
-            (first_name, middle_name, last_name, birthdate, age, email, phone, region, province, city, barangay,
-             business_name, business_address, other_income_source_1, other_income_source_2, other_income_source_3, other_income_source_4,
-             spouse_name, spouse_birthdate,
-             beneficiary_1_firstname, beneficiary_1_lastname, beneficiary_1_dependent,
-             beneficiary_2_firstname, beneficiary_2_lastname, beneficiary_2_dependent,
-             beneficiary_3_firstname, beneficiary_3_lastname, beneficiary_3_dependent,
-             beneficiary_4_firstname, beneficiary_4_lastname, beneficiary_4_dependent,
-             trustee_name, trustee_birthdate, member_signature, beneficiary_signature)
-            VALUES
-            (:first_name, :middle_name, :last_name, :birthdate, :age, :email, :phone, :region, :province, :city, :barangay,
-             :business_name, :business_address, :other_income_source_1, :other_income_source_2, :other_income_source_3, :other_income_source_4,
-             :spouse_name, :spouse_birthdate,
-             :beneficiary_1_firstname, :beneficiary_1_lastname, :beneficiary_1_dependent,
-             :beneficiary_2_firstname, :beneficiary_2_lastname, :beneficiary_2_dependent,
-             :beneficiary_3_firstname, :beneficiary_3_lastname, :beneficiary_3_dependent,
-             :beneficiary_4_firstname, :beneficiary_4_lastname, :beneficiary_4_dependent,
-             :trustee_name, :trustee_birthdate, :member_signature, :beneficiary_signature)"
+            (branch, cid_no, center_no, plans, classification,
+             first_name, middle_name, last_name, gender, civil_status,
+             birthdate, age, birth_place, email, cell_phone, contact_no, nationality,
+             id_number, other_valid_ids, mothers_maiden_last_name,
+             mothers_maiden_first_name, mothers_maiden_middle_name,
+             present_address, present_region_text, present_province_text,
+             present_city_text, present_barangay_text, present_zip_code,
+             permanent_address, permanent_region_text, permanent_province_text,
+             permanent_city_text, permanent_barangay_text, permanent_zip_code,
+             home_ownership, length_of_stay, primary_business,
+             years_in_business, business_address, business_region_text,
+             business_province_text, business_city_text, business_barangay_text,
+             business_zip_code, other_income_source_1, other_income_source_2,
+             other_income_source_3, other_income_source_4, spouse_name,
+             spouse_birthdate, spouse_occupation, spouse_id_number,
+             beneficiary_fn_1, beneficiary_ln_1, beneficiary_mi_1,
+             beneficiary_birthdate_1, beneficiary_gender_1,
+             beneficiary_relationship_1, beneficiary_dependent_1,
+             beneficiary_fn_2, beneficiary_ln_2, beneficiary_mi_2,
+             beneficiary_birthdate_2, beneficiary_gender_2,
+             beneficiary_relationship_2, beneficiary_dependent_2,
+             beneficiary_fn_3, beneficiary_ln_3, beneficiary_mi_3,
+             beneficiary_birthdate_3, beneficiary_gender_3,
+             beneficiary_relationship_3, beneficiary_dependent_3,
+             beneficiary_fn_4, beneficiary_ln_4, beneficiary_mi_4,
+             beneficiary_birthdate_4, beneficiary_gender_4,
+             beneficiary_relationship_4, beneficiary_dependent_4,
+             trustee_name, trustee_birthdate, trustee_relationship,
+             member_name, sig_beneficiary_name,
+             member_signature, beneficiary_signature,
+             disclaimer_agreement, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->execute([
-            ':first_name'    => $first_name,
-            ':middle_name'   => $middle_name,
-            ':last_name'     => $last_name,
-            ':birthdate'     => $birthdate,
-            ':age'           => $age,
-            ':email'         => $email,
-            ':phone'         => $phone,
-            ':region'        => $region,
-            ':province'      => $province,
-            ':city'          => $city,
-            ':barangay'      => $barangay,
-            ':business_name'     => $business_name,
-            ':business_address'  => $business_address,
-            ':other_income_source_1' => $other_income_source_1,
-            ':other_income_source_2' => $other_income_source_2,
-            ':other_income_source_3' => $other_income_source_3,
-            ':other_income_source_4' => $other_income_source_4,
-            ':spouse_name'       => $spouse_name,
-            ':spouse_birthdate'  => $spouse_birthdate,
-            ':beneficiary_1_firstname' => $beneficiary_1_firstname,
-            ':beneficiary_1_lastname'  => $beneficiary_1_lastname,
-            ':beneficiary_1_dependent' => $beneficiary_1_dependent,
-            ':beneficiary_2_firstname' => $beneficiary_2_firstname,
-            ':beneficiary_2_lastname'  => $beneficiary_2_lastname,
-            ':beneficiary_2_dependent' => $beneficiary_2_dependent,
-            ':beneficiary_3_firstname' => $beneficiary_3_firstname,
-            ':beneficiary_3_lastname'  => $beneficiary_3_lastname,
-            ':beneficiary_3_dependent' => $beneficiary_3_dependent,
-            ':beneficiary_4_firstname' => $beneficiary_4_firstname,
-            ':beneficiary_4_lastname'  => $beneficiary_4_lastname,
-            ':beneficiary_4_dependent' => $beneficiary_4_dependent,
-            ':trustee_name'      => $trustee_name,
-            ':trustee_birthdate' => $trustee_birthdate,
-            ':member_signature'  => $memberSignaturePath,
-            ':beneficiary_signature' => $beneficiarySignaturePath
-        ]);
+        
+        // Convert plans and classification arrays to JSON
+        $plansJson = isset($_POST['plans']) ? json_encode($_POST['plans']) : null;
+        $classificationJson = isset($_POST['classification']) ? json_encode($_POST['classification']) : null;
+        $otherValidIdsJson = isset($_POST['other_valid_id']) ? json_encode($_POST['other_valid_id']) : null;
+        
+        // Get values for mother's maiden name that weren't initialized before
+        $mothers_maiden_last_name = sanitize($_POST['mothers_maiden_last_name'] ?? '');
+        $mothers_maiden_first_name = sanitize($_POST['mothers_maiden_first_name'] ?? '');
+        $mothers_maiden_middle_name = sanitize($_POST['mothers_maiden_middle_name'] ?? '');
+        
+        // Create an array of all values to pass to execute()
+        $params = [
+            $branch,                                              // branch
+            $cid_no,                                              // cid_no
+            $center_no,                                           // center_no
+            $plansJson,                                           // plans
+            $classificationJson,                                  // classification
+            $first_name,                                          // first_name
+            $middle_name,                                         // middle_name
+            $last_name,                                           // last_name
+            $gender,                                              // gender
+            $civil_status,                                        // civil_status
+            $birthdate,                                           // birthdate
+            $age,                                                 // age
+            $birth_place,                                         // birth_place
+            $email,                                               // email
+            $phone,                                               // cell_phone
+            sanitize($_POST['contact_no'] ?? ''),                 // contact_no
+            $nationality,                                         // nationality
+            $id_number,                                           // id_number
+            $otherValidIdsJson,                                   // other_valid_ids
+            $mothers_maiden_last_name,                            // mothers_maiden_last_name
+            $mothers_maiden_first_name,                           // mothers_maiden_first_name
+            $mothers_maiden_middle_name,                          // mothers_maiden_middle_name
+            $present_address,                                     // present_address
+            $region,                                              // present_region_text
+            $province,                                            // present_province_text
+            $city,                                                // present_city_text
+            $barangay,                                            // present_barangay_text
+            $present_zip_code,                                    // present_zip_code
+            $permanent_address,                                   // permanent_address
+            $region,                                              // permanent_region_text
+            $province,                                            // permanent_province_text
+            $city,                                                // permanent_city_text
+            $barangay,                                            // permanent_barangay_text
+            $permanent_zip_code,                                  // permanent_zip_code
+            $home_ownership,                                      // home_ownership
+            $length_of_stay,                                      // length_of_stay
+            $business_name,                                       // primary_business
+            $years_in_business,                                   // years_in_business
+            $business_address,                                    // business_address
+            $region,                                              // business_region_text
+            $province,                                            // business_province_text
+            $city,                                                // business_city_text
+            $barangay,                                            // business_barangay_text
+            sanitize($_POST['business_zip_code'] ?? ''),          // business_zip_code
+            $other_income_source_1,                               // other_income_source_1
+            $other_income_source_2,                               // other_income_source_2
+            $other_income_source_3,                               // other_income_source_3
+            $other_income_source_4,                               // other_income_source_4
+            $spouse_name,                                         // spouse_name
+            $spouse_birthdate,                                    // spouse_birthdate
+            sanitize($_POST['spouse_occupation'] ?? ''),          // spouse_occupation
+            sanitize($_POST['spouse_id_number'] ?? ''),           // spouse_id_number
+            $beneficiary_1_firstname,                             // beneficiary_fn_1
+            $beneficiary_1_lastname,                              // beneficiary_ln_1
+            sanitize($_POST['beneficiary_mi'][0] ?? ''),          // beneficiary_mi_1
+            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][0] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_1
+            sanitize($_POST['beneficiary_gender'][0] ?? ''),      // beneficiary_gender_1
+            sanitize($_POST['beneficiary_relationship'][0] ?? ''), // beneficiary_relationship_1
+            $beneficiary_1_dependent,                             // beneficiary_dependent_1
+            $beneficiary_2_firstname,                             // beneficiary_fn_2
+            $beneficiary_2_lastname,                              // beneficiary_ln_2
+            sanitize($_POST['beneficiary_mi'][1] ?? ''),          // beneficiary_mi_2
+            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][1] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_2
+            sanitize($_POST['beneficiary_gender'][1] ?? ''),      // beneficiary_gender_2
+            sanitize($_POST['beneficiary_relationship'][1] ?? ''), // beneficiary_relationship_2
+            $beneficiary_2_dependent,                             // beneficiary_dependent_2
+            $beneficiary_3_firstname,                             // beneficiary_fn_3
+            $beneficiary_3_lastname,                              // beneficiary_ln_3
+            sanitize($_POST['beneficiary_mi'][2] ?? ''),          // beneficiary_mi_3
+            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][2] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_3
+            sanitize($_POST['beneficiary_gender'][2] ?? ''),      // beneficiary_gender_3
+            sanitize($_POST['beneficiary_relationship'][2] ?? ''), // beneficiary_relationship_3
+            $beneficiary_3_dependent,                             // beneficiary_dependent_3
+            $beneficiary_4_firstname,                             // beneficiary_fn_4
+            $beneficiary_4_lastname,                              // beneficiary_ln_4
+            sanitize($_POST['beneficiary_mi'][3] ?? ''),          // beneficiary_mi_4
+            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][3] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_4
+            sanitize($_POST['beneficiary_gender'][3] ?? ''),      // beneficiary_gender_4
+            sanitize($_POST['beneficiary_relationship'][3] ?? ''), // beneficiary_relationship_4
+            $beneficiary_4_dependent,                             // beneficiary_dependent_4
+            $trustee_name,                                        // trustee_name
+            $trustee_birthdate,                                   // trustee_birthdate
+            sanitize($_POST['trustee_relationship'] ?? ''),       // trustee_relationship
+            sanitize($_POST['member_name'] ?? ''),                // member_name
+            sanitize($_POST['sig_beneficiary_name'] ?? ''),       // sig_beneficiary_name
+            $memberSignaturePath,                                 // member_signature
+            $beneficiarySignaturePath,                            // beneficiary_signature
+            isset($_POST['disclaimer_agreement']) ? 1 : 0,        // disclaimer_agreement
+            'pending'                                             // status
+        ];
+
+        $stmt->execute($params);
         $success = true;
     } catch (Exception $e) {
         $errors[] = 'Submission error: ' . $e->getMessage();
@@ -932,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form validation before submit OR page next
     function validateCurrentPageFields() {
-        let isValid = true;
+            let isValid = true;
         let invalidElements = [];
         const activePage = document.querySelector('.form-page-content.active');
         if (!activePage) return true;
@@ -941,12 +1043,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const val = input.value.trim();
             if ((input.type === 'checkbox' || input.type === 'radio')) {
                 if (!document.querySelector(`input[name="${input.name}"]:checked`)) {
-                    isValid = false;
+                isValid = false;
                     invalidElements.push(input);
                 }
             } else {
                 if (!val) {
-                    isValid = false;
+                isValid = false;
                     invalidElements.push(input);
                 }
             }
@@ -969,7 +1071,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 invalidElements.push(cellPhone);
             }
         }
-        if (!isValid) {
+            if (!isValid) {
             alert('Please fill out required fields.');
             if (invalidElements.length) {
                 invalidElements[0].scrollIntoView({behavior:'smooth', block:'center'});
@@ -992,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!validateCurrentPageFields()) {
                     allValid = false;
                     updatePageDisplay(); // Show the page with the first error
-                    event.preventDefault();
+                event.preventDefault();
                     return; // Stop submission
                 }
             }

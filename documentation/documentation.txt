@@ -394,3 +394,9 @@ A new `members_information` database table has been introduced to store multi-pa
 SQL for creating this table and associated triggers is documented in `documentation/members_table.txt`.
 
 Signature images are exported as Base64-encoded PNGs via the Signature Pad API and saved under `/uploads/signatures`. PHP code ensures the directory exists and decodes/stores the image files, with file paths stored in the `members` table.
+
+## Application Tracking and Verification
+
+- A new `status` column (`pending`, `approved`, `rejected`) has been added to `members_information` to track the state of each application.
+- By default, all new submissions are marked `pending` via PHP insertion logic.
+- An admin interface is available under `admin/applications.php` to list all applications, view submission details, and approve or reject each application via `admin/verify_application.php`.
