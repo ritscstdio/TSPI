@@ -132,3 +132,6 @@ define('PROFILE_PICS_DIR', UPLOADS_DIR . '/profile_pics');
 if (!is_dir(PROFILE_PICS_DIR)) {
     mkdir(PROFILE_PICS_DIR, 0755, true);
 }
+
+// Include administrator authentication functions
+require_once __DIR__ . '/admin_auth.php';

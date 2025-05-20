@@ -2,8 +2,7 @@
 $page_title = "Admin Dashboard";
 $body_class = "admin-dashboard-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin', 'editor', 'comment_moderator']);
+require_admin_login();
 
 // Get stats
 $stmt = $pdo->query("SELECT 

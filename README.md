@@ -106,6 +106,53 @@ These instructions will guide you to get a copy of the project up and running on
     ```
     *   On the server side (e.g., in `membership-form.php`), decode the Base64-encoded signature (from a hidden input like `member_signature_data`) and save to `uploads/signatures`, storing the filepath (e.g., `uploads/signatures/member_<timestamp>.png`) in the database.
 
+4.4. **Install Required Dependencies (TCPDF for PDF Generation):**
+    *   This project uses Composer to manage PHP dependencies. If you don't have Composer installed, download it from [getcomposer.org](https://getcomposer.org/download/).
+    *   For convenience, you can use the provided installation scripts:
+        * On Windows: Double-click `install_dependencies.bat`
+        * On Linux/Mac: Run `chmod +x install_dependencies.sh && ./install_dependencies.sh` in your terminal
+    *   Alternatively, run the following command manually in the project root directory:
+    ```bash
+    composer install
+    ```
+    *   This will install the TCPDF library required for PDF generation of membership applications.
+    *   If you encounter errors like "TCPDF ERROR: TCPDF requires the Imagick or GD extension", you need to enable the GD extension in PHP:
+        1. Open your `php.ini` file (usually in your XAMPP/PHP directory)
+        2. Find the line `;extension=gd` and uncomment it by removing the semicolon
+        3. Restart your web server
+        4. You can verify the installation by accessing `tcpdf_test.php` in your browser
+
+4.5. **Administrator Authentication System:**
+    *   The website now uses a separate authentication system for administrators.
+    *   To set up an administrator account, run the following SQL:
+    ```sql
+    CREATE TABLE IF NOT EXISTS `administrators` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `username` varchar(50) NOT NULL,
+      `password` varchar(255) NOT NULL,
+      `name` varchar(100) NOT NULL,
+      `email` varchar(100) NOT NULL,
+      `role` enum('admin','editor') NOT NULL DEFAULT 'admin',
+      `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `username` (`username`),
+      UNIQUE KEY `email` (`email`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    -- Create a default admin user (username: admin, password: Admin123!)
+    INSERT INTO `administrators` (`username`, `password`, `name`, `email`, `role`) 
+    VALUES ('admin', '$2y$10$5KP.IqP.8bi3z/mCRQpa0eNUQb3wQJG1H8xVTHsoLn0UlGm3Y0t8K', 'Admin User', 'admin@example.com', 'admin');
+    ```
+    *   This will create an administrator with username `admin` and password `Admin123!` - CHANGE THIS PASSWORD IMMEDIATELY after first login.
+    *   Access the admin panel at `/admin/login.php` using these credentials.
+
+4.6. **Admin Membership Application Management:**
+    *   The admin panel includes functionality to view, approve, reject, and generate PDFs for membership applications.
+    *   Access is restricted to users with admin privileges.
+    *   Ensure the TCPDF library is installed via Composer for PDF generation functionality.
+    *   Access the membership application management via Admin Panel → Membership Applications.
+
 5.  **Access the website:**
     *   Open your web browser and navigate to the project's URL (e.g., `http://localhost/your-project-folder-name/` if using XAMPP/WAMP).
 
@@ -151,6 +198,11 @@ These instructions will guide you to get a copy of the project up and running on
 *   **User Verification (`user/verify.php`):**
     *   Verify that the "Complete Membership Form" button appears after successful verification.
     *   Test the link to ensure it properly directs to the membership form with the verified parameter.
+*   **Admin Membership Application Management:**
+    *   Test the application list view (`admin/applications.php`).
+    *   Verify that the detailed view (`admin/view_application.php`) displays all application data correctly.
+    *   Test the PDF generation functionality.
+    *   Test the approval and rejection functionalities.
 *   **Responsiveness:** Check all pages on different screen sizes (desktop, tablet, mobile).
 
 ## Developer Documentation

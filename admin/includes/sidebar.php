@@ -1,5 +1,5 @@
 <?php
-$current_user = get_logged_in_user();
+$current_admin = get_admin_user();
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
@@ -16,8 +16,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
     
     <div class="sidebar-user">
         <div class="user-info">
-            <span class="user-name"><?php echo $current_user ? sanitize($current_user['name']) : 'Guest'; ?></span>
-            <span class="user-role"><?php echo $current_user ? ucfirst(sanitize($current_user['role'])) : ''; ?></span>
+            <span class="user-name"><?php echo $current_admin ? sanitize($current_admin['name']) : 'Guest'; ?></span>
+            <span class="user-role"><?php echo $current_admin ? ucfirst(sanitize($current_admin['role'])) : ''; ?></span>
         </div>
     </div>
     
@@ -29,7 +29,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             
             <li class="nav-header"><span>Content Management</span></li>
             
-            <?php if ($current_user && in_array($current_user['role'], ['admin', 'editor'])): ?>
+            <?php if ($current_admin && in_array($current_admin['role'], ['admin', 'editor'])): ?>
                 <li class="<?php echo in_array($current_page, ['content.php', 'add-content.php', 'edit-content.php']) ? 'active' : ''; ?>">
                     <a href="content.php"><i class="fas fa-newspaper"></i> <span>Content</span></a>
                 </li>
@@ -47,11 +47,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <a href="comments.php"><i class="fas fa-comments"></i> <span>Comments</span></a>
             </li>
             
-            <?php if ($current_user && $current_user['role'] === 'admin'): ?>
+            <?php if ($current_admin && $current_admin['role'] === 'admin'): ?>
                 <li class="nav-header"><span>Administration</span></li>
                 
                 <li class="<?php echo in_array($current_page, ['users.php', 'add-user.php', 'edit-user.php']) ? 'active' : ''; ?>">
                     <a href="users.php"><i class="fas fa-users"></i> <span>Users</span></a>
+                </li>
+                
+                <li class="<?php echo in_array($current_page, ['applications.php', 'view_application.php']) ? 'active' : ''; ?>">
+                    <a href="applications.php"><i class="fas fa-file-alt"></i> <span>Membership Applications</span></a>
                 </li>
                 
                 <li class="<?php echo $current_page === 'settings.php' ? 'active' : ''; ?>">

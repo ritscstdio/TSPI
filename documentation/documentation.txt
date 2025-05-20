@@ -400,3 +400,154 @@ Signature images are exported as Base64-encoded PNGs via the Signature Pad API a
 - A new `status` column (`pending`, `approved`, `rejected`) has been added to `members_information` to track the state of each application.
 - By default, all new submissions are marked `pending` via PHP insertion logic.
 - An admin interface is available under `admin/applications.php` to list all applications, view submission details, and approve or reject each application via `admin/verify_application.php`.
+
+## Admin Membership Applications
+
+The admin panel includes functionality to manage and review membership applications submitted through the frontend membership form.
+
+### Features:
+
+1. **Application List View**
+   - Located at `admin/applications.php`
+   - Displays a table with all submitted applications
+   - Shows ID, applicant name, email, submission date, and status
+   - Includes action buttons: View, Approve, and Reject
+
+2. **Detailed Application View**
+   - Located at `admin/view_application.php`
+   - Accessible by clicking the "View" button on any application
+   - Displays all information submitted by the applicant organized in sections:
+     - Personal Information (name, contact details, ID numbers, etc.)
+     - Mother's Maiden Name
+     - Present and Permanent Addresses
+     - Business Information
+     - Spouse Information (if applicable)
+     - Beneficiaries
+     - Trustee Information
+     - Signatures (shows uploaded signature images)
+   - Application status is prominently displayed with color coding
+   - Action buttons for approval/rejection are available for pending applications
+
+3. **PDF Generation**
+   - Each application can be exported as a PDF document
+   - PDF includes all application data formatted in sections
+   - Includes applicant's signature images if provided
+   - Generated PDF uses the naming format: `TSPI_Membership_{ID}_{LastName}.pdf`
+   - Requires TCPDF library (installed via Composer)
+
+### Technical Implementation:
+
+- The PDF generation uses TCPDF library
+- Images are embedded directly in the PDF
+- Application data is retrieved from the `members_information` database table
+- The sidebar in the admin panel includes a link to the Membership Applications section
+- All pages include proper authorization checks to ensure only admin users can access them
+
+### Usage:
+
+1. Log in as an admin user
+2. Navigate to "Membership Applications" from the admin sidebar
+3. Review application list and status
+4. Click "View" on an application to see full details
+5. Use "Generate PDF" button to download a PDF version
+6. For pending applications, use "Approve" or "Reject" buttons to update status
+
+The PDF format allows administrators to print application forms or share them with other departments as needed.
+
+## Administrator Authentication System
+
+The website uses a dedicated authentication system for administrators separate from regular user login. This provides enhanced security and separation of responsibilities.
+
+### Components:
+
+1. **Database Table**: `administrators` table stores admin user information (ID, username, password, name, email, role)
+
+2. **Authentication Functions** (`includes/admin_auth.php`):
+   - `is_admin_logged_in()`: Checks if an admin is currently logged in
+   - `is_admin()`: Verifies if current user has admin privileges
+   - `require_admin_login()`: Redirects to login page if not logged in as admin
+   - `get_admin_user()`: Retrieves current admin user data
+
+3. **Admin Login** (`admin/login.php`):
+   - Authenticates against the `administrators` table
+   - Creates admin session variables (`admin_id` and `admin_role`)
+   - Redirects to admin dashboard on success
+
+4. **Access Control**:
+   - All admin pages now use `require_admin_login()` for protection
+   - Admin sidebar dynamically shows menu items based on admin role
+
+### Usage:
+
+- Admin users log in via `/admin/login.php`
+- Regular users cannot access admin features
+- Role-based access control determines what features each admin can access
+- Secure password hashing is used for admin credentials
+
+## Membership Application Management
+
+The website includes a system for managing membership applications, including PDF generation capabilities for approved applications.
+
+### Features:
+
+1. **Application Listing** (`admin/applications.php`):
+   - Shows all membership applications with status indicators
+   - Provides action buttons to approve, reject, or view applications
+
+2. **Application Detail View** (`admin/view_application.php`):
+   - Comprehensive view of all application details
+   - Includes personal information, addresses, business details, beneficiaries, etc.
+   - Displays uploaded signatures when available
+
+3. **PDF Generation**:
+   - Generates professional PDFs of approved applications
+   - Uses TCPDF library for PDF creation
+   - Includes all application details formatted for print/archiving
+   - Allow downloading the PDF for record keeping
+
+### Technical Requirements:
+
+1. **TCPDF Library**:
+   - Required for PDF generation
+   - Installed via Composer: `composer require tecnickcom/tcpdf`
+   - Requires either GD or Imagick PHP extensions for handling images
+
+2. **Installation**:
+   - Run `install_dependencies.bat` (Windows) or `install_dependencies.sh` (Linux/Mac)
+   - Ensure PHP has GD extension enabled in php.ini (`extension=gd`)
+   - Use `tcpdf_test.php` to verify proper installation
+
+### Troubleshooting:
+
+- If seeing "TCPDF ERROR: TCPDF requires the Imagick or GD extension", enable GD in php.ini
+- If PDF generation fails, check that Composer dependencies are installed
+- For image issues in PDFs, ensure uploaded images are in supported formats (JPG, PNG)
+
+## PDF Generation with TCPDF and FPDI
+
+The system uses TCPDF along with FPDI to generate PDF documents from existing templates. This allows for:
+
+1. **PDF Form Generation**: Generate PDF forms from application data
+2. **Template-based PDFs**: Populate existing PDF templates with database information
+3. **Custom Document Generation**: Create custom PDFs with precise control over content placement
+
+### Dependencies:
+- TCPDF: Main PDF generation library
+- FPDI: Plugin for importing and working with existing PDF templates
+- GD Extension: Required for handling PNG images with alpha channel
+
+### Example Use Cases:
+1. **Membership Certificates**: Fill in member data on certificate templates
+2. **Application Forms**: Generate completed application forms for record-keeping
+3. **Reports**: Create detailed reports with company branding and formatting
+
+### Implementation Notes:
+- The system can place text at exact coordinates on a PDF template
+- The FPDI library allows importing existing PDF documents as templates 
+- Database records can be directly mapped to specific locations on PDF forms
+- The system handles various data types (text, numbers, dates) with proper formatting
+
+For implementations, see the example in `tcpdf_template_example.php` which demonstrates the three primary methods for working with PDFs:
+1. Using existing PDF files as templates (Method 1)
+2. Precise text positioning on blank PDFs (Method 2)
+3. Creating PDF documents with form fields (Method 3)

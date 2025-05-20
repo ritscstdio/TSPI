@@ -3,14 +3,9 @@ $page_title = "Admin Login";
 $body_class = "admin-login-page";
 require_once '../includes/config.php';
 
-// Check if already logged in
-if (is_logged_in()) {
-    $current = get_logged_in_user();
-    if ($current && $current['role'] === 'comment_moderator') {
-        redirect('/admin/comments.php');
-    } else {
-        redirect('/admin/index.php');
-    }
+// Check if already logged in as admin
+if (is_admin_logged_in()) {
+    redirect('/admin/index.php');
 }
 
 // Handle login form submission
@@ -21,21 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$username || !$password) {
         $_SESSION['message'] = "Username and password are required";
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt = $pdo->prepare("SELECT * FROM administrators WHERE username = ?");
         $stmt->execute([$username]);
-        $user = $stmt->fetch();
+        $admin = $stmt->fetch();
         
-        if ($user && password_verify($password, $user['password'])) {
+        if ($admin && password_verify($password, $admin['password'])) {
             // Login successful
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_role'] = $user['role'];
-            $_SESSION['message'] = "Welcome back, {$user['name']}!";
-            // Redirect user based on role
-            if ($user['role'] === 'comment_moderator') {
-                redirect('/admin/comments.php');
-            } else {
-                redirect('/admin/index.php');
-            }
+            $_SESSION['admin_id'] = $admin['id'];
+            $_SESSION['admin_role'] = $admin['role'];
+            $_SESSION['message'] = "Welcome back, {$admin['name']}!";
+            redirect('/admin/index.php');
         } else {
             // Login failed
             $_SESSION['message'] = "Invalid username or password";
