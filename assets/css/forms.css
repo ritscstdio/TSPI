@@ -24,8 +24,8 @@ h1, h2 {
     max-width: 1000px; /* Increased max-width */
     margin-left: auto;
     margin-right: auto;
-    margin-top: 13rem; /* Further increased margin-top, was 11rem */
-    margin-bottom: 5rem;
+    margin-top: 10rem; /* Further increased margin-top, was 11rem */
+    margin-bottom: 1rem;
     background: var(--W-Background);
     padding: 1rem; /* User changed from 2.5rem */
     border-radius: 12px;

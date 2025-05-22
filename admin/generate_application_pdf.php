@@ -235,15 +235,16 @@ if (!file_exists($template_file)) {
                 
                 // Addresses
                 // Present Address
-                $pdf->SetFont('helvetica', '', 5); // Set smaller font size using helvetica
+                $pdf->SetFont('helvetica', '', 7); // Set smaller font size using helvetica
                 $pdf->SetXY(3, 91); 
                 $pdf->Write(0, $application['present_address']);
                 
                 // Permanent Address
+                $pdf->SetFont('helvetica', '', 6); // Set smaller font size using helvetica
                 $pdf->SetXY(117, 91); 
                 $pdf->Write(0, $application['permanent_address']);
-                $pdf->SetFont('helvetica', '', 7); // Set smaller font size using helvetica
 
+                $pdf->SetFont('helvetica', '', 7); // Set smaller font size using helvetica
                 // ZIP codes
                 $pdf->SetXY(190, 91.5); 
                 $pdf->Write(0, $application['present_zip_code']);

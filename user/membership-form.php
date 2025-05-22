@@ -14,14 +14,17 @@ $errors = [];
 $success = false;
 
 // Prevent duplicate application submission
-$stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
-$stmtDup->execute([get_logged_in_user()['email']]);
-if ($stmtDup->fetch()) {
-include '../includes/header.php';
-    echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
-    echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
-    include '../includes/footer.php';
-    exit;
+$user = get_logged_in_user();
+if ($user && isset($user['email'])) {
+    $stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
+    $stmtDup->execute([$user['email']]);
+    if ($stmtDup->fetch()) {
+        include '../includes/header.php';
+        echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
+        echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
+        include '../includes/footer.php';
+        exit;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -42,6 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $birth_place = sanitize($_POST['birth_place'] ?? '');
     $nationality = sanitize($_POST['nationality'] ?? '');
     $id_number = sanitize($_POST['id_number'] ?? '');
+    $other_valid_id = sanitize($_POST['other_valid_id'] ?? '');
+    $present_brgy_code = sanitize($_POST['present_brgy_code'] ?? '');
+    $permanent_brgy_code = sanitize($_POST['permanent_brgy_code'] ?? '');
     $present_address = sanitize($_POST['present_address'] ?? '');
     $present_zip_code = sanitize($_POST['present_zip_code'] ?? '');
     $permanent_address = sanitize($_POST['permanent_address'] ?? '');
@@ -284,6 +290,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $stmt->execute($params);
         $success = true;
+        
+        // Clear localStorage after successful submission
+        echo '<script>localStorage.removeItem("membershipFormData");</script>';
     } catch (Exception $e) {
         $errors[] = 'Submission error: ' . $e->getMessage();
     }
@@ -549,55 +558,31 @@ include '../includes/header.php';
                 </div> <!-- End of Page 1 -->
 
                 <div class="form-page-content" id="form-page-2">
-                    <h2>Present Address</h2>
-                     <div class="form-group">
-                        <label for="present_address">Unit / Address</label>
-                        <input type="text" id="present_address" name="present_address" placeholder="Unit No., Building, Street Name" required>
-                        <!-- Hidden text fields for address selector -->
-                        <input type="hidden" name="present_region_text" id="present_region_text">
-                        <input type="hidden" name="present_province_text" id="present_province_text">
-                        <input type="hidden" name="present_city_text" id="present_city_text">
-                        <input type="hidden" name="present_barangay_text" id="present_barangay_text">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="present_region">Region</label>
-                                <select id="present_region" name="present_region" class="form-control address-region" required></select>
-                            </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="present_province">Province</label>
-                                <select id="present_province" name="present_province" class="form-control address-province" required></select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="present_city">City/Municipality</label>
-                                <select id="present_city" name="present_city" class="form-control address-city" required></select>
-                            </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="present_barangay">Barangay</label>
-                                <select id="present_barangay" name="present_barangay" class="form-control address-barangay" required></select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="present_zip_code">Zip Code</label>
-                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code">
-                            </div>
-                        </div>
-                        <div class="form-col-3">
-                            <!-- Empty div to maintain 2-column layout -->
-                        </div>
-                    </div>
+                            <h2>Present Address</h2>
+     <div class="form-group">
+        <label for="present_address">Unit / Address</label>
+        <input type="text" id="present_address" name="present_address" placeholder="Unit No., Street, Brgy., City" required>
+     </div>
+     <div class="form-row">
+        <div class="form-col-3">
+            <div class="form-group">
+                <label for="present_brgy_code">Brgy. Code</label>
+                <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required>
+            </div>
+        </div>
+        <div class="form-col-3">
+            <div class="form-group">
+                <label for="present_zip_code">Zip Code</label>
+                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code">
+            </div>
+        </div>
+     </div>
+     
+     <!-- Hidden fields to maintain database compatibility -->
+     <input type="hidden" name="present_region_text" id="present_region_text">
+     <input type="hidden" name="present_province_text" id="present_province_text">
+     <input type="hidden" name="present_city_text" id="present_city_text">
+     <input type="hidden" name="present_barangay_text" id="present_barangay_text">
 
                     <div class="section-divider"></div>
 
@@ -605,53 +590,29 @@ include '../includes/header.php';
                     <h2>Permanent Address</h2>
                     <div class="form-group">
                         <label for="permanent_address">Unit / Address</label>
-                        <input type="text" id="permanent_address" name="permanent_address" placeholder="Unit No., Building, Street Name" required>
-                        <!-- Hidden text fields for address selector -->
-                        <input type="hidden" name="permanent_region_text" id="permanent_region_text">
-                        <input type="hidden" name="permanent_province_text" id="permanent_province_text">
-                        <input type="hidden" name="permanent_city_text" id="permanent_city_text">
-                        <input type="hidden" name="permanent_barangay_text" id="permanent_barangay_text">
+                        <input type="text" id="permanent_address" name="permanent_address" placeholder="Unit No., Street, Brgy., City" required>
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="permanent_region">Region</label>
-                                <select id="permanent_region" name="permanent_region" class="form-control address-region" required></select>
+                                <label for="permanent_brgy_code">Brgy. Code</label>
+                                <input type="text" id="permanent_brgy_code" name="permanent_brgy_code" placeholder="Enter Brgy. Code" required>
                             </div>
                         </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="permanent_province">Province</label>
-                                <select id="permanent_province" name="permanent_province" class="form-control address-province" required></select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="permanent_city">City/Municipality</label>
-                                <select id="permanent_city" name="permanent_city" class="form-control address-city" required></select>
-                            </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="permanent_barangay">Barangay</label>
-                                <select id="permanent_barangay" name="permanent_barangay" class="form-control address-barangay" required></select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="permanent_zip_code">Zip Code</label>
                                 <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code">
                             </div>
                         </div>
-                        <div class="form-col-2">
-                            <!-- Empty div to maintain 2-column layout -->
-                        </div>
                     </div>
-                    <div class="section-divider"></div>
+                    
+                    <!-- Hidden fields to maintain database compatibility -->
+                    <input type="hidden" name="permanent_region_text" id="permanent_region_text">
+                    <input type="hidden" name="permanent_province_text" id="permanent_province_text">
+                    <input type="hidden" name="permanent_city_text" id="permanent_city_text">
+                    <input type="hidden" name="permanent_barangay_text" id="permanent_barangay_text">
+
                     <!-- Home Ownership -->
                     <div class="form-group">
                         <label>Home Ownership</label>
@@ -704,52 +665,14 @@ include '../includes/header.php';
                     </div>
                     <div class="form-group">
                         <label for="business_address_unit">Unit / Address</label>
-                        <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Building, Street Name" required>
-                        <!-- Hidden text fields for address selector -->
+                        <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Street, Brgy., City" required>
+                        <!-- Hidden fields to maintain database compatibility -->
                         <input type="hidden" name="business_region_text" id="business_region_text">
                         <input type="hidden" name="business_province_text" id="business_province_text">
                         <input type="hidden" name="business_city_text" id="business_city_text">
                         <input type="hidden" name="business_barangay_text" id="business_barangay_text">
                     </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="business_region">Region</label>
-                                <select id="business_region" name="business_region" class="form-control address-region" required></select>
-                            </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="business_province">Province</label>
-                                <select id="business_province" name="business_province" class="form-control address-province" required></select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="business_city">City/Municipality</label>
-                                <select id="business_city" name="business_city" class="form-control address-city" required></select>
-                            </div>
-                        </div>
-                        <div class="form-col-3">        
-                            <div class="form-group">
-                                <label for="business_barangay">Barangay</label>
-                                <select id="business_barangay" name="business_barangay" class="form-control address-barangay" required></select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="business_zip_code">Zip Code</label>
-                                <input type="text" id="business_zip_code" name="business_zip_code" required placeholder="Enter ZIP Code">
-                            </div>
-                        </div>
-                        <div class="form-col-2">
-                            <!-- Empty div to maintain 2-column layout -->
-                        </div>
-                    </div>
+                    <!-- Address fields removed -->
                     <!-- Spouse Information -->
                     <div id="spouse_information_section" style="display: none;">
                         <h2>Spouse Information</h2>
@@ -1182,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const addBeneficiaryBtn = document.getElementById('add_beneficiary_btn');
     const beneficiariesTbody = document.getElementById('beneficiaries_tbody');
     let beneficiaryRowCount = 1; // Start with 1 because one row is already in HTML
-    const maxBeneficiaryRows = 4;
+    const maxBeneficiaryRows = 5;
 
     if (addBeneficiaryBtn && beneficiariesTbody) {
         addBeneficiaryBtn.addEventListener('click', function() {
@@ -1376,8 +1299,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Other Valid IDs Logic
     const idNumberField = document.getElementById('id_number');
     const addOtherValidIdBtn = document.getElementById('add_other_valid_id_btn');
-    let otherValidIdsContainer = document.getElementById('other_valid_ids_container'); // Ensure it's correctly targeted
-    let otherValidIdCount = 0;
+    let otherValidIdsContainer = document.getElementById('other_valid_ids_container');
+    let otherValidIdActive = false;
     
     if (idNumberField && addOtherValidIdBtn) {
         // Create the container if it doesn't exist and is still null
@@ -1385,39 +1308,72 @@ document.addEventListener('DOMContentLoaded', function() {
             const container = document.createElement('div');
             container.id = 'other_valid_ids_container';
             container.style.marginTop = '10px';
+            
             // Insert after the button's parent div if the button is inside a div, or directly after the button
             const buttonContainer = addOtherValidIdBtn.closest('.form-group') || addOtherValidIdBtn.parentNode;
             if (buttonContainer.nextSibling) {
-                 buttonContainer.parentNode.insertBefore(container, buttonContainer.nextSibling);
+                buttonContainer.parentNode.insertBefore(container, buttonContainer.nextSibling);
             } else {
-                 buttonContainer.parentNode.appendChild(container);
+                buttonContainer.parentNode.appendChild(container);
             }
             otherValidIdsContainer = container; // Update reference
         }
         
         addOtherValidIdBtn.addEventListener('click', function() {
-            if (!otherValidIdsContainer) { // Check again in case it was missed
+            if (!otherValidIdsContainer) {
                 console.error('other_valid_ids_container not found or created.');
                 return;
             }
-            otherValidIdCount++;
-            const otherIdRow = document.createElement('div');
-            otherIdRow.classList.add('other-valid-id-row');
-            otherIdRow.style.display = 'flex';
-            otherIdRow.style.marginBottom = '5px';
-            otherIdRow.style.alignItems = 'center';
-            otherIdRow.innerHTML = `
-                <input type="text" id="other_valid_id_${otherValidIdCount}" name="other_valid_id[]" placeholder="Other Valid ID" style="flex-grow: 1;">
-                <button type="button" class="remove-other-id-btn btn btn-danger btn-remove btn-sm"><span class="btn-icon">×</span></button>
-            `;
             
-            const container = document.getElementById('other_valid_ids_container');
-            container.appendChild(otherIdRow);
+            // If there's already an active field, don't add another
+            if (otherValidIdActive) {
+                return;
+            }
             
-            otherIdRow.querySelector('.remove-other-id-btn').addEventListener('click', function() {
-                otherIdRow.remove();
-                otherValidIdCount--;
-                // Always show the button since we can have multiple IDs
+            otherValidIdActive = true;
+            
+            // Create form-group structure to match other inputs
+            const formGroup = document.createElement('div');
+            formGroup.classList.add('form-group');
+            formGroup.style.display = 'flex';
+            formGroup.style.alignItems = 'center';
+            formGroup.style.marginBottom = '5px';
+            
+            // Create input with proper styling
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'other_valid_id';
+            input.name = 'other_valid_id';
+            input.placeholder = 'Other Valid ID';
+            input.style.flexGrow = '1';
+            
+            // Create remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-danger btn-remove btn-sm';
+            removeBtn.innerHTML = '<span class="btn-icon">×</span>';
+            removeBtn.style.marginLeft = '5px';
+            
+            // Add input and button to form group
+            formGroup.appendChild(input);
+            formGroup.appendChild(removeBtn);
+            
+            // Add form group to container
+            otherValidIdsContainer.appendChild(formGroup);
+            
+            // Add event listener for remove button
+            removeBtn.addEventListener('click', function() {
+                formGroup.remove();
+                otherValidIdActive = false;
+            });
+            
+            // Hide the "Add Other Valid ID" button while there's an active field
+            addOtherValidIdBtn.style.display = 'none';
+            
+            // Show the button when field is removed
+            removeBtn.addEventListener('click', function() {
+                formGroup.remove();
+                otherValidIdActive = false;
                 addOtherValidIdBtn.style.display = 'inline-block';
             });
         });
@@ -1828,6 +1784,39 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 });
+
+// Add styles for responsive beneficiaries table
+const style = document.createElement('style');
+style.textContent = `
+    @media (max-width: 768px) {
+        .beneficiaries-table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        .beneficiary-row td {
+            min-width: 120px;
+        }
+        
+        .beneficiary-row input,
+        .beneficiary-row select {
+            width: 100%;
+            min-width: 80px;
+        }
+        
+        .beneficiary-row .form-group {
+            margin-right: 0;
+        }
+        
+        .beneficiaries-table th,
+        .beneficiaries-table td {
+            white-space: nowrap;
+        }
+    }
+`;
+document.head.appendChild(style);
 </script>
 
 <?php include '../includes/footer.php'; ?> 
+
