@@ -3,6 +3,41 @@ $page_title = "Membership Form";
 $body_class = "membership-form-page";
 require_once '../includes/config.php';
 
+// Function to generate a unique CID
+function generateUniqueCID($length = 6) {
+    $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $cid = '';
+    for ($i = 0; $i < $length; $i++) {
+        $cid .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $cid;
+}
+
+// Function to check if a CID already exists
+function cidExists($cid) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM members_information WHERE cid_no = ?");
+    $stmt->execute([$cid]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+// Function to get a guaranteed unique CID
+function getUniqueCID($length = 6, $maxAttempts = 10) {
+    $attempts = 0;
+    do {
+        $cid = generateUniqueCID($length);
+        $exists = cidExists($cid);
+        $attempts++;
+    } while ($exists && $attempts < $maxAttempts);
+    
+    if ($exists) {
+        // If we still have a collision after max attempts, use a longer CID
+        return getUniqueCID($length + 1, $maxAttempts);
+    }
+    
+    return $cid;
+}
+
 // Require user to be logged in
 if (!is_logged_in()) {
     $_SESSION['message'] = "You must be logged in to access the membership form.";
@@ -17,10 +52,11 @@ $success = false;
 function checkDuplicateApplication($email = null, $user_id = null) {
     global $pdo;
     
-    // If we have an email, check by email
-    if (!empty($email)) {
-        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE email = ?");
-        $stmt->execute([$email]);
+    // First check by user_id which is more reliable
+    if (!empty($user_id)) {
+        // This assumes you have a user_id column in your members_information table
+        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE user_id = ?");
+        $stmt->execute([$user_id]);
         $result = $stmt->fetch();
         if ($result) {
             return [
@@ -30,12 +66,10 @@ function checkDuplicateApplication($email = null, $user_id = null) {
         }
     }
     
-    // If we have a user ID, check by user ID (future enhancement if you track user_id in members_information)
-    if (!empty($user_id)) {
-        // This assumes you have a user_id column in your members_information table
-        // If you don't have this column, you can remove this check or add the column
-        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE user_id = ?");
-        $stmt->execute([$user_id]);
+    // If no result from user_id, check by email as fallback
+    if (!empty($email)) {
+        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE email = ? AND status IN ('pending', 'approved')");
+        $stmt->execute([$email]);
         $result = $stmt->fetch();
         if ($result) {
             return [
@@ -63,7 +97,7 @@ if ($user) {
     if ($application_check['has_application']) {
         include '../includes/header.php';
         
-        $status_message = "Your application is still being processed.";
+        $status_message = "Your application is currently being processed.";
         if ($application_check['status'] === 'approved') {
             $status_message = "You already have an approved application.";
         } elseif ($application_check['status'] === 'rejected') {
@@ -87,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $last_name = sanitize($_POST['last_name']);
     
     // Initialize all form fields to prevent undefined variable warnings
-    $branch = sanitize($_POST['branch'] ?? '');
-    $cid_no = sanitize($_POST['cid_no'] ?? '');
+    $branch = null; // Set branch to NULL rather than sanitize
+    $cid_no = getUniqueCID(); // Generate a unique CID
     $center_no = sanitize($_POST['center_no'] ?? '');
     $gender = sanitize($_POST['gender'] ?? '');
     $civil_status = sanitize($_POST['civil_status'] ?? '');
@@ -170,28 +204,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!is_dir($uploadsDir)) mkdir($uploadsDir, 0755, true);
     // Member signature
     $memberSignaturePath = null;
-    if (!empty($_POST['member_signature'])) {
+    if (!empty($_POST['member_signature']) && $_POST['member_signature'] !== 'data:,') {
         [$meta, $data] = explode(',', $_POST['member_signature']);
         $decoded = base64_decode($data);
-        $fname = 'member_' . time() . '.png';
-        file_put_contents($uploadsDir . '/' . $fname, $decoded);
-        $memberSignaturePath = 'uploads/signatures/' . $fname;
+        if (!empty($decoded)) {
+            $fname = 'member_' . time() . '.png';
+            file_put_contents($uploadsDir . '/' . $fname, $decoded);
+            $memberSignaturePath = 'uploads/signatures/' . $fname;
+        }
     }
     // Beneficiary signature
     $beneficiarySignaturePath = null;
-    if (!empty($_POST['beneficiary_signature'])) {
+    if (!empty($_POST['beneficiary_signature']) && $_POST['beneficiary_signature'] !== 'data:,') {
         [, $data] = explode(',', $_POST['beneficiary_signature']);
         $decoded = base64_decode($data);
-        $fname2 = 'beneficiary_' . time() . '.png';
-        file_put_contents($uploadsDir . '/' . $fname2, $decoded);
-        $beneficiarySignaturePath = 'uploads/signatures/' . $fname2;
+        if (!empty($decoded)) {
+            $fname2 = 'beneficiary_' . time() . '.png';
+            file_put_contents($uploadsDir . '/' . $fname2, $decoded);
+            $beneficiarySignaturePath = 'uploads/signatures/' . $fname2;
+        }
     }
     // Insert into database
     global $pdo;
     try {
         // Dynamically build INSERT statement to match parameter count
         $columns = [
-            'branch','cid_no','center_no','plans','classification',
+            'user_id', 'branch','cid_no','center_no','plans','classification',
             'first_name','middle_name','last_name','gender','civil_status',
             'birthdate','age','birth_place','email','cell_phone','contact_no','nationality',
             'id_number','other_valid_ids','mothers_maiden_last_name','mothers_maiden_first_name','mothers_maiden_middle_name',
@@ -217,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare($sql);
         
         // Convert plans and classification arrays to JSON
-        $plansJson = isset($_POST['plans']) ? json_encode($_POST['plans']) : null;
+        $plansJson = isset($_POST['plans']) ? json_encode(array_unique($_POST['plans'])) : null;
         $classificationJson = isset($_POST['classification']) ? json_encode($_POST['classification']) : null;
         $otherValidIdsJson = isset($_POST['other_valid_id']) ? json_encode($_POST['other_valid_id']) : null;
         
@@ -228,6 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Create an array of all values to pass to execute()
         $params = [
+            $user['id'], // user_id
             $branch,                                              // branch
             $cid_no,                                              // cid_no
             $center_no,                                           // center_no
@@ -327,6 +366,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 include '../includes/header.php';
 ?>
+<!-- Add a hidden comment with SQL command for adding UNIQUE constraint to cid_no column -->
+<!-- 
+To add a UNIQUE constraint to the cid_no column in phpMyAdmin, run the following SQL command:
+
+ALTER TABLE `members_information` ADD UNIQUE KEY `unique_cid` (`cid_no`);
+
+This will ensure that each CID must be unique in the database.
+-->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
 <link rel="stylesheet" type="text/css" href="../assets/css/forms.css">
 
@@ -371,17 +418,17 @@ include '../includes/header.php';
                         <div class="checkbox-group">
                           
                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_tkp" name="classification[]" value="TKP">
-                                <label for="class_tkp">TKP (Borrower) </label>
+                                <input type="checkbox" id="class_tkp" name="classification[]" value="TKP" title="TKP borrower classification - For individual borrowers">
+                                <label for="class_tkp">TKP (Borrower) <span class="tooltip-icon" title="TKP borrower classification - For individual borrowers">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_tpp" name="classification[]" value="TPP">
-                                <label for="class_tpp">TPP (Borrower)</label>
+                                <input type="checkbox" id="class_tpp" name="classification[]" value="TPP" title="TPP borrower classification - For business or partnership borrowers">
+                                <label for="class_tpp">TPP (Borrower) <span class="tooltip-icon" title="TPP borrower classification - For business or partnership borrowers">ⓘ</span></label>
                         </div>
 
                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_borrower" name="classification[]" value="Kapamilya">
-                                <label for="class_borrower">Kapamilya</label>
+                                <input type="checkbox" id="class_borrower" name="classification[]" value="Kapamilya" title="Kapamilya classification - For family members of borrowers">
+                                <label for="class_borrower">Kapamilya <span class="tooltip-icon" title="Kapamilya classification - For family members of borrowers">ⓘ</span></label>
                             </div>
                         </div>
                     </div>
@@ -390,16 +437,16 @@ include '../includes/header.php';
                         <label>Available Plans</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" checked onclick="return false;">
-                                <label for="plan_blip">Basic Life (BLIP) <span class="required-plan">(Required)</span></label>
+                                <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" checked onclick="return false;" title="Basic Life Insurance Plan - Provides essential coverage">
+                                <label for="plan_blip">Basic Life (BLIP) <span class="tooltip-icon" title="Basic Life Insurance Plan - Provides essential coverage">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP">
-                                <label for="plan_lpip">Life Plus (LPIP)</label>
+                                <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP" title="Life Plus Insurance Plan - Additional coverage on top of basic">
+                                <label for="plan_lpip">Life Plus (LPIP) <span class="tooltip-icon" title="Life Plus Insurance Plan - Additional coverage on top of basic">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_lmip" name="plans[]" value="LMIP">
-                                <label for="plan_lmip">Life Max (LMIP)</label>
+                                <input type="checkbox" id="plan_lmip" name="plans[]" value="LMIP" title="Life Max Insurance Plan - Comprehensive coverage with maximum benefits">
+                                <label for="plan_lmip">Life Max (LMIP) <span class="tooltip-icon" title="Life Max Insurance Plan - Comprehensive coverage with maximum benefits">ⓘ</span></label>
                             </div>
                         </div>
                     </div>
@@ -712,10 +759,10 @@ include '../includes/header.php';
                             <?php // Only render one row initially, rest will be added by JS ?>
                             <tr class="beneficiary-row">
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_1" name="beneficiary_last_name[]" placeholder="Enter Last Name"></div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_1" name="beneficiary_last_name[]" placeholder="Enter Last Name (optional)"></div>
                                 </td>
                                 <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_1" name="beneficiary_first_name[]" placeholder="Enter First Name"></div>
+                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_1" name="beneficiary_first_name[]" placeholder="Enter First Name (optional)"></div>
                                 </td>
                                 <td>
                                     <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_1" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div>
@@ -747,19 +794,19 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_name">Name of Trustee</label>
-                                <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name">
+                                <label for="trustee_name">Name of Trustee (optional)</label>
+                                <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name (optional)">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_dob">Date of Birth</label>
+                                <label for="trustee_dob">Date of Birth (optional)</label>
                                 <input type="text" id="trustee_dob" name="trustee_dob" placeholder="MM/DD/YYYY">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_relationship">Relationship to Applicant</label>
+                                <label for="trustee_relationship">Relationship to Applicant (optional)</label>
                                 <input type="text" id="trustee_relationship" name="trustee_relationship" placeholder="Enter Relationship to Beneficiary">
                             </div>
                         </div>
@@ -783,7 +830,7 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="beneficiary_signature">Beneficiary's Signature</label>
+                                <label for="beneficiary_signature">Beneficiary's Signature (optional)</label>
                                 <div class="signature-container">
                                     <canvas id="beneficiary_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
@@ -811,8 +858,8 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="sig_beneficiary_name">Name of Beneficiary</label>
-                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name">
+                                <label for="sig_beneficiary_name">Name of Beneficiary (optional)</label>
+                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name (optional)">
                             </div>
                         </div>
                         <div class="form-col-2"></div>
@@ -952,8 +999,9 @@ include '../includes/header.php';
         flex-shrink: 0;
     }
     
-    /* Form validation styles */
-    input:invalid, select:invalid {
+    /* Form validation styles - modified to show red outline only after submission attempt */
+    form.attempted input:invalid, 
+    form.attempted select:invalid {
         border-color: #ff6666;
     }
     
@@ -968,19 +1016,32 @@ include '../includes/header.php';
         padding-left: 10px;
     }
     
-    .required-plan {
-        color: #e74c3c;
-        font-size: 0.85em;
-        font-weight: 600;
-        margin-left: 5px;
-    }
-    
     /* Make all text inputs uppercase */
     input[type="text"], 
     textarea,
     select,
-    .phone-input-group input {
+    .phone-input-group input,
+    .beneficiaries-table input[type="text"],
+    .other-income-source-item input,
+    .other-valid-id-item input {
         text-transform: uppercase;
+    }
+    
+    /* Tooltip styles */
+    .checkbox-item {
+        position: relative;
+    }
+    
+    .checkbox-item label {
+        cursor: pointer;
+    }
+    
+    .tooltip-icon {
+        display: inline-block;
+        margin-left: 5px;
+        color: #007bff;
+        font-size: 14px;
+        cursor: help;
     }
     
     @media (max-width: 768px) {
@@ -1002,25 +1063,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Variables for dynamic rows
     let beneficiaryRowCount = 1; // Start with 1 row as default
-    const maxBeneficiaryRows = 5; // Maximum number of beneficiary rows
+    const maxBeneficiaryRows = 6; // Maximum number of beneficiary rows (initial + 5 additional)
     let incomeSourceCount = 0;
     let otherValidIdActive = false;
     
     // Set default values for hidden fields
     document.getElementById('branch').value = null; // Set branch to null
-    document.getElementById('cid_no').value = "000000"; // Default CID No
+    document.getElementById('cid_no').value = ""; // Leave empty for server-side generation
     document.getElementById('center_no').value = "000"; // Default Center No
     
     // Ensure BLIP is checked and cannot be unchecked
     const blipCheckbox = document.getElementById('plan_blip');
     if (blipCheckbox) {
         blipCheckbox.checked = true;
+        blipCheckbox.setAttribute('checked', 'checked'); // Add the checked attribute for form submission
         blipCheckbox.onclick = function() {
             return false; // Prevent unchecking
         };
-        // We don't need a hidden field as the checkbox will be submitted
-        // This was causing duplicate BLIP values
     }
+
+    // Function to mark the form as attempted (for validation styling)
+    const markFormAttempted = () => {
+        if (form) form.classList.add('attempted');
+    };
     
     // Convert all text inputs to uppercase on submit
     const uppercaseTextInputs = () => {
@@ -1030,14 +1095,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Also uppercase select values if needed
+        // Also uppercase select values
         document.querySelectorAll('select').forEach(select => {
             if (select.value) {
-                // Store the uppercase value for sending to server
-                const option = select.options[select.selectedIndex];
-                if (option) {
-                    option.setAttribute('data-original-value', option.value);
-                    option.value = option.value.toUpperCase();
+                select.value = select.value.toUpperCase();
+                
+                // Update the select's selected option text to uppercase for display
+                const selectedOption = select.options[select.selectedIndex];
+                if (selectedOption) {
+                    selectedOption.text = selectedOption.text.toUpperCase();
                 }
             }
         });
@@ -1045,18 +1111,43 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (form) {
         form.addEventListener('submit', function(event) {
-            // Convert to uppercase before validation
-            uppercaseTextInputs();
-            
-            // Continue with existing submit logic
+            return; // disabled duplicate listener
+            // If already confirmed (from modal), let the form submit normally
             if (form.dataset.confirmed === 'true') {
+                console.log('Form confirmed, submitting...');
                 form.dataset.confirmed = 'false';
                 return true;
             }
             
-            event.preventDefault(); // Prevent default submit for review
+            console.log('Form submission intercepted for validation');
+            event.preventDefault(); // Prevent default submission
             
-            // Rest of your existing submit handler code...
+            // Mark form as attempted for validation styling
+            markFormAttempted();
+            
+            // Convert to uppercase before validation
+            uppercaseTextInputs();
+            
+            // Validate the current page
+            let allValid = true;
+            for (let i = 0; i < totalPages; i++) {
+                // Temporarily activate each page for validation
+                pages.forEach((p, idx) => p.classList.toggle('active', idx === i));
+                if (!validateCurrentPageFields()) {
+                    allValid = false;
+                    console.log('Validation failed on page', i+1);
+                    break;
+                }
+            }
+            
+            // Restore the last page view
+            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages-1)));
+            updatePageDisplay();
+            
+            if (allValid) {
+                console.log('Form validation passed, showing review modal');
+                showReviewModal();
+            }
         });
     }
     
@@ -1095,7 +1186,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (spouseBirthdayField && spouseAgeField) {
         spouseBirthdayField.addEventListener('change', function() {
-            calculateAge(this.value, spouseAgeField);
+            // Create hidden field for spouse age if it doesn't exist
+            let hiddenAgeField = document.getElementById('spouse_age');
+            if (!hiddenAgeField) {
+                hiddenAgeField = document.createElement('input');
+                hiddenAgeField.type = 'hidden';
+                hiddenAgeField.id = 'spouse_age';
+                hiddenAgeField.name = 'spouse_age';
+                this.parentNode.appendChild(hiddenAgeField);
+            }
+            calculateAge(this.value, hiddenAgeField);
         });
     }
     
@@ -1128,7 +1228,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form validation before submit OR page next
     function validateCurrentPageFields() {
-            let isValid = true;
+        // Mark form as attempted to show validation styling
+        markFormAttempted();
+            
+        let isValid = true;
         let invalidElements = [];
         const activePage = document.querySelector('.form-page-content.active');
         if (!activePage) return true;
@@ -1153,11 +1256,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (activePage.id === 'form-page-1') {
             // BLIP is now mandatory and checked by default, so no need to check this
-            // const planChecked = document.querySelectorAll('input[name="plans[]"]:checked');
-            // if (planChecked.length === 0) {
-            //     isValid = false;
-            //     invalidElements.push(document.getElementById('plan_blip'));
-            // }
             const classChecked = document.querySelectorAll('input[name="classification[]"]:checked');
             if (classChecked.length === 0) {
                 isValid = false;
@@ -1171,45 +1269,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Validate beneficiary rows if on the beneficiaries page
-        if (activePage.id === 'form-page-3') {
-            const beneficiaryRows = activePage.querySelectorAll('.beneficiary-row');
-            beneficiaryRows.forEach((row, index) => {
-                // If any field in this row has a value, all fields in the row are required
-                const rowInputs = row.querySelectorAll('input, select');
-                let hasValue = false;
-                let invalidRowFields = [];
-                
-                rowInputs.forEach(input => {
-                    // Skip the dependent checkbox, it's optional
-                    if (input.id && input.id.includes('dependent')) return;
-                    
-                    if (input.value.trim()) {
-                        hasValue = true;
-                    }
-                });
-                
-                if (hasValue) {
-                    // Now check that all fields are filled
-                    rowInputs.forEach(input => {
-                        // Skip the dependent checkbox, it's optional
-                        if (input.id && input.id.includes('dependent')) return;
-                        
-                        if (!input.value.trim()) {
-                            isValid = false;
-                            invalidRowFields.push(input);
-                        }
-                    });
-                    
-                    if (invalidRowFields.length > 0) {
-                        invalidElements.push(invalidRowFields[0]);
-                        alert(`Beneficiary #${index + 1} has incomplete information. Please complete all fields in this row.`);
-                    }
-                }
-            });
-        }
+        // Beneficiary rows are now optional (removing validation for beneficiary fields)
+        // Removed the specific validation for beneficiary rows that was here
         
-            if (!isValid) {
+        if (!isValid) {
             alert('Please fill out required fields.');
             if (invalidElements.length) {
                 invalidElements[0].scrollIntoView({behavior:'smooth', block:'center'});
@@ -1223,32 +1286,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modify form submission event listener
     if (form) {
         form.addEventListener('submit', function(event) {
-            // Check if already confirmed, if so proceed with submission
+            return; // disabled duplicate listener
+            // If already confirmed (from modal), let the form submit normally
             if (form.dataset.confirmed === 'true') {
+                console.log('Form confirmed, submitting...');
                 form.dataset.confirmed = 'false';
                 return true;
             }
             
-            event.preventDefault(); // Prevent default submit for review
+            console.log('Form submission intercepted for validation');
+            event.preventDefault(); // Prevent default submission
             
-            // Validate all fields from all pages before final submission
+            // Mark form as attempted for validation styling
+            markFormAttempted();
+            
+            // Convert to uppercase before validation
+            uppercaseTextInputs();
+            
+            // Validate the current page
             let allValid = true;
             for (let i = 0; i < totalPages; i++) {
-                // Temporarily activate each page for validation to pick up its fields
+                // Temporarily activate each page for validation
                 pages.forEach((p, idx) => p.classList.toggle('active', idx === i));
                 if (!validateCurrentPageFields()) {
                     allValid = false;
-                    updatePageDisplay(); // Show the page with the first error
-                    return; // Stop submission
+                    console.log('Validation failed on page', i+1);
+                    break;
                 }
             }
             
-            // Restore actual current page display
-            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages -1)));
+            // Restore the last page view
+            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages-1)));
             updatePageDisplay();
-
+            
             if (allValid) {
-                // Show review modal
+                console.log('Form validation passed, showing review modal');
                 showReviewModal();
             }
         });
@@ -1276,22 +1348,58 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Submit the form when clicking Confirm button
     if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
-            // Save signatures before submitting (to prevent loss)
+        confirmBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent the default action
+            console.log('Confirm button clicked, preparing submission');
+            
+            // Convert all inputs to uppercase before final submission
+            uppercaseTextInputs();
+            
+            // Process signature data
             const memberCanvas = document.getElementById('member_signature_canvas');
             const beneficiaryCanvas = document.getElementById('beneficiary_signature_canvas');
             
             if (memberCanvas && memberCanvas._signaturePad) {
-                document.getElementById('member_signature').value = memberCanvas._signaturePad.toDataURL();
+                const memberSignature = memberCanvas._signaturePad;
+                if (!memberSignature.isEmpty()) {
+                    document.getElementById('member_signature').value = memberSignature.toDataURL();
+                } else {
+                    document.getElementById('member_signature').value = '';
+                }
             }
             
             if (beneficiaryCanvas && beneficiaryCanvas._signaturePad) {
-                document.getElementById('beneficiary_signature').value = beneficiaryCanvas._signaturePad.toDataURL();
+                const beneficiarySignature = beneficiaryCanvas._signaturePad;
+                if (!beneficiarySignature.isEmpty()) {
+                    document.getElementById('beneficiary_signature').value = beneficiarySignature.toDataURL();
+                } else {
+                    document.getElementById('beneficiary_signature').value = '';
+                }
             }
             
-            // Set a flag to prevent the submit handler from showing the modal again
-            document.getElementById('membership-form').dataset.confirmed = 'true';
-            document.getElementById('membership-form').submit();
+            // Ensure BLIP is checked (double check)
+            if (blipCheckbox && !blipCheckbox.checked) {
+                blipCheckbox.checked = true;
+            }
+            
+            try {
+                // Set the confirmed flag and submit the form
+                form.dataset.confirmed = 'true';
+                
+                // Disable the button to prevent double submission
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Submitting...';
+                
+                console.log('Submitting form...');
+                setTimeout(function() {
+                    form.submit();
+                }, 100); // Small delay to ensure UI updates
+            } catch (error) {
+                console.error('Error during form submission:', error);
+                alert('There was an error submitting the form. Please try again.');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Confirm Submission';
+            }
         });
     }
     
@@ -1840,6 +1948,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Load saved data on page load
         loadFormFromLocalStorage();
+        // Re-trigger spouse section toggle in case civil status was loaded as Married
+        if (civilStatusSelect) {
+            civilStatusSelect.dispatchEvent(new Event('change'));
+        }
     }
 
     // Beneficiary management
