@@ -16,21 +16,21 @@ $success = false;
 // Prevent duplicate application submission
 $user = get_logged_in_user();
 if ($user && isset($user['email'])) {
-    $stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
+$stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
     $stmtDup->execute([$user['email']]);
-    if ($stmtDup->fetch()) {
-        include '../includes/header.php';
-        echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
-        echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
-        include '../includes/footer.php';
-        exit;
+if ($stmtDup->fetch()) {
+include '../includes/header.php';
+    echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
+    echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
+    include '../includes/footer.php';
+    exit;
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Process form data
     $user = get_logged_in_user();
-    $email = sanitize($user['email']);
+    $email = isset($user['email']) ? sanitize($user['email']) : '';
     // Names
     $first_name = sanitize($_POST['first_name']);
     $middle_name = sanitize($_POST['middle_name']);
@@ -46,41 +46,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nationality = sanitize($_POST['nationality'] ?? '');
     $id_number = sanitize($_POST['id_number'] ?? '');
     $other_valid_id = sanitize($_POST['other_valid_id'] ?? '');
-    $present_brgy_code = sanitize($_POST['present_brgy_code'] ?? '');
-    $permanent_brgy_code = sanitize($_POST['permanent_brgy_code'] ?? '');
     $present_address = sanitize($_POST['present_address'] ?? '');
+    $present_brgy_code = sanitize($_POST['present_brgy_code'] ?? '');
     $present_zip_code = sanitize($_POST['present_zip_code'] ?? '');
     $permanent_address = sanitize($_POST['permanent_address'] ?? '');
+    $permanent_brgy_code = sanitize($_POST['permanent_brgy_code'] ?? '');
     $permanent_zip_code = sanitize($_POST['permanent_zip_code'] ?? '');
     $home_ownership = sanitize($_POST['home_ownership'] ?? '');
     $length_of_stay = intval($_POST['length_of_stay'] ?? 0);
     $years_in_business = intval($_POST['years_in_business'] ?? 0);
     
+    // Helper function to convert date format from MM/DD/YYYY to Y-m-d safely
+    function formatMembershipDate($dateStr) {
+        if (empty($dateStr)) return null;
+        $dateObj = DateTime::createFromFormat('m/d/Y', $dateStr);
+        return $dateObj ? $dateObj->format('Y-m-d') : null;
+    }
+    
     // Birthday and age (input format MM/DD/YYYY)
-    $birthDateObj = DateTime::createFromFormat('m/d/Y', $_POST['birthday']);
-    if ($birthDateObj) {
-        $birthdate = $birthDateObj->format('Y-m-d');
+    $birthdate = formatMembershipDate($_POST['birthday']);
+    if ($birthdate) {
+        $birthDateObj = DateTime::createFromFormat('Y-m-d', $birthdate);
         $age = $birthDateObj->diff(new DateTime('today'))->y;
     } else {
-        $birthdate = null;
         $age = 0;
     }
     // Contact
     $phone = sanitize($_POST['cell_phone']);
-    // Present address components
-    $region = sanitize($_POST['present_region_text']);
-    $province = sanitize($_POST['present_province_text']);
-    $city = sanitize($_POST['present_city_text']);
-    $barangay = sanitize($_POST['present_barangay_text']);
     // Business info
     $business_name = sanitize($_POST['primary_business']);
-    $business_address = sanitize(
-        $_POST['business_address_unit'] . ', ' .
-        $_POST['business_barangay_text'] . ', ' .
-        $_POST['business_city_text'] . ', ' .
-        $_POST['business_province_text'] . ', ' .
-        $_POST['business_region_text']
-    );
+    $business_address = sanitize($_POST['business_address_unit'] ?? '');
     // Other sources of income
     $other_income_source_1 = sanitize($_POST['other_income_source_1'] ?? '');
     $other_income_source_2 = sanitize($_POST['other_income_source_2'] ?? '');
@@ -98,10 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ($_POST['spouse_last_name'] ?? '')
             )
         );
-        $spDate = DateTime::createFromFormat('m/d/Y', $_POST['spouse_birthday']);
-        if ($spDate) {
-            $spouse_birthdate = $spDate->format('Y-m-d');
-        }
+        $spouse_birthdate = formatMembershipDate($_POST['spouse_birthday']);
     }
     // Beneficiary 1
     $beneficiary_1_firstname = sanitize($_POST['beneficiary_first_name'][0] ?? '');
@@ -122,8 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Trustee
     $trustee_name = sanitize($_POST['trustee_name'] ?? '');
-    $tDate = DateTime::createFromFormat('m/d/Y', $_POST['trustee_dob'] ?? '');
-    $trustee_birthdate = $tDate ? $tDate->format('Y-m-d') : null;
+    $trustee_birthdate = formatMembershipDate($_POST['trustee_dob'] ?? '');
     // Signature uploads
     $uploadsDir = UPLOADS_DIR . '/signatures';
     if (!is_dir($uploadsDir)) mkdir($uploadsDir, 0755, true);
@@ -148,42 +139,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert into database
     global $pdo;
     try {
-        // Count placeholders carefully to match columns
-        $stmt = $pdo->prepare(
-            "INSERT INTO members_information
-            (branch, cid_no, center_no, plans, classification,
-             first_name, middle_name, last_name, gender, civil_status,
-             birthdate, age, birth_place, email, cell_phone, contact_no, nationality,
-             id_number, other_valid_ids, mothers_maiden_last_name,
-             mothers_maiden_first_name, mothers_maiden_middle_name,
-             present_address, present_region_text, present_province_text,
-             present_city_text, present_barangay_text, present_zip_code,
-             permanent_address, permanent_region_text, permanent_province_text,
-             permanent_city_text, permanent_barangay_text, permanent_zip_code,
-             home_ownership, length_of_stay, primary_business,
-             years_in_business, business_address, business_region_text,
-             business_province_text, business_city_text, business_barangay_text,
-             business_zip_code, other_income_source_1, other_income_source_2,
-             other_income_source_3, other_income_source_4, spouse_name,
-             spouse_birthdate, spouse_occupation, spouse_id_number,
-             beneficiary_fn_1, beneficiary_ln_1, beneficiary_mi_1,
-             beneficiary_birthdate_1, beneficiary_gender_1,
-             beneficiary_relationship_1, beneficiary_dependent_1,
-             beneficiary_fn_2, beneficiary_ln_2, beneficiary_mi_2,
-             beneficiary_birthdate_2, beneficiary_gender_2,
-             beneficiary_relationship_2, beneficiary_dependent_2,
-             beneficiary_fn_3, beneficiary_ln_3, beneficiary_mi_3,
-             beneficiary_birthdate_3, beneficiary_gender_3,
-             beneficiary_relationship_3, beneficiary_dependent_3,
-             beneficiary_fn_4, beneficiary_ln_4, beneficiary_mi_4,
-             beneficiary_birthdate_4, beneficiary_gender_4,
-             beneficiary_relationship_4, beneficiary_dependent_4,
-             trustee_name, trustee_birthdate, trustee_relationship,
-             member_name, sig_beneficiary_name,
-             member_signature, beneficiary_signature,
-             disclaimer_agreement, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        // Dynamically build INSERT statement to match parameter count
+        $columns = [
+            'branch','cid_no','center_no','plans','classification',
+            'first_name','middle_name','last_name','gender','civil_status',
+            'birthdate','age','birth_place','email','cell_phone','contact_no','nationality',
+            'id_number','other_valid_ids','mothers_maiden_last_name','mothers_maiden_first_name','mothers_maiden_middle_name',
+            'present_address','present_brgy_code','present_zip_code',
+            'permanent_address','permanent_brgy_code','permanent_zip_code',
+            'home_ownership','length_of_stay','primary_business','years_in_business','business_address',
+            'other_income_source_1','other_income_source_2','other_income_source_3','other_income_source_4',
+            'spouse_name','spouse_birthdate','spouse_occupation','spouse_id_number',
+            'beneficiary_fn_1','beneficiary_ln_1','beneficiary_mi_1','beneficiary_birthdate_1','beneficiary_gender_1','beneficiary_relationship_1','beneficiary_dependent_1',
+            'beneficiary_fn_2','beneficiary_ln_2','beneficiary_mi_2','beneficiary_birthdate_2','beneficiary_gender_2','beneficiary_relationship_2','beneficiary_dependent_2',
+            'beneficiary_fn_3','beneficiary_ln_3','beneficiary_mi_3','beneficiary_birthdate_3','beneficiary_gender_3','beneficiary_relationship_3','beneficiary_dependent_3',
+            'beneficiary_fn_4','beneficiary_ln_4','beneficiary_mi_4','beneficiary_birthdate_4','beneficiary_gender_4','beneficiary_relationship_4','beneficiary_dependent_4',
+            'beneficiary_fn_5','beneficiary_ln_5','beneficiary_mi_5','beneficiary_birthdate_5','beneficiary_gender_5','beneficiary_relationship_5','beneficiary_dependent_5',
+            'trustee_name','trustee_birthdate','trustee_relationship',
+            'member_name','sig_beneficiary_name','member_signature','beneficiary_signature','disclaimer_agreement','status'
+        ];
+        $placeholders = implode(', ', array_fill(0, count($columns), '?'));
+        $sql = sprintf(
+            "INSERT INTO members_information (%s) VALUES (%s)",
+            implode(', ', $columns),
+            $placeholders
         );
+        $stmt = $pdo->prepare($sql);
         
         // Convert plans and classification arrays to JSON
         $plansJson = isset($_POST['plans']) ? json_encode($_POST['plans']) : null;
@@ -220,27 +201,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mothers_maiden_first_name,                           // mothers_maiden_first_name
             $mothers_maiden_middle_name,                          // mothers_maiden_middle_name
             $present_address,                                     // present_address
-            $region,                                              // present_region_text
-            $province,                                            // present_province_text
-            $city,                                                // present_city_text
-            $barangay,                                            // present_barangay_text
+            sanitize($_POST['present_brgy_code'] ?? ''),          // present_brgy_code
             $present_zip_code,                                    // present_zip_code
             $permanent_address,                                   // permanent_address
-            $region,                                              // permanent_region_text
-            $province,                                            // permanent_province_text
-            $city,                                                // permanent_city_text
-            $barangay,                                            // permanent_barangay_text
+            sanitize($_POST['permanent_brgy_code'] ?? ''),        // permanent_brgy_code
             $permanent_zip_code,                                  // permanent_zip_code
             $home_ownership,                                      // home_ownership
             $length_of_stay,                                      // length_of_stay
             $business_name,                                       // primary_business
             $years_in_business,                                   // years_in_business
             $business_address,                                    // business_address
-            $region,                                              // business_region_text
-            $province,                                            // business_province_text
-            $city,                                                // business_city_text
-            $barangay,                                            // business_barangay_text
-            sanitize($_POST['business_zip_code'] ?? ''),          // business_zip_code
             $other_income_source_1,                               // other_income_source_1
             $other_income_source_2,                               // other_income_source_2
             $other_income_source_3,                               // other_income_source_3
@@ -252,31 +222,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $beneficiary_1_firstname,                             // beneficiary_fn_1
             $beneficiary_1_lastname,                              // beneficiary_ln_1
             sanitize($_POST['beneficiary_mi'][0] ?? ''),          // beneficiary_mi_1
-            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][0] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_1
+            formatMembershipDate($_POST['beneficiary_dob'][0] ?? ''),          // beneficiary_birthdate_1
             sanitize($_POST['beneficiary_gender'][0] ?? ''),      // beneficiary_gender_1
             sanitize($_POST['beneficiary_relationship'][0] ?? ''), // beneficiary_relationship_1
             $beneficiary_1_dependent,                             // beneficiary_dependent_1
             $beneficiary_2_firstname,                             // beneficiary_fn_2
             $beneficiary_2_lastname,                              // beneficiary_ln_2
             sanitize($_POST['beneficiary_mi'][1] ?? ''),          // beneficiary_mi_2
-            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][1] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_2
+            formatMembershipDate($_POST['beneficiary_dob'][1] ?? ''),          // beneficiary_birthdate_2
             sanitize($_POST['beneficiary_gender'][1] ?? ''),      // beneficiary_gender_2
             sanitize($_POST['beneficiary_relationship'][1] ?? ''), // beneficiary_relationship_2
             $beneficiary_2_dependent,                             // beneficiary_dependent_2
             $beneficiary_3_firstname,                             // beneficiary_fn_3
             $beneficiary_3_lastname,                              // beneficiary_ln_3
             sanitize($_POST['beneficiary_mi'][2] ?? ''),          // beneficiary_mi_3
-            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][2] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_3
+            formatMembershipDate($_POST['beneficiary_dob'][2] ?? ''),          // beneficiary_birthdate_3
             sanitize($_POST['beneficiary_gender'][2] ?? ''),      // beneficiary_gender_3
             sanitize($_POST['beneficiary_relationship'][2] ?? ''), // beneficiary_relationship_3
             $beneficiary_3_dependent,                             // beneficiary_dependent_3
             $beneficiary_4_firstname,                             // beneficiary_fn_4
             $beneficiary_4_lastname,                              // beneficiary_ln_4
             sanitize($_POST['beneficiary_mi'][3] ?? ''),          // beneficiary_mi_4
-            ($d = DateTime::createFromFormat('m/d/Y', $_POST['beneficiary_dob'][3] ?? '')) ? $d->format('Y-m-d') : null, // beneficiary_birthdate_4
+            formatMembershipDate($_POST['beneficiary_dob'][3] ?? ''),          // beneficiary_birthdate_4
             sanitize($_POST['beneficiary_gender'][3] ?? ''),      // beneficiary_gender_4
             sanitize($_POST['beneficiary_relationship'][3] ?? ''), // beneficiary_relationship_4
             $beneficiary_4_dependent,                             // beneficiary_dependent_4
+            sanitize($_POST['beneficiary_first_name'][4] ?? ''),  // beneficiary_fn_5
+            sanitize($_POST['beneficiary_last_name'][4] ?? ''),   // beneficiary_ln_5
+            sanitize($_POST['beneficiary_mi'][4] ?? ''),          // beneficiary_mi_5
+            formatMembershipDate($_POST['beneficiary_dob'][4] ?? ''),          // beneficiary_birthdate_5
+            sanitize($_POST['beneficiary_gender'][4] ?? ''),      // beneficiary_gender_5
+            sanitize($_POST['beneficiary_relationship'][4] ?? ''), // beneficiary_relationship_5
+            isset($_POST['beneficiary_dependent'][4]) ? 1 : 0,    // beneficiary_dependent_5
             $trustee_name,                                        // trustee_name
             $trustee_birthdate,                                   // trustee_birthdate
             sanitize($_POST['trustee_relationship'] ?? ''),       // trustee_relationship
@@ -558,31 +535,27 @@ include '../includes/header.php';
                 </div> <!-- End of Page 1 -->
 
                 <div class="form-page-content" id="form-page-2">
-                            <h2>Present Address</h2>
-     <div class="form-group">
-        <label for="present_address">Unit / Address</label>
+                    <h2>Present Address</h2>
+                     <div class="form-group">
+                        <label for="present_address">Unit / Address</label>
         <input type="text" id="present_address" name="present_address" placeholder="Unit No., Street, Brgy., City" required>
-     </div>
-     <div class="form-row">
-        <div class="form-col-3">
-            <div class="form-group">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col-3">
+                            <div class="form-group">
                 <label for="present_brgy_code">Brgy. Code</label>
                 <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required>
-            </div>
-        </div>
-        <div class="form-col-3">
-            <div class="form-group">
-                <label for="present_zip_code">Zip Code</label>
-                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code">
-            </div>
-        </div>
-     </div>
+                            </div>
+                        </div>
+                        <div class="form-col-3">
+                            <div class="form-group">
+                                <label for="present_zip_code">Zip Code</label>
+                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code">
+                            </div>
+                        </div>
+                    </div>
      
-     <!-- Hidden fields to maintain database compatibility -->
-     <input type="hidden" name="present_region_text" id="present_region_text">
-     <input type="hidden" name="present_province_text" id="present_province_text">
-     <input type="hidden" name="present_city_text" id="present_city_text">
-     <input type="hidden" name="present_barangay_text" id="present_barangay_text">
+         <!-- Hidden fields removed -->
 
                     <div class="section-divider"></div>
 
@@ -605,13 +578,9 @@ include '../includes/header.php';
                                 <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code">
                             </div>
                         </div>
-                    </div>
+                        </div>
                     
-                    <!-- Hidden fields to maintain database compatibility -->
-                    <input type="hidden" name="permanent_region_text" id="permanent_region_text">
-                    <input type="hidden" name="permanent_province_text" id="permanent_province_text">
-                    <input type="hidden" name="permanent_city_text" id="permanent_city_text">
-                    <input type="hidden" name="permanent_barangay_text" id="permanent_barangay_text">
+                        <!-- Hidden fields removed -->
 
                     <!-- Home Ownership -->
                     <div class="form-group">
@@ -666,11 +635,7 @@ include '../includes/header.php';
                     <div class="form-group">
                         <label for="business_address_unit">Unit / Address</label>
                         <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Street, Brgy., City" required>
-                        <!-- Hidden fields to maintain database compatibility -->
-                        <input type="hidden" name="business_region_text" id="business_region_text">
-                        <input type="hidden" name="business_province_text" id="business_province_text">
-                        <input type="hidden" name="business_city_text" id="business_city_text">
-                        <input type="hidden" name="business_barangay_text" id="business_barangay_text">
+                        <!-- Hidden fields removed -->
                     </div>
                     <!-- Address fields removed -->
                     <!-- Spouse Information -->
@@ -883,17 +848,148 @@ include '../includes/header.php';
         <?php endif; ?>
     </div>
 
+    <!-- Review Modal -->
+    <div id="review-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Review Your Application</h2>
+            <div id="review-content"></div>
+            <div class="modal-actions">
+                <button type="button" id="edit-application" class="btn btn-secondary">Edit</button>
+                <button type="button" id="confirm-application" class="btn btn-primary">Confirm Submission</button>
+            </div>
+        </div>
+    </div>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/philippine-address-selector@latest/dist/philippine-address-selector.bundle.js"></script>
+
+<style>
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow-y: auto;
+        border-radius: 5px;
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+    }
+    
+    .modal-actions {
+        margin-top: 20px;
+        text-align: right;
+    }
+    
+    #review-content {
+        margin: 20px 0;
+    }
+    
+    .review-section {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+    
+    .review-section h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .review-row {
+        display: flex;
+        margin-bottom: 5px;
+    }
+    
+    .review-label {
+        width: 40%;
+        font-weight: bold;
+        padding-right: 10px;
+    }
+    
+    .review-value {
+        width: 60%;
+    }
+    
+    /* Input with button container */
+    .input-with-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .input-with-btn input {
+        flex: 1;
+    }
+    
+    .input-with-btn button {
+        flex-shrink: 0;
+    }
+    
+    /* Form validation styles */
+    input:invalid, select:invalid {
+        border-color: #ff6666;
+    }
+    
+    .date-error {
+        color: #ff0000;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    
+    @media (max-width: 768px) {
+        .review-row {
+            flex-direction: column;
+        }
+        
+        .review-label, .review-value {
+            width: 100%;
+        }
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('membership-form');
     const submitButton = document.getElementById('submit_application_btn');
     const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
+    
+    // Variables for dynamic rows
+    let beneficiaryRowCount = 1; // Start with 1 row as default
+    const maxBeneficiaryRows = 5; // Maximum number of beneficiary rows
+    let incomeSourceCount = 0;
+    let otherValidIdActive = false;
     
     // Handle submit button based on disclaimer checkbox
     if (submitButton && disclaimerCheckbox) {
@@ -976,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+        
         if (activePage.id === 'form-page-1') {
             const planChecked = document.querySelectorAll('input[name="plans[]"]:checked');
             if (planChecked.length === 0) {
@@ -994,6 +1091,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 invalidElements.push(cellPhone);
             }
         }
+        
+        // Validate beneficiary rows if on the beneficiaries page
+        if (activePage.id === 'form-page-3') {
+            const beneficiaryRows = activePage.querySelectorAll('.beneficiary-row');
+            beneficiaryRows.forEach((row, index) => {
+                // If any field in this row has a value, all fields in the row are required
+                const rowInputs = row.querySelectorAll('input, select');
+                let hasValue = false;
+                let invalidRowFields = [];
+                
+                rowInputs.forEach(input => {
+                    // Skip the dependent checkbox, it's optional
+                    if (input.id && input.id.includes('dependent')) return;
+                    
+                    if (input.value.trim()) {
+                        hasValue = true;
+                    }
+                });
+                
+                if (hasValue) {
+                    // Now check that all fields are filled
+                    rowInputs.forEach(input => {
+                        // Skip the dependent checkbox, it's optional
+                        if (input.id && input.id.includes('dependent')) return;
+                        
+                        if (!input.value.trim()) {
+                            isValid = false;
+                            invalidRowFields.push(input);
+                        }
+                    });
+                    
+                    if (invalidRowFields.length > 0) {
+                        invalidElements.push(invalidRowFields[0]);
+                        alert(`Beneficiary #${index + 1} has incomplete information. Please complete all fields in this row.`);
+                    }
+                }
+            });
+        }
+        
             if (!isValid) {
             alert('Please fill out required fields.');
             if (invalidElements.length) {
@@ -1008,8 +1144,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modify form submission event listener
     if (form) {
         form.addEventListener('submit', function(event) {
+            // Check if already confirmed, if so proceed with submission
+            if (form.dataset.confirmed === 'true') {
+                form.dataset.confirmed = 'false';
+                return true;
+            }
+            
+            event.preventDefault(); // Prevent default submit for review
+            
             // Validate all fields from all pages before final submission
-            currentPage = 0; // Reset to check all pages, or iterate through them
             let allValid = true;
             for (let i = 0; i < totalPages; i++) {
                 // Temporarily activate each page for validation to pick up its fields
@@ -1017,452 +1160,280 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!validateCurrentPageFields()) {
                     allValid = false;
                     updatePageDisplay(); // Show the page with the first error
-                event.preventDefault();
                     return; // Stop submission
                 }
             }
-            // Restore actual current page display if all valid (though not strictly necessary on submit)
-            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages -1) ));
+            
+            // Restore actual current page display
+            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages -1)));
             updatePageDisplay();
 
-            if (!allValid) { // Should be caught by loop above, but as a safeguard
-                 event.preventDefault();
+            if (allValid) {
+                // Show review modal
+                showReviewModal();
             }
         });
     }
     
-    // Pikaday Initializations
-    const pikadayConfig = {
-        format: 'MM/DD/YYYY', // Changed format
-        toString(date, format) {
-            const day = date.getDate();
-            const month = date.getMonth() + 1;
-            const year = date.getFullYear();
-            return `${month < 10 ? '0' + month : month}/${day < 10 ? '0' + day : day}/${year}`; // Changed format
-        },
-        parse(dateString, format) {
-            const parts = dateString.split('/');
-            const month = parseInt(parts[0], 10) - 1; // Adjusted for MM/DD/YYYY
-            const day = parseInt(parts[1], 10);
-            const year = parseInt(parts[2], 10);
-            return new Date(year, month, day);
-        },
-        yearRange: [1900, new Date().getFullYear() + 5] // Adjust year range as needed
-    };
-
-    if (birthdayField) {
-        const eighteenYearsAgo = new Date();
-        eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
-
-        const birthdayPicker = new Pikaday({ 
-            field: birthdayField,
-            ...pikadayConfig,
-            defaultDate: eighteenYearsAgo, 
-            setDefaultDate: true, 
-            onSelect: function() {
-                if (this.getMoment().isValid()) {
-                    calculateAge(this.getDate(), ageField);
-                } else {
-                    if(ageField) ageField.value = '';
-                }
-            }
-        });
-        // Trigger age calculation on initial load if default date is set
-        if (birthdayField.value) { // Check if field has a value (could be from localStorage later)
-             calculateAge(birthdayPicker.getDate(), ageField); // Use picker's date
-        } else if (birthdayPicker.getDate()){ // Or if picker set a default
-             calculateAge(birthdayPicker.getDate(), ageField);
-        }
-    }
-
-    if (spouseBirthdayField) {
-        new Pikaday({
-            field: spouseBirthdayField,
-            ...pikadayConfig,
-            onSelect: function() {
-                if (this.getMoment().isValid()) {
-                    calculateAge(this.getDate(), spouseAgeField);
-                } else {
-                    if(spouseAgeField) spouseAgeField.value = '';
-                }
-            }
-        });
-         if (spouseBirthdayField.value) { // For localStorage refill
-            calculateAge(spouseBirthdayField.value, spouseAgeField);
-        }
-    }
-
-    // Initialize for Beneficiary DOBs - Initial Row
-    const initialBeneficiaryDobField = document.getElementById('beneficiary_dob_1');
-    if (initialBeneficiaryDobField) {
-        new Pikaday({
-            field: initialBeneficiaryDobField,
-            ...pikadayConfig
-        });
-    }
-
-    // Add Beneficiary Row Logic
-    const addBeneficiaryBtn = document.getElementById('add_beneficiary_btn');
-    const beneficiariesTbody = document.getElementById('beneficiaries_tbody');
-    let beneficiaryRowCount = 1; // Start with 1 because one row is already in HTML
-    const maxBeneficiaryRows = 5;
-
-    if (addBeneficiaryBtn && beneficiariesTbody) {
-        addBeneficiaryBtn.addEventListener('click', function() {
-            if (beneficiaryRowCount < maxBeneficiaryRows) {
-                beneficiaryRowCount++;
-                const newRow = document.createElement('tr');
-                newRow.classList.add('beneficiary-row');
-                newRow.innerHTML = `
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_${beneficiaryRowCount}" name="beneficiary_last_name[]" placeholder="Enter Last Name"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_${beneficiaryRowCount}" name="beneficiary_first_name[]" placeholder="Enter First Name"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_${beneficiaryRowCount}" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_${beneficiaryRowCount}" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_${beneficiaryRowCount}" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div></td>
-                    <td><div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_${beneficiaryRowCount}" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div></td>
-                    <td><div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_${beneficiaryRowCount}" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div></td>
-                    <td><button type="button" class="remove-beneficiary-btn btn btn-danger btn-remove btn-sm"><span class="btn-icon">×</span></button></td>
-                `;
-                beneficiariesTbody.appendChild(newRow);
-
-                // Initialize Pikaday for the new date field
-                const newDobField = newRow.querySelector('.beneficiary-dob');
-                if (newDobField) {
-                    new Pikaday({
-                        field: newDobField,
-                        ...pikadayConfig
-                    });
-                }
-
-                newRow.querySelector('.remove-beneficiary-btn').addEventListener('click', function() {
-                    newRow.remove();
-                    beneficiaryRowCount--;
-                    if (beneficiaryRowCount < maxBeneficiaryRows) {
-                        addBeneficiaryBtn.style.display = 'inline-block';
-                    }
-                });
-
-                if (beneficiaryRowCount >= maxBeneficiaryRows) {
-                    addBeneficiaryBtn.style.display = 'none';
-                }
-            }
-        });
-        // Initial check in case maxBeneficiaryRows is 1
-        if (beneficiaryRowCount >= maxBeneficiaryRows) {
-             addBeneficiaryBtn.style.display = 'none';
-        }
-    }
-
-    const trusteeDobField = document.getElementById('trustee_dob');
-    if (trusteeDobField) {
-        new Pikaday({
-            field: trusteeDobField,
-            ...pikadayConfig
-        });
-    }
-
-    // Philippine Address Selector (wilfredpine/philippine-address-selector)
-    const jsonBasePath = '../assets/ph-json/'; // Adjusted path assuming assets is at the root
-
-    function setupAddressDropdowns(prefix) {
-        const regionEl = $(`#${prefix}_region`);
-        const provinceEl = $(`#${prefix}_province`);
-        const cityEl = $(`#${prefix}_city`);
-        const barangayEl = $(`#${prefix}_barangay`);
-
-        const regionTextEl = $(`#${prefix}_region_text`);
-        const provinceTextEl = $(`#${prefix}_province_text`);
-        const cityTextEl = $(`#${prefix}_city_text`);
-        const barangayTextEl = $(`#${prefix}_barangay_text`);
-
-        regionEl.empty().append('<option selected=\"true\" disabled>Choose Region</option>').prop('selectedIndex', 0);
-        $.getJSON(`${jsonBasePath}region.json`, function (data) {
-            data.sort((a, b) => a.region_name.localeCompare(b.region_name));
-            $.each(data, function (key, entry) {
-                regionEl.append($('<option></option>').attr('value', entry.region_code).text(entry.region_name));
-            });
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            console.error(`Error loading ${prefix} regions:`, textStatus, errorThrown);
-            console.error("Path used:", `${jsonBasePath}region.json`);
-        });
-
-        regionEl.on('change', function() {
-            const regionCode = $(this).val();
-            regionTextEl.val($(this).find("option:selected").text());
-            provinceEl.empty().append('<option selected=\"true\" disabled>Choose Province</option>').prop('selectedIndex', 0);
-            cityEl.empty().append('<option selected=\"true\" disabled>Choose City/Municipality</option>').prop('selectedIndex', 0);
-            barangayEl.empty().append('<option selected=\"true\" disabled>Choose Barangay</option>').prop('selectedIndex', 0);
-            provinceTextEl.val('');
-            cityTextEl.val('');
-            barangayTextEl.val('');
-
-            $.getJSON(`${jsonBasePath}province.json`, function(data) {
-                const result = data.filter(value => value.region_code == regionCode);
-                result.sort((a, b) => a.province_name.localeCompare(b.province_name));
-                $.each(result, function (key, entry) {
-                    provinceEl.append($('<option></option>').attr('value', entry.province_code).text(entry.province_name));
-                });
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error(`Error loading ${prefix} provinces:`, textStatus, errorThrown);
-            });
-        });
-
-        provinceEl.on('change', function() {
-            const provinceCode = $(this).val();
-            provinceTextEl.val($(this).find("option:selected").text());
-            cityEl.empty().append('<option selected=\"true\" disabled>Choose City/Municipality</option>').prop('selectedIndex', 0);
-            barangayEl.empty().append('<option selected=\"true\" disabled>Choose Barangay</option>').prop('selectedIndex', 0);
-            cityTextEl.val('');
-            barangayTextEl.val('');
-
-            $.getJSON(`${jsonBasePath}city.json`, function(data) {
-                const result = data.filter(value => value.province_code == provinceCode);
-                result.sort((a, b) => a.city_name.localeCompare(b.city_name));
-                $.each(result, function (key, entry) {
-                    cityEl.append($('<option></option>').attr('value', entry.city_code).text(entry.city_name));
-                });
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error(`Error loading ${prefix} cities:`, textStatus, errorThrown);
-            });
-        });
-
-        cityEl.on('change', function() {
-            const cityCode = $(this).val();
-            cityTextEl.val($(this).find("option:selected").text());
-            barangayEl.empty().append('<option selected=\"true\" disabled>Choose Barangay</option>').prop('selectedIndex', 0);
-            barangayTextEl.val('');
-
-            $.getJSON(`${jsonBasePath}barangay.json`, function(data) {
-                const result = data.filter(value => value.city_code == cityCode);
-                result.sort((a, b) => a.brgy_name.localeCompare(b.brgy_name));
-                $.each(result, function (key, entry) {
-                    barangayEl.append($('<option></option>').attr('value', entry.brgy_code).text(entry.brgy_name));
-                });
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                console.error(`Error loading ${prefix} barangays:`, textStatus, errorThrown);
-            });
-        });
-
-        barangayEl.on('change', function() {
-             barangayTextEl.val($(this).find("option:selected").text());
-        });
-    }
-
-    setupAddressDropdowns('present');
-    setupAddressDropdowns('permanent');
-    setupAddressDropdowns('business');
-
-    // Add other income source
-    const addIncomeSourceBtn = document.getElementById('add_other_income_source_btn');
-    const incomeSourcesContainer = document.getElementById('other_income_sources_container');
-    let incomeSourceCount = 0;
-    const maxIncomeSources = 4;
-
-    if (addIncomeSourceBtn && incomeSourcesContainer) {
-        addIncomeSourceBtn.addEventListener('click', function() {
-            if (incomeSourceCount < maxIncomeSources) {
-                incomeSourceCount++;
-                const newIncomeSourceDiv = document.createElement('div');
-                newIncomeSourceDiv.classList.add('other-income-source-item');
-                newIncomeSourceDiv.innerHTML = `
-                    <div class="form-group" style="flex-grow: 1; margin-bottom: 0;">
-                        <label for="other_income_source_${incomeSourceCount}" class="sr-only">Other Source of Income ${incomeSourceCount}</label>
-                        <input type="text" id="other_income_source_${incomeSourceCount}" name="other_income_source[]" placeholder="Other Source of Income ${incomeSourceCount}" style="flex-grow: 1;">
-                    </div>
-                    <button type="button" class="remove-income-source-btn btn btn-danger btn-remove btn-sm"><span class="btn-icon">×</span></button>
-                `;
-                incomeSourcesContainer.appendChild(newIncomeSourceDiv);
-
-                newIncomeSourceDiv.querySelector('.remove-income-source-btn').addEventListener('click', function() {
-                    newIncomeSourceDiv.remove();
-                    incomeSourceCount--;
-                    if (incomeSourceCount < maxIncomeSources) {
-                        addIncomeSourceBtn.style.display = 'inline-block';
-                    }
-                });
-
-                if (incomeSourceCount >= maxIncomeSources) {
-                    addIncomeSourceBtn.style.display = 'none';
-                }
-            }
-        });
-    }
-
-    // Remove original Other Income Source fields as they are now dynamic
-    for (let i = 1; i <= 4; i++) {
-        const oldIncomeField = document.getElementById(`other_income_source_${i}`);
-        if (oldIncomeField && oldIncomeField.parentElement.classList.contains('form-group')) {
-            oldIncomeField.parentElement.remove();
-        }
-    }
-
-    // Other Valid IDs Logic
-    const idNumberField = document.getElementById('id_number');
-    const addOtherValidIdBtn = document.getElementById('add_other_valid_id_btn');
-    let otherValidIdsContainer = document.getElementById('other_valid_ids_container');
-    let otherValidIdActive = false;
+    // Review modal functionality
+    const modal = document.getElementById('review-modal');
+    const closeBtn = document.querySelector('.close');
+    const editBtn = document.getElementById('edit-application');
+    const confirmBtn = document.getElementById('confirm-application');
     
-    if (idNumberField && addOtherValidIdBtn) {
-        // Create the container if it doesn't exist and is still null
-        if (!otherValidIdsContainer && idNumberField.parentNode) {
-            const container = document.createElement('div');
-            container.id = 'other_valid_ids_container';
-            container.style.marginTop = '10px';
-            
-            // Insert after the button's parent div if the button is inside a div, or directly after the button
-            const buttonContainer = addOtherValidIdBtn.closest('.form-group') || addOtherValidIdBtn.parentNode;
-            if (buttonContainer.nextSibling) {
-                buttonContainer.parentNode.insertBefore(container, buttonContainer.nextSibling);
-            } else {
-                buttonContainer.parentNode.appendChild(container);
-            }
-            otherValidIdsContainer = container; // Update reference
-        }
-        
-        addOtherValidIdBtn.addEventListener('click', function() {
-            if (!otherValidIdsContainer) {
-                console.error('other_valid_ids_container not found or created.');
-                return;
-            }
-            
-            // If there's already an active field, don't add another
-            if (otherValidIdActive) {
-                return;
-            }
-            
-            otherValidIdActive = true;
-            
-            // Create form-group structure to match other inputs
-            const formGroup = document.createElement('div');
-            formGroup.classList.add('form-group');
-            formGroup.style.display = 'flex';
-            formGroup.style.alignItems = 'center';
-            formGroup.style.marginBottom = '5px';
-            
-            // Create input with proper styling
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = 'other_valid_id';
-            input.name = 'other_valid_id';
-            input.placeholder = 'Other Valid ID';
-            input.style.flexGrow = '1';
-            
-            // Create remove button
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn-danger btn-remove btn-sm';
-            removeBtn.innerHTML = '<span class="btn-icon">×</span>';
-            removeBtn.style.marginLeft = '5px';
-            
-            // Add input and button to form group
-            formGroup.appendChild(input);
-            formGroup.appendChild(removeBtn);
-            
-            // Add form group to container
-            otherValidIdsContainer.appendChild(formGroup);
-            
-            // Add event listener for remove button
-            removeBtn.addEventListener('click', function() {
-                formGroup.remove();
-                otherValidIdActive = false;
-            });
-            
-            // Hide the "Add Other Valid ID" button while there's an active field
-            addOtherValidIdBtn.style.display = 'none';
-            
-            // Show the button when field is removed
-            removeBtn.addEventListener('click', function() {
-                formGroup.remove();
-                otherValidIdActive = false;
-                addOtherValidIdBtn.style.display = 'inline-block';
-            });
+    // Close the modal when clicking the × button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
         });
     }
-
-    // Initialize signature pads
-    const memberSignaturePad = initializeSignaturePad('member_signature_canvas', 'member_signature', 'clear_member_signature');
-    const beneficiarySignaturePad = initializeSignaturePad('beneficiary_signature_canvas', 'beneficiary_signature', 'clear_beneficiary_signature');
-
-    function initializeSignaturePad(canvasId, hiddenInputId, clearButtonId) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) {
-            console.warn('Signature canvas not found:', canvasId);
-            return null;
-        }
-
-        // Set explicit width and height for signature pad to work correctly before CSS might resize it.
-        // CSS will handle the final display size.
-        const context = canvas.getContext('2d');
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        // canvas.width = canvas.offsetWidth * ratio; // This causes issues if offsetWidth is 0 initially
-        // canvas.height = canvas.offsetHeight * ratio;
-        // Use fixed initial dimensions that match the HTML attributes if present, or default
-        canvas.width = (canvas.getAttribute('width') || 400) * ratio;
-        canvas.height = (canvas.getAttribute('height') || 200) * ratio;
-        context.scale(ratio, ratio);
-
-
-        const signaturePad = new SignaturePad(canvas, {
-            backgroundColor: 'rgb(0, 0, 0, 0)',
-            penColor: 'rgb(0, 0, 0)',
-            minWidth: 0.5,
-            maxWidth: 2.5
+    
+    // Close modal when clicking Edit button
+    if (editBtn) {
+        editBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
         });
-
-        // Handle canvas resize
-        function resizeCanvas() {
-            if (!canvas.offsetParent) return; // Don't resize if canvas is not visible (e.g. on non-active page)
-            const currentRatio = Math.max(window.devicePixelRatio || 1, 1);
-            const W = canvas.offsetWidth; // Get width from CSS-driven layout
-            // For height, you might want to maintain an aspect ratio or use a fixed height from CSS
-            // Here, we'll try to respect the initial aspect ratio from canvas attributes if possible,
-            // otherwise default to a common height or the one from CSS if it's set explicitly.
-            const initialCanvasWidth = parseFloat(canvas.getAttribute('data-initial-width') || canvas.width / currentRatio);
-            const initialCanvasHeight = parseFloat(canvas.getAttribute('data-initial-height') || canvas.height / currentRatio);
-
-            canvas.width = W * currentRatio;
-            // canvas.height = (W * (initialCanvasHeight / initialCanvasWidth)) * currentRatio; // Maintain aspect ratio
-            canvas.height = ( (canvas.parentElement.classList.contains('signature-container') ? canvas.parentElement.offsetHeight : 200)  || 200 ) * currentRatio ;
-
-
-            canvas.getContext("2d").scale(currentRatio, currentRatio);
-            const data = signaturePad.toData(); // Save current signature
-            signaturePad.clear(); // Clear before redrawing
-            signaturePad.fromData(data); // Redraw signature
+    }
+    
+    // Submit the form when clicking Confirm button
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            // Save signatures before submitting (to prevent loss)
+            const memberCanvas = document.getElementById('member_signature_canvas');
+            const beneficiaryCanvas = document.getElementById('beneficiary_signature_canvas');
+            
+            if (memberCanvas && memberCanvas._signaturePad) {
+                document.getElementById('member_signature').value = memberCanvas._signaturePad.toDataURL();
+            }
+            
+            if (beneficiaryCanvas && beneficiaryCanvas._signaturePad) {
+                document.getElementById('beneficiary_signature').value = beneficiaryCanvas._signaturePad.toDataURL();
+            }
+            
+            // Set a flag to prevent the submit handler from showing the modal again
+            document.getElementById('membership-form').dataset.confirmed = 'true';
+            document.getElementById('membership-form').submit();
+        });
+    }
+    
+    // Close modal when clicking outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    function showReviewModal() {
+        const reviewContent = document.getElementById('review-content');
+        reviewContent.innerHTML = '';
+        
+        // Personal Information section
+        const personalSection = document.createElement('div');
+        personalSection.className = 'review-section';
+        personalSection.innerHTML = '<h3>Personal Information</h3>';
+        
+        addReviewRow(personalSection, 'Branch', document.getElementById('branch').value);
+        addReviewRow(personalSection, 'CID No.', document.getElementById('cid_no').value);
+        addReviewRow(personalSection, 'Center No.', document.getElementById('center_no').value);
+        
+        // Get selected plans
+        const selectedPlans = [];
+        document.querySelectorAll('input[name="plans[]"]:checked').forEach(checkbox => {
+            selectedPlans.push(checkbox.value);
+        });
+        addReviewRow(personalSection, 'Plans', selectedPlans.join(', '));
+        
+        // Get selected classifications
+        const selectedClassifications = [];
+        document.querySelectorAll('input[name="classification[]"]:checked').forEach(checkbox => {
+            selectedClassifications.push(checkbox.value);
+        });
+        addReviewRow(personalSection, 'Classification', selectedClassifications.join(', '));
+        
+        addReviewRow(personalSection, 'Last Name', document.getElementById('last_name').value);
+        addReviewRow(personalSection, 'First Name', document.getElementById('first_name').value);
+        addReviewRow(personalSection, 'Middle Name', document.getElementById('middle_name').value);
+        addReviewRow(personalSection, 'Gender', document.getElementById('gender').value);
+        addReviewRow(personalSection, 'Civil Status', document.getElementById('civil_status').value);
+        addReviewRow(personalSection, 'Birthday', document.getElementById('birthday').value);
+        addReviewRow(personalSection, 'Birth Place', document.getElementById('birth_place').value);
+        addReviewRow(personalSection, 'Phone No.', '+63' + document.getElementById('cell_phone').value);
+        addReviewRow(personalSection, 'Telephone No.', document.getElementById('contact_no').value);
+        addReviewRow(personalSection, 'Nationality', document.getElementById('nationality').value);
+        addReviewRow(personalSection, 'TIN/SSS/GSIS Number', document.getElementById('id_number').value);
+        
+        // Add mother's maiden name
+        addReviewRow(personalSection, 'Mother\'s Maiden Last Name', document.getElementById('mothers_maiden_last_name').value);
+        addReviewRow(personalSection, 'Mother\'s Maiden First Name', document.getElementById('mothers_maiden_first_name').value);
+        addReviewRow(personalSection, 'Mother\'s Maiden Middle Name', document.getElementById('mothers_maiden_middle_name').value);
+        
+        reviewContent.appendChild(personalSection);
+        
+        // Address Information section
+        const addressSection = document.createElement('div');
+        addressSection.className = 'review-section';
+        addressSection.innerHTML = '<h3>Address Information</h3>';
+        
+        addReviewRow(addressSection, 'Present Address', document.getElementById('present_address').value);
+        addReviewRow(addressSection, 'Present Brgy. Code', document.getElementById('present_brgy_code').value);
+        addReviewRow(addressSection, 'Present Zip Code', document.getElementById('present_zip_code').value);
+        
+        addReviewRow(addressSection, 'Permanent Address', document.getElementById('permanent_address').value);
+        addReviewRow(addressSection, 'Permanent Brgy. Code', document.getElementById('permanent_brgy_code').value);
+        addReviewRow(addressSection, 'Permanent Zip Code', document.getElementById('permanent_zip_code').value);
+        
+        // Home ownership
+        const homeOwnership = document.querySelector('input[name="home_ownership"]:checked');
+        addReviewRow(addressSection, 'Home Ownership', homeOwnership ? homeOwnership.value : '');
+        addReviewRow(addressSection, 'Length of Stay (years)', document.getElementById('length_of_stay').value);
+        
+        reviewContent.appendChild(addressSection);
+        
+        // Business Information section
+        const businessSection = document.createElement('div');
+        businessSection.className = 'review-section';
+        businessSection.innerHTML = '<h3>Business Information</h3>';
+        
+        addReviewRow(businessSection, 'Primary Business', document.getElementById('primary_business').value);
+        addReviewRow(businessSection, 'Years in Business', document.getElementById('years_in_business').value);
+        addReviewRow(businessSection, 'Business Address', document.getElementById('business_address_unit').value);
+        
+        // Other income sources
+        const otherIncomeSources = document.querySelectorAll('.other-income-source-item input');
+        otherIncomeSources.forEach((input, index) => {
+            if (input.value) {
+                addReviewRow(businessSection, `Other Income Source ${index + 1}`, input.value);
+            }
+        });
+        
+        reviewContent.appendChild(businessSection);
+        
+        // Spouse Information (if married)
+        if (document.getElementById('civil_status').value === 'Married') {
+            const spouseSection = document.createElement('div');
+            spouseSection.className = 'review-section';
+            spouseSection.innerHTML = '<h3>Spouse Information</h3>';
+            
+            addReviewRow(spouseSection, 'Spouse\'s Last Name', document.getElementById('spouse_last_name').value);
+            addReviewRow(spouseSection, 'Spouse\'s First Name', document.getElementById('spouse_first_name').value);
+            addReviewRow(spouseSection, 'Spouse\'s Middle Name', document.getElementById('spouse_middle_name').value);
+            addReviewRow(spouseSection, 'Spouse\'s Birthday', document.getElementById('spouse_birthday').value);
+            addReviewRow(spouseSection, 'Spouse\'s Age', document.getElementById('spouse_age').value);
+            addReviewRow(spouseSection, 'Spouse\'s Occupation', document.getElementById('spouse_occupation').value);
+            addReviewRow(spouseSection, 'Spouse\'s ID Number', document.getElementById('spouse_id_number').value);
+            
+            reviewContent.appendChild(spouseSection);
         }
         
-        // Store initial dimensions for aspect ratio
-        canvas.setAttribute('data-initial-width', canvas.width / ratio);
-        canvas.setAttribute('data-initial-height', canvas.height / ratio);
-
-
-        window.addEventListener("resize", resizeCanvas);
-        // Call resizeCanvas initially if canvas is visible.
-        // For paginated forms, this might need to be called when page becomes active.
-        // For now, let's call it once. If it's not visible, offsetWidth might be 0.
-        // We'll call it specifically when a page with a signature pad becomes active.
-        // resizeCanvas(); 
-
-        const currentForm = document.getElementById('membership-form');
-        if (currentForm) {
-            currentForm.addEventListener('submit', function() {
-                if (!signaturePad.isEmpty()) {
-                    const signatureData = signaturePad.toDataURL();
-                    document.getElementById(hiddenInputId).value = signatureData;
-                }
+        // Beneficiaries Information - as a TABLE
+        const beneficiariesSection = document.createElement('div');
+        beneficiariesSection.className = 'review-section';
+        beneficiariesSection.innerHTML = '<h3>Beneficiaries</h3>';
+        
+        // Filter out empty beneficiary rows
+        const beneficiaryRows = Array.from(document.querySelectorAll('.beneficiary-row')).filter(row => {
+            const lastName = row.querySelector('input[name="beneficiary_last_name[]"]').value;
+            const firstName = row.querySelector('input[name="beneficiary_first_name[]"]').value;
+            return lastName || firstName;
+        });
+        
+        if (beneficiaryRows.length > 0) {
+            // Create a table to display beneficiaries
+            const table = document.createElement('table');
+            table.className = 'review-beneficiaries-table';
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.marginTop = '10px';
+            
+            // Create table header
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr style="background-color: #f3f3f3; border-bottom: 1px solid #ddd;">
+                    <th style="padding: 8px; text-align: left;">Name</th>
+                    <th style="padding: 8px; text-align: left;">DOB</th>
+                    <th style="padding: 8px; text-align: left;">Gender</th>
+                    <th style="padding: 8px; text-align: left;">Relationship</th>
+                    <th style="padding: 8px; text-align: center;">Dependent</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            
+            // Create table body
+            const tbody = document.createElement('tbody');
+            beneficiaryRows.forEach((row, index) => {
+                const lastName = row.querySelector('input[name="beneficiary_last_name[]"]').value;
+                const firstName = row.querySelector('input[name="beneficiary_first_name[]"]').value;
+                const mi = row.querySelector('input[name="beneficiary_mi[]"]').value;
+                const dob = row.querySelector('input[name="beneficiary_dob[]"]').value;
+                const gender = row.querySelector('select[name="beneficiary_gender[]"]').value;
+                const relationship = row.querySelector('input[name="beneficiary_relationship[]"]').value;
+                const dependent = row.querySelector('input[name="beneficiary_dependent[]"]') && 
+                                 row.querySelector('input[name="beneficiary_dependent[]"]').checked ? 'Yes' : 'No';
+                
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #eee';
+                
+                tr.innerHTML = `
+                    <td style="padding: 8px;">${lastName}, ${firstName} ${mi}</td>
+                    <td style="padding: 8px;">${dob}</td>
+                    <td style="padding: 8px;">${gender}</td>
+                    <td style="padding: 8px;">${relationship}</td>
+                    <td style="padding: 8px; text-align: center;">${dependent}</td>
+                `;
+                
+                tbody.appendChild(tr);
             });
+            
+            table.appendChild(tbody);
+            beneficiariesSection.appendChild(table);
+        } else {
+            beneficiariesSection.innerHTML += '<p>No beneficiaries added.</p>';
         }
-
-        // Clear button functionality
-        const clearButton = document.getElementById(clearButtonId);
-        if (clearButton) {
-            clearButton.addEventListener('click', function() {
-                signaturePad.clear();
-                document.getElementById(hiddenInputId).value = '';
-            });
-        }
-
-        return signaturePad;
+        
+        reviewContent.appendChild(beneficiariesSection);
+        
+        // Trustee Information
+        const trusteeSection = document.createElement('div');
+        trusteeSection.className = 'review-section';
+        trusteeSection.innerHTML = '<h3>Trustee Information</h3>';
+        
+        addReviewRow(trusteeSection, 'Trustee Name', document.getElementById('trustee_name').value);
+        addReviewRow(trusteeSection, 'Trustee Date of Birth', document.getElementById('trustee_dob').value);
+        addReviewRow(trusteeSection, 'Relationship to Applicant', document.getElementById('trustee_relationship').value);
+        
+        reviewContent.appendChild(trusteeSection);
+        
+        // Signature Information
+        const signatureSection = document.createElement('div');
+        signatureSection.className = 'review-section';
+        signatureSection.innerHTML = '<h3>Signature Information</h3>';
+        
+        addReviewRow(signatureSection, 'Member Name', document.getElementById('member_name').value);
+        addReviewRow(signatureSection, 'Beneficiary Name', document.getElementById('sig_beneficiary_name').value);
+        
+        reviewContent.appendChild(signatureSection);
+        
+        // Show the modal
+        modal.style.display = 'block';
+    }
+    
+    function addReviewRow(container, label, value) {
+        if (!value) return; // Skip empty values
+        
+        const row = document.createElement('div');
+        row.className = 'review-row';
+        
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'review-label';
+        labelDiv.textContent = label;
+        
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'review-value';
+        valueDiv.textContent = value;
+        
+        row.appendChild(labelDiv);
+        row.appendChild(valueDiv);
+        container.appendChild(row);
     }
 
     // Pagination Logic
@@ -1493,13 +1464,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const disclaimerBox = document.querySelector('.disclaimer-box');
-        // const submitButtonActual = document.getElementById('submit_application_btn'); // Already have submitApplicationBtn
 
         if (currentPage === totalPages - 1) {
             if (disclaimerBox) disclaimerBox.style.display = 'block';
-           // if (submitApplicationBtn) submitApplicationBtn.style.display = 'inline-flex'; // Already handled above
-             // if (submitBtnContainer) submitBtnContainer.style.display = 'flex'; // Not needed
-
 
              // Attempt to resize signature canvases if they are on this page and now visible
             const signatureCanvases = pages[currentPage].querySelectorAll('canvas[id*=\'_signature_canvas\']');
@@ -1513,24 +1480,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-
-
         } else {
             if (disclaimerBox) disclaimerBox.style.display = 'none';
-           // if (submitApplicationBtn) submitApplicationBtn.style.display = 'none'; // Already handled above
-            // if (submitBtnContainer) submitBtnContainer.style.display = 'none'; // Not needed
         }
     }
     
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (!validateCurrentPageFields()) {
-                return; // Stop navigation if current page is invalid
-            }
+        nextBtn.addEventListener('click', function() {
+            if (validateCurrentPageFields()) {
             if (currentPage < totalPages - 1) {
+                    saveFormToLocalStorage(); // Save form data before navigating
                 currentPage++;
                 updatePageDisplay();
                  window.scrollTo(0, 0); // Scroll to top of page
+                }
             }
         });
     }
@@ -1538,6 +1501,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
             if (currentPage > 0) {
+                saveFormToLocalStorage(); // Save form data before navigating
                 currentPage--;
                 updatePageDisplay();
                 window.scrollTo(0, 0); // Scroll to top of page
@@ -1548,7 +1512,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial page setup
     updatePageDisplay();
 
-
     // Save and Load form data from localStorage
     const formToSave = document.getElementById('membership-form');
     const formElements = formToSave ? formToSave.elements : [];
@@ -1556,266 +1519,676 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveFormToLocalStorage() {
         if (!formToSave) return;
         const formData = {};
+        
+        // Special handling for select elements including branch
+        document.querySelectorAll('select').forEach(select => {
+            if (select.name) {
+                formData[select.name] = select.value;
+            }
+        });
+        
+        // Save all regular form fields
         for (const element of formElements) {
+            // Skip saving the disclaimer agreement checkbox
+            if (element.id === 'disclaimer_agreement') continue;
+            
             if (element.name) {
                 if (element.type === 'checkbox') {
-                    formData[element.name + (element.value ? `_${element.value}` : '')] = element.checked; // Store by name_value for multiple checkboxes with same name
+                    if (element.name.includes('[]')) {
+                        // For array checkboxes like plans[] or classification[]
+                        const baseName = element.name.replace('[]', '');
+                        if (!formData[baseName]) formData[baseName] = [];
+                        if (element.checked) {
+                            if (!formData[baseName].includes(element.value)) {
+                                formData[baseName].push(element.value);
+                            }
+                        }
+                    } else {
+                        // Regular checkbox
+                        formData[element.name + (element.value ? `_${element.value}` : '')] = element.checked;
+                    }
                 } else if (element.type === 'radio') {
                     if (element.checked) {
                         formData[element.name] = element.value;
                     }
                 } else if (element.tagName === 'SELECT' && element.multiple) {
                     formData[element.name] = Array.from(element.selectedOptions).map(option => option.value);
-                } else {
+                } else if (!formData[element.name]) { // Don't overwrite values already set
                     formData[element.name] = element.value;
                 }
             }
         }
+        
+        // Special handling for beneficiary rows
+        const beneficiaryRows = document.querySelectorAll('.beneficiary-row');
+        formData.beneficiary_rows = [];
+        beneficiaryRows.forEach((row, index) => {
+            const rowData = {};
+            row.querySelectorAll('input, select').forEach(input => {
+                const fieldName = input.name.replace('[]', '');
+                if (input.type === 'checkbox') {
+                    rowData[fieldName] = input.checked;
+                } else {
+                    rowData[fieldName] = input.value;
+                }
+            });
+            formData.beneficiary_rows.push(rowData);
+        });
+        
         // Save dynamic rows count
         formData['beneficiary_row_count'] = beneficiaryRowCount;
+        
+        // Save other income sources
+        const incomeSourceInputs = document.querySelectorAll('.other-income-source-item input');
+        formData.other_income_sources = [];
+        incomeSourceInputs.forEach(input => {
+            formData.other_income_sources.push(input.value);
+        });
         formData['other_income_source_count'] = incomeSourceCount;
-        formData['other_valid_id_count'] = otherValidIdCount;
+        
+        // Save other valid IDs
+        const otherValidIdInputs = document.querySelectorAll('.other-valid-id-item input');
+        formData.other_valid_ids = [];
+        otherValidIdInputs.forEach(input => {
+            formData.other_valid_ids.push(input.value);
+        });
+        formData['other_valid_id_count'] = otherValidIdActive ? 1 : 0;
+        
+        // Make sure branch and barangay codes are explicitly saved
+        formData['branch'] = document.getElementById('branch').value;
+        formData['present_brgy_code'] = document.getElementById('present_brgy_code').value;
+        formData['permanent_brgy_code'] = document.getElementById('permanent_brgy_code').value;
 
         localStorage.setItem('membershipFormData', JSON.stringify(formData));
+        console.log('Form data saved:', formData);
     }
 
     function loadFormFromLocalStorage() {
-        if (!formToSave) return;
         const savedData = localStorage.getItem('membershipFormData');
-        if (savedData) {
-            // Show reload notice as a toast at bottom-left
-            const reloadNotice = document.getElementById('reload-notice');
-            const closeNoticeBtn = reloadNotice ? reloadNotice.querySelector('.close-notice') : null;
-            if (reloadNotice) {
-                reloadNotice.classList.add('show');
-                setTimeout(() => {
-                    reloadNotice.classList.add('fade-out');
-                    setTimeout(() => {
-                        reloadNotice.classList.remove('show', 'fade-out');
-                    }, 500);
-                }, 4000);
-            }
-            if (closeNoticeBtn) {
-                closeNoticeBtn.addEventListener('click', () => {
-                    reloadNotice.classList.add('fade-out');
-                    setTimeout(() => {
-                        reloadNotice.classList.remove('show', 'fade-out');
-                    }, 500);
-                });
-            }
+        if (!savedData || !formToSave) return;
+        
+        try {
             const formData = JSON.parse(savedData);
+            console.log('Loading form data:', formData);
+            
+            // Restore branch select field first
+            if (formData.branch) {
+                const branchSelect = document.getElementById('branch');
+                if (branchSelect) branchSelect.value = formData.branch;
+            }
+            
+            // Restore barangay codes
+            if (formData.present_brgy_code) {
+                const presentBrgyCode = document.getElementById('present_brgy_code');
+                if (presentBrgyCode) presentBrgyCode.value = formData.present_brgy_code;
+            }
+            
+            if (formData.permanent_brgy_code) {
+                const permanentBrgyCode = document.getElementById('permanent_brgy_code');
+                if (permanentBrgyCode) permanentBrgyCode.value = formData.permanent_brgy_code;
+            }
+            
+            // Restore simple field values
             for (const element of formElements) {
                 if (element.name) {
-                    const savedValueKey = element.type === 'checkbox' ? element.name + (element.value ? `_${element.value}` : '') : element.name;
-                    if (formData.hasOwnProperty(savedValueKey)) {
+                    // Skip select fields we've already handled
+                    if (element.name === 'branch') continue;
+                    
+                    // Skip the disclaimer agreement checkbox - should never be remembered
+                    if (element.id === 'disclaimer_agreement') continue;
+                    
                         if (element.type === 'checkbox') {
-                            element.checked = formData[savedValueKey];
-                        } else if (element.type === 'radio') {
-                            if (element.value === formData[savedValueKey]) {
-                                element.checked = true;
-                            }
-                        } else if (element.tagName === 'SELECT' && element.multiple) {
-                            const values = formData[savedValueKey];
-                            if (Array.isArray(values)) {
-                                Array.from(element.options).forEach(option => {
-                                    option.selected = values.includes(option.value);
-                                });
+                        if (element.name.includes('[]')) {
+                            // Handle array checkboxes (plans, classification)
+                            const baseName = element.name.replace('[]', '');
+                            if (formData[baseName] && Array.isArray(formData[baseName])) {
+                                element.checked = formData[baseName].includes(element.value);
                             }
                         } else {
-                             // Skip address dropdowns that are dynamically populated by philippine-address-selector
-                            if (!element.classList.contains('address-region') &&
-                                !element.classList.contains('address-province') &&
-                                !element.classList.contains('address-city') &&
-                                !element.classList.contains('address-barangay')) {
-                                element.value = formData[savedValueKey];
+                            // Regular checkbox
+                            const key = element.name + (element.value ? `_${element.value}` : '');
+                            if (key in formData) {
+                                element.checked = formData[key];
                             }
                         }
-                         // Trigger change event for fields that might have dependent logic (like civil status)
-                        if (element.id === 'civil_status' || element.id === 'birthday' || element.id === 'spouse_birthday') {
-                            element.dispatchEvent(new Event('change'));
-                        }
+                        } else if (element.type === 'radio') {
+                        if (element.name in formData && element.value === formData[element.name]) {
+                                element.checked = true;
+                            }
+                    } else if (element.name in formData) {
+                        element.value = formData[element.name];
                     }
                 }
             }
-
-            // Restore dynamic rows - this is more complex and might need specific handling for each type
-            // For now, just logging the counts. Full restoration would involve recreating rows.
-            // console.log("Saved beneficiary rows:", formData['beneficiary_row_count']);
-            // console.log("Saved income sources:", formData['other_income_source_count']);
-            // console.log("Saved other IDs:", formData['other_valid_id_count']);
-
-            // Special handling for address dropdowns if their text values were saved
-            ['present', 'permanent', 'business'].forEach(prefix => {
-                if (formData[`${prefix}_region`]) {
-                    const regionSelect = document.getElementById(`${prefix}_region`);
-                    if (regionSelect) {
-                        regionSelect.value = formData[`${prefix}_region`];
-                        // Manually trigger change to load provinces, if not automatically handled by value set
-                        // This is tricky because the options might not be loaded yet.
-                        // It's often better to let the user re-select these or find a way to re-run the address selector logic with saved values.
-                        // For now, we're skipping direct value setting for these in the loop above.
-                        // We'll rely on saving the text fields and let the user re-select for full dependent dropdown functionality.
-                    }
+            
+            // Handle dynamic content
+            // Restore beneficiary rows
+            if ('beneficiary_row_count' in formData && formData.beneficiary_row_count > 1) {
+                // Add the necessary rows first - up to 5 max
+                const rowsToAdd = Math.min(formData.beneficiary_row_count - 1, maxBeneficiaryRows - 1);
+                for (let i = 0; i < rowsToAdd; i++) {
+                    addBeneficiaryRow(); // Call the function that adds a new row
                 }
-                 // Repopulate the hidden text fields for addresses
-                if (document.getElementById(`${prefix}_region_text`)) document.getElementById(`${prefix}_region_text`).value = formData[`${prefix}_region_text`] || '';
-                if (document.getElementById(`${prefix}_province_text`)) document.getElementById(`${prefix}_province_text`).value = formData[`${prefix}_province_text`] || '';
-                if (document.getElementById(`${prefix}_city_text`)) document.getElementById(`${prefix}_city_text`).value = formData[`${prefix}_city_text`] || '';
-                if (document.getElementById(`${prefix}_barangay_text`)) document.getElementById(`${prefix}_barangay_text`).value = formData[`${prefix}_barangay_text`] || '';
-
-            });
-
-            // Re-calculate age for birthday and spouse birthday after loading
-            if (birthdayField.value) calculateAge(birthdayField.value, ageField);
-            if (spouseBirthdayField.value) calculateAge(spouseBirthdayField.value, spouseAgeField);
-
-            // Update disclaimer checkbox and submit button state
-            if (disclaimerCheckbox && formData['disclaimer_agreement']) {
-                disclaimerCheckbox.checked = formData['disclaimer_agreement'];
-                if (submitApplicationBtn) submitApplicationBtn.disabled = !disclaimerCheckbox.checked;
-            }
-
-            // Dynamically add placeholder tooltips to each checkbox-item
-            document.querySelectorAll('.checkbox-item').forEach(item => {
-                if (!item.querySelector('.tooltip-text')) {
-                    const tooltip = document.createElement('span');
-                    tooltip.className = 'tooltip-text';
-                    tooltip.textContent = 'Additional info';
-                    item.appendChild(tooltip);
-                }
-            });
-
-            // Restore dynamic rows - this is more complex and might need specific handling for each type
-            // For now, just logging the counts. Full restoration would involve recreating rows.
-            // console.log("Saved beneficiary rows:", formData['beneficiary_row_count']);
-            // console.log("Saved income sources:", formData['other_income_source_count']);
-            // console.log("Saved other IDs:", formData['other_valid_id_count']);
-
-            // Special handling for address dropdowns if their text values were saved
-            ['present', 'permanent', 'business'].forEach(prefix => {
-                const regionCode = formData[`${prefix}_region`];
-                if (regionCode) {
-                    const regionEl = document.getElementById(`${prefix}_region`);
-                    regionEl.value = regionCode;
-                    regionEl.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        const provCode = formData[`${prefix}_province`];
-                        if (provCode) {
-                            const provEl = document.getElementById(`${prefix}_province`);
-                            provEl.value = provCode;
-                            provEl.dispatchEvent(new Event('change'));
-                        }
-                        setTimeout(() => {
-                            const cityCode = formData[`${prefix}_city`];
-                            if (cityCode) {
-                                const cityEl = document.getElementById(`${prefix}_city`);
-                                cityEl.value = cityCode;
-                                cityEl.dispatchEvent(new Event('change'));
-                            }
-                            setTimeout(() => {
-                                const brgyCode = formData[`${prefix}_barangay`];
-                                if (brgyCode) {
-                                    document.getElementById(`${prefix}_barangay`).value = brgyCode;
+                
+                // Restore beneficiary data if available
+                if (formData.beneficiary_rows && Array.isArray(formData.beneficiary_rows)) {
+                    const rows = document.querySelectorAll('.beneficiary-row');
+                    formData.beneficiary_rows.forEach((rowData, index) => {
+                        if (index < rows.length) {
+                            const row = rows[index];
+                            for (const fieldName in rowData) {
+                                const input = row.querySelector(`[name="${fieldName}[]"]`);
+                                if (input) {
+                                    if (input.type === 'checkbox') {
+                                        input.checked = rowData[fieldName];
+                        } else {
+                                        input.value = rowData[fieldName];
+                                    }
                                 }
-                            }, 300);
-                        }, 300);
-                    }, 300);
+                            }
+                        }
+                    });
                 }
-            });
-
+            }
+            
+            // Restore other income sources
+            if (formData.other_income_sources && Array.isArray(formData.other_income_sources)) {
+                // Clear any existing income source fields
+                document.querySelectorAll('.other-income-source-item').forEach(item => item.remove());
+                incomeSourceCount = 0;
+                
+                // Add new ones with the saved data
+                formData.other_income_sources.forEach((value, index) => {
+                    if (value && index < 4) { // Limit to 4 sources
+                        const newSource = addOtherIncomeSource();
+                        if (newSource) {
+                            const input = newSource.querySelector('input');
+                            if (input) input.value = value;
+                        }
+                    }
+                });
+            }
+            
+            // Restore other valid IDs
+            if (formData.other_valid_ids && Array.isArray(formData.other_valid_ids) && formData.other_valid_ids.length > 0) {
+                // Clear any existing fields
+                document.querySelectorAll('.other-valid-id-item').forEach(item => item.remove());
+                otherValidIdActive = false;
+                
+                // Add new one with the saved data if available
+                const idValue = formData.other_valid_ids[0];
+                if (idValue) {
+                    const newId = addOtherValidId();
+                    if (newId) {
+                        const input = newId.querySelector('input');
+                        if (input) input.value = idValue;
+                    }
+                }
+            }
+            
+            // Check if spouse fields need to be shown
+            if (document.getElementById('civil_status').value === 'Married') {
+                const spouseInfoSection = document.getElementById('spouse_information_section');
+                if (spouseInfoSection) {
+                    spouseInfoSection.style.display = 'block';
+                }
+            }
+            
+            console.log('Form data loaded from localStorage');
+        } catch (e) {
+            console.error('Error loading form data:', e);
         }
     }
 
-    // Load saved data when page loads
-    loadFormFromLocalStorage();
-
-    // Clear remembered checkboxes and signatures
-    // Remove checkbox states
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    // Clear signature pads
-    if (typeof memberSignaturePad !== 'undefined' && memberSignaturePad) memberSignaturePad.clear();
-    if (typeof beneficiarySignaturePad !== 'undefined' && beneficiarySignaturePad) beneficiarySignaturePad.clear();
-
-    // Save data when form inputs change
+    // Call saveFormToLocalStorage on form changes
     if (formToSave) {
         formToSave.addEventListener('input', saveFormToLocalStorage);
         // Also save for select changes
         const selects = formToSave.querySelectorAll('select');
         selects.forEach(select => select.addEventListener('change', saveFormToLocalStorage));
+        
+        // Load saved data on page load
+        loadFormFromLocalStorage();
     }
 
-
-    // Ensure signature pad resize functions are globally accessible for updatePageDisplay
-    if (memberSignaturePad && memberSignaturePad.canvas) {
-        window[`resize_${memberSignaturePad.canvas.id}`] = () => {
-            if (!memberSignaturePad.canvas.offsetParent) return;
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            const W = memberSignaturePad.canvas.offsetWidth;
-            memberSignaturePad.canvas.width = W * ratio;
-            memberSignaturePad.canvas.height = ( (memberSignaturePad.canvas.parentElement.classList.contains('signature-container') ? memberSignaturePad.canvas.parentElement.offsetHeight : 200)  || 200 ) * ratio ;
-            memberSignaturePad.canvas.getContext("2d").scale(ratio, ratio);
-            const data = memberSignaturePad.toData();
-            memberSignaturePad.clear();
-            memberSignaturePad.fromData(data);
-        };
-    }
-    if (beneficiarySignaturePad && beneficiarySignaturePad.canvas) {
-         window[`resize_${beneficiarySignaturePad.canvas.id}`] = () => {
-            if (!beneficiarySignaturePad.canvas.offsetParent) return;
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            const W = beneficiarySignaturePad.canvas.offsetWidth;
-            beneficiarySignaturePad.canvas.width = W * ratio;
-            beneficiarySignaturePad.canvas.height = ( (beneficiarySignaturePad.canvas.parentElement.classList.contains('signature-container') ? beneficiarySignaturePad.canvas.parentElement.offsetHeight : 200)  || 200 ) * ratio ;
-            beneficiarySignaturePad.canvas.getContext("2d").scale(ratio, ratio);
-            const data = beneficiarySignaturePad.toData();
-            beneficiarySignaturePad.clear();
-            beneficiarySignaturePad.fromData(data);
-        };
-    }
-
-    // Restrict phone inputs to numeric only
-    [document.getElementById('cell_phone'), document.getElementById('contact_no')]
-    .forEach(input => {
-        if (input) {
-            input.addEventListener('input', e => {
-                e.target.value = e.target.value.replace(/\D/g, '');
+    // Beneficiary management
+    const addBeneficiaryBtn = document.getElementById('add_beneficiary_btn');
+    const beneficiariesTbody = document.getElementById('beneficiaries_tbody');
+    
+    // Function to add a new beneficiary row
+    function addBeneficiaryRow() {
+        if (beneficiaryRowCount >= maxBeneficiaryRows) {
+            alert('Maximum ' + maxBeneficiaryRows + ' beneficiaries allowed.');
+            return;
+        }
+        
+        beneficiaryRowCount++;
+        const newRow = document.createElement('tr');
+        newRow.className = 'beneficiary-row';
+        
+        newRow.innerHTML = `
+            <td>
+                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_${beneficiaryRowCount}" name="beneficiary_last_name[]" placeholder="Enter Last Name"></div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_${beneficiaryRowCount}" name="beneficiary_first_name[]" placeholder="Enter First Name"></div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_${beneficiaryRowCount}" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_${beneficiaryRowCount}" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_${beneficiaryRowCount}" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_${beneficiaryRowCount}" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_${beneficiaryRowCount}" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div>
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm remove-beneficiary">✕</button>
+            </td>
+        `;
+        
+        beneficiariesTbody.appendChild(newRow);
+        
+        // Initialize datepicker for the new date field if using Pikaday
+        const newDateInput = newRow.querySelector('.beneficiary-dob');
+        if (newDateInput && typeof Pikaday !== 'undefined') {
+            new Pikaday({ 
+                field: newDateInput,
+                format: 'MM/DD/YYYY',
+                yearRange: [1900, new Date().getFullYear()],
+                maxDate: new Date(),
+                toString(date, format) {
+                    // Format the date as MM/DD/YYYY
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${month}/${day}/${year}`;
+                },
+                onSelect: function() {
+                    newDateInput.setCustomValidity('');
+                    newDateInput.style.borderColor = '';
+                    
+                    // Remove error message if it exists
+                    const errorMsg = newDateInput.nextElementSibling;
+                    if (errorMsg && errorMsg.classList.contains('date-error')) {
+                        errorMsg.textContent = '';
+                    }
+                }
+            });
+            
+            // Add validation to the new date field
+            newDateInput.addEventListener('blur', function() {
+                const dateValue = this.value.trim();
+                if (dateValue && !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateValue)) {
+                    this.setCustomValidity('Please enter a valid date in MM/DD/YYYY format');
+                    
+                    // Add visual error indication
+                    this.style.borderColor = 'red';
+                    
+                    // Show error message near the field
+                    let errorMsg = this.nextElementSibling;
+                    if (!errorMsg || !errorMsg.classList.contains('date-error')) {
+                        errorMsg = document.createElement('div');
+                        errorMsg.className = 'date-error';
+                        errorMsg.style.color = 'red';
+                        errorMsg.style.fontSize = '12px';
+                        errorMsg.style.marginTop = '5px';
+                        this.parentNode.appendChild(errorMsg);
+                    }
+                    errorMsg.textContent = 'Please enter a valid date in MM/DD/YYYY format';
+                } else {
+                    this.setCustomValidity('');
+                    this.style.borderColor = '';
+                    
+                    // Remove error message if it exists
+                    const errorMsg = this.nextElementSibling;
+                    if (errorMsg && errorMsg.classList.contains('date-error')) {
+                        errorMsg.textContent = '';
+                    }
+                }
             });
         }
-    });
-
-});
-
-// Add styles for responsive beneficiaries table
-const style = document.createElement('style');
-style.textContent = `
-    @media (max-width: 768px) {
-        .beneficiaries-table {
-            display: block;
-            width: 100%;
-            overflow-x: auto;
+        
+        // Add remove event listener
+        const removeBtn = newRow.querySelector('.remove-beneficiary');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                newRow.remove();
+                beneficiaryRowCount--;
+                saveFormToLocalStorage(); // Update localStorage after removing
+            });
         }
         
-        .beneficiary-row td {
-            min-width: 120px;
+        saveFormToLocalStorage(); // Save the new state
+        return newRow;
+    }
+    
+    // Add beneficiary button click handler
+    if (addBeneficiaryBtn) {
+        addBeneficiaryBtn.addEventListener('click', addBeneficiaryRow);
+    }
+    
+    // Other income sources management
+    const addOtherIncomeSourceBtn = document.getElementById('add_other_income_source_btn');
+    const otherIncomeSourcesContainer = document.getElementById('other_income_sources_container');
+    
+    function addOtherIncomeSource() {
+        if (incomeSourceCount >= 4) {
+            alert('Maximum 4 additional income sources allowed.');
+            return;
         }
         
-        .beneficiary-row input,
-        .beneficiary-row select {
-            width: 100%;
-            min-width: 80px;
+        incomeSourceCount++;
+        const sourceNumber = incomeSourceCount;
+        
+        const sourceContainer = document.createElement('div');
+        sourceContainer.className = 'form-group other-income-source-item';
+        sourceContainer.style.marginTop = '10px';
+        
+        sourceContainer.innerHTML = `
+            <div class="input-with-btn">
+                <input type="text" id="other_income_source_${sourceNumber}" name="other_income_source_${sourceNumber}" placeholder="Enter Other Income Source">
+                <button type="button" class="btn btn-danger btn-sm remove-income-source">✕</button>
+            </div>
+        `;
+        
+        otherIncomeSourcesContainer.appendChild(sourceContainer);
+        
+        // Add remove event listener
+        const removeBtn = sourceContainer.querySelector('.remove-income-source');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                sourceContainer.remove();
+                // We need to re-index and update remaining fields
+                updateIncomeSourceIndices();
+                saveFormToLocalStorage(); // Update localStorage after removing
+            });
         }
         
-        .beneficiary-row .form-group {
-            margin-right: 0;
+        saveFormToLocalStorage(); // Save the new state
+        return sourceContainer;
+    }
+    
+    // Function to reindex income sources after removal
+    function updateIncomeSourceIndices() {
+        const sources = document.querySelectorAll('.other-income-source-item');
+        
+        // Count how many are left
+        incomeSourceCount = sources.length;
+        
+        // Update IDs and names
+        sources.forEach((source, index) => {
+            const input = source.querySelector('input');
+            if (input) {
+                input.id = `other_income_source_${index + 1}`;
+                input.name = `other_income_source_${index + 1}`;
+            }
+        });
+    }
+    
+    // Add other income source button click handler
+    if (addOtherIncomeSourceBtn) {
+        addOtherIncomeSourceBtn.addEventListener('click', addOtherIncomeSource);
+    }
+    
+    // Other valid ID management
+    const addOtherValidIdBtn = document.getElementById('add_other_valid_id_btn');
+    const otherValidIdsContainer = document.getElementById('other_valid_ids_container');
+    
+    function addOtherValidId() {
+        if (otherValidIdActive) {
+            alert('Maximum 1 additional valid ID allowed.');
+            return null;
         }
         
-        .beneficiaries-table th,
-        .beneficiaries-table td {
-            white-space: nowrap;
+        otherValidIdActive = true;
+        
+        const idContainer = document.createElement('div');
+        idContainer.className = 'form-group other-valid-id-item';
+        idContainer.style.marginBottom = '10px';
+        
+        idContainer.innerHTML = `
+            <div class="input-with-btn">
+                <input type="text" id="other_valid_id_1" name="other_valid_id" placeholder="Enter Other Valid ID">
+                <button type="button" class="btn btn-danger btn-sm remove-valid-id">✕</button>
+            </div>
+        `;
+        
+        otherValidIdsContainer.appendChild(idContainer);
+        
+        // Add remove event listener
+        const removeBtn = idContainer.querySelector('.remove-valid-id');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                idContainer.remove();
+                otherValidIdActive = false;
+                saveFormToLocalStorage(); // Update localStorage after removing
+            });
+        }
+        
+        saveFormToLocalStorage(); // Save the new state
+        return idContainer;
+    }
+    
+    // Add other valid ID button click handler
+    if (addOtherValidIdBtn) {
+        addOtherValidIdBtn.addEventListener('click', function() {
+            addOtherValidId();
+        });
+    }
+    
+    // Initialize date pickers for all date fields
+    function initDatepickers() {
+        if (typeof Pikaday !== 'undefined') {
+            // Common date validation function
+            const validateDate = function(field) {
+                field.addEventListener('blur', function() {
+                    const dateValue = this.value.trim();
+                    if (dateValue && !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateValue)) {
+                        this.setCustomValidity('Please enter a valid date in MM/DD/YYYY format');
+                        
+                        // Add visual error indication
+                        this.style.borderColor = 'red';
+                        
+                        // Show error message near the field
+                        let errorMsg = this.nextElementSibling;
+                        if (!errorMsg || !errorMsg.classList.contains('date-error')) {
+                            errorMsg = document.createElement('div');
+                            errorMsg.className = 'date-error';
+                            errorMsg.style.color = 'red';
+                            errorMsg.style.fontSize = '12px';
+                            errorMsg.style.marginTop = '5px';
+                            this.parentNode.appendChild(errorMsg);
+                        }
+                        errorMsg.textContent = 'Please enter a valid date in MM/DD/YYYY format';
+                    } else {
+                        this.setCustomValidity('');
+                        this.style.borderColor = '';
+                        
+                        // Remove error message if it exists
+                        const errorMsg = this.nextElementSibling;
+                        if (errorMsg && errorMsg.classList.contains('date-error')) {
+                            errorMsg.textContent = '';
+                        }
+                    }
+                });
+            };
+            
+            // Birthday field
+            if (document.getElementById('birthday')) {
+                const birthdayField = document.getElementById('birthday');
+                new Pikaday({
+                    field: birthdayField,
+                    format: 'MM/DD/YYYY',
+                    yearRange: [1900, new Date().getFullYear()],
+                    maxDate: new Date(),
+                    toString(date, format) {
+                        // Format the date as MM/DD/YYYY
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${month}/${day}/${year}`;
+                    },
+                    onSelect: function() {
+                        birthdayField.setCustomValidity('');
+                        birthdayField.style.borderColor = '';
+                        
+                        // Remove error message if it exists
+                        const errorMsg = birthdayField.nextElementSibling;
+                        if (errorMsg && errorMsg.classList.contains('date-error')) {
+                            errorMsg.textContent = '';
+                        }
+                    }
+                });
+                validateDate(birthdayField);
+            }
+            
+            // Spouse birthday field
+            if (document.getElementById('spouse_birthday')) {
+                const spouseBirthdayField = document.getElementById('spouse_birthday');
+                new Pikaday({
+                    field: spouseBirthdayField,
+                    format: 'MM/DD/YYYY',
+                    yearRange: [1900, new Date().getFullYear()],
+                    maxDate: new Date(),
+                    toString(date, format) {
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const year = date.getFullYear();
+                        return `${month}/${day}/${year}`;
+                    },
+                    onSelect: function() {
+                        spouseBirthdayField.setCustomValidity('');
+                        spouseBirthdayField.style.borderColor = '';
+                        const errorMsg = spouseBirthdayField.nextElementSibling;
+                        if (errorMsg && errorMsg.classList.contains('date-error')) {
+                            errorMsg.textContent = '';
+                        }
+                    }
+                });
+                validateDate(spouseBirthdayField);
+            }
         }
     }
-`;
-document.head.appendChild(style);
+    
+    // Initialize all date pickers
+    initDatepickers();
+    
+    // Initialize signature pads if elements exist
+    if (typeof SignaturePad !== 'undefined') {
+        // Member signature
+        const memberCanvas = document.getElementById('member_signature_canvas');
+        const memberSignatureInput = document.getElementById('member_signature');
+        
+        if (memberCanvas) {
+            const memberPad = new SignaturePad(memberCanvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                penColor: 'black'
+            });
+            memberCanvas._signaturePad = memberPad; // Store reference for later
+            
+            // If there's saved signature data, restore it
+            if (memberSignatureInput && memberSignatureInput.value) {
+                memberPad.fromDataURL(memberSignatureInput.value);
+            }
+            
+            // Clear button
+            const clearMemberBtn = document.getElementById('clear_member_signature');
+            if (clearMemberBtn) {
+                clearMemberBtn.addEventListener('click', function() {
+                    memberPad.clear();
+                    if (memberSignatureInput) memberSignatureInput.value = '';
+                    saveFormToLocalStorage();
+                });
+            }
+            
+            // On end event - save signature data
+            memberPad.addEventListener('endStroke', function() {
+                if (memberSignatureInput) memberSignatureInput.value = memberPad.toDataURL();
+                saveFormToLocalStorage();
+            });
+            
+            // Resize function
+            window.resize_member_signature_canvas = function() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                const savedData = memberPad.toDataURL();
+                
+                memberCanvas.width = memberCanvas.offsetWidth * ratio;
+                memberCanvas.height = memberCanvas.offsetHeight * ratio;
+                memberCanvas.getContext('2d').scale(ratio, ratio);
+                
+                // Restore the signature after resize
+                if (savedData) {
+                    memberPad.fromDataURL(savedData);
+                } else {
+                    memberPad.clear();
+                }
+            };
+            
+            window.addEventListener('resize', window.resize_member_signature_canvas);
+            window.resize_member_signature_canvas(); // Call once on init
+        }
+        
+        // Beneficiary signature
+        const beneficiaryCanvas = document.getElementById('beneficiary_signature_canvas');
+        const beneficiarySignatureInput = document.getElementById('beneficiary_signature');
+        
+        if (beneficiaryCanvas) {
+            const beneficiaryPad = new SignaturePad(beneficiaryCanvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                penColor: 'black'
+            });
+            beneficiaryCanvas._signaturePad = beneficiaryPad; // Store reference for later
+            
+            // If there's saved signature data, restore it
+            if (beneficiarySignatureInput && beneficiarySignatureInput.value) {
+                beneficiaryPad.fromDataURL(beneficiarySignatureInput.value);
+            }
+            
+            // Clear button
+            const clearBeneficiaryBtn = document.getElementById('clear_beneficiary_signature');
+            if (clearBeneficiaryBtn) {
+                clearBeneficiaryBtn.addEventListener('click', function() {
+                    beneficiaryPad.clear();
+                    if (beneficiarySignatureInput) beneficiarySignatureInput.value = '';
+                    saveFormToLocalStorage();
+                });
+            }
+            
+            // On end event - save signature data
+            beneficiaryPad.addEventListener('endStroke', function() {
+                if (beneficiarySignatureInput) beneficiarySignatureInput.value = beneficiaryPad.toDataURL();
+                saveFormToLocalStorage();
+            });
+            
+            // Resize function
+            window.resize_beneficiary_signature_canvas = function() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                const savedData = beneficiaryPad.toDataURL();
+                
+                beneficiaryCanvas.width = beneficiaryCanvas.offsetWidth * ratio;
+                beneficiaryCanvas.height = beneficiaryCanvas.offsetHeight * ratio;
+                beneficiaryCanvas.getContext('2d').scale(ratio, ratio);
+                
+                // Restore the signature after resize
+                if (savedData) {
+                    beneficiaryPad.fromDataURL(savedData);
+                } else {
+                    beneficiaryPad.clear();
+                }
+            };
+            
+            window.addEventListener('resize', window.resize_beneficiary_signature_canvas);
+            window.resize_beneficiary_signature_canvas(); // Call once on init
+        }
+    }
+});
 </script>
 
 <?php include '../includes/footer.php'; ?> 
