@@ -13,17 +13,67 @@ if (!is_logged_in()) {
 $errors = [];
 $success = false;
 
-// Prevent duplicate application submission
+// Prevent duplicate application submission - enhanced version
+function checkDuplicateApplication($email = null, $user_id = null) {
+    global $pdo;
+    
+    // If we have an email, check by email
+    if (!empty($email)) {
+        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE email = ?");
+        $stmt->execute([$email]);
+        $result = $stmt->fetch();
+        if ($result) {
+            return [
+                'has_application' => true,
+                'status' => $result['status']
+            ];
+        }
+    }
+    
+    // If we have a user ID, check by user ID (future enhancement if you track user_id in members_information)
+    if (!empty($user_id)) {
+        // This assumes you have a user_id column in your members_information table
+        // If you don't have this column, you can remove this check or add the column
+        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE user_id = ?");
+        $stmt->execute([$user_id]);
+        $result = $stmt->fetch();
+        if ($result) {
+            return [
+                'has_application' => true,
+                'status' => $result['status']
+            ];
+        }
+    }
+    
+    // No duplicate found
+    return [
+        'has_application' => false,
+        'status' => null
+    ];
+}
+
+// Check for duplicate application
 $user = get_logged_in_user();
-if ($user && isset($user['email'])) {
-$stmtDup = $pdo->prepare("SELECT id FROM members_information WHERE email = ?");
-    $stmtDup->execute([$user['email']]);
-if ($stmtDup->fetch()) {
-include '../includes/header.php';
-    echo '<div class="message success" style="margin-top:180px;"><p>Your application is still being processed. You cannot submit another application at this time.</p></div>';
-    echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 10000);</script>';
-    include '../includes/footer.php';
-    exit;
+if ($user) {
+    $email = isset($user['email']) ? $user['email'] : null;
+    $user_id = isset($user['id']) ? $user['id'] : null;
+    
+    $application_check = checkDuplicateApplication($email, $user_id);
+    
+    if ($application_check['has_application']) {
+        include '../includes/header.php';
+        
+        $status_message = "Your application is still being processed.";
+        if ($application_check['status'] === 'approved') {
+            $status_message = "You already have an approved application.";
+        } elseif ($application_check['status'] === 'rejected') {
+            $status_message = "Your previous application was rejected. Please contact support for more information.";
+        }
+        
+        echo '<div class="message info" style="margin-top:180px;"><p>' . $status_message . ' You cannot submit another application at this time.</p></div>';
+        echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 8000);</script>';
+        include '../includes/footer.php';
+        exit;
     }
 }
 
@@ -316,7 +366,7 @@ include '../includes/header.php';
                     <input type="hidden" id="center_no" name="center_no" value="">
                     
 
-                    <div class="form-group">
+                            <div class="form-group">
                         <label>Member Classification</label>
                         <div class="checkbox-group">
                           
@@ -327,7 +377,7 @@ include '../includes/header.php';
                             <div class="checkbox-item">
                                 <input type="checkbox" id="class_tpp" name="classification[]" value="TPP">
                                 <label for="class_tpp">TPP (Borrower)</label>
-                            </div>
+                        </div>
 
                             <div class="checkbox-item">
                                 <input type="checkbox" id="class_borrower" name="classification[]" value="Kapamilya">
@@ -620,32 +670,23 @@ include '../includes/header.php';
                                 <div class="form-group">
                                     <label for="spouse_birthday">Birthday (mm/dd/yyyy)</label>
                                     <input type="text" id="spouse_birthday" name="spouse_birthday" placeholder="MM/DD/YYYY">
+                                    <!-- Age is now calculated but not displayed as a field -->
+                                    <input type="hidden" id="spouse_age" name="spouse_age">
                                 </div>
                             </div>
                         </div>
                         <div class="form-row">
-                            <div class="form-col-2">
-                                <div class="form-group">
-                                    <label for="spouse_age">Age</label>
-                                    <input type="number" id="spouse_age" name="spouse_age" min="18" max="100" readonly>
-                                </div>
-                            </div>
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_occupation">Occupation</label>
                                     <input type="text" id="spouse_occupation" name="spouse_occupation" placeholder="Enter Spouse's Occupation">
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID</label>
                                     <input type="text" id="spouse_id_number" name="spouse_id_number" placeholder="Enter Spouse's ID Number">
                                 </div>
-                            </div>
-                            <div class="form-col-2">
-                                <!-- Empty div to maintain 2-column layout -->
                             </div>
                         </div>
                      
@@ -934,6 +975,14 @@ include '../includes/header.php';
         margin-left: 5px;
     }
     
+    /* Make all text inputs uppercase */
+    input[type="text"], 
+    textarea,
+    select,
+    .phone-input-group input {
+        text-transform: uppercase;
+    }
+    
     @media (max-width: 768px) {
         .review-row {
             flex-direction: column;
@@ -958,7 +1007,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let otherValidIdActive = false;
     
     // Set default values for hidden fields
-    document.getElementById('branch').value = "Main Branch"; // Default branch value
+    document.getElementById('branch').value = null; // Set branch to null
     document.getElementById('cid_no').value = "000000"; // Default CID No
     document.getElementById('center_no').value = "000"; // Default Center No
     
@@ -969,12 +1018,46 @@ document.addEventListener('DOMContentLoaded', function() {
         blipCheckbox.onclick = function() {
             return false; // Prevent unchecking
         };
-        // Double ensure it's always submitted by adding a hidden backup field
-        const hiddenBlip = document.createElement('input');
-        hiddenBlip.type = 'hidden';
-        hiddenBlip.name = 'plans[]';
-        hiddenBlip.value = 'BLIP';
-        blipCheckbox.parentNode.appendChild(hiddenBlip);
+        // We don't need a hidden field as the checkbox will be submitted
+        // This was causing duplicate BLIP values
+    }
+    
+    // Convert all text inputs to uppercase on submit
+    const uppercaseTextInputs = () => {
+        document.querySelectorAll('input[type="text"], textarea').forEach(input => {
+            if (input.value) {
+                input.value = input.value.toUpperCase();
+            }
+        });
+        
+        // Also uppercase select values if needed
+        document.querySelectorAll('select').forEach(select => {
+            if (select.value) {
+                // Store the uppercase value for sending to server
+                const option = select.options[select.selectedIndex];
+                if (option) {
+                    option.setAttribute('data-original-value', option.value);
+                    option.value = option.value.toUpperCase();
+                }
+            }
+        });
+    };
+    
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            // Convert to uppercase before validation
+            uppercaseTextInputs();
+            
+            // Continue with existing submit logic
+            if (form.dataset.confirmed === 'true') {
+                form.dataset.confirmed = 'false';
+                return true;
+            }
+            
+            event.preventDefault(); // Prevent default submit for review
+            
+            // Rest of your existing submit handler code...
+        });
     }
     
     // Handle submit button based on disclaimer checkbox
@@ -1009,6 +1092,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-calculate spouse age from spouse birthday
     const spouseBirthdayField = document.getElementById('spouse_birthday');
     const spouseAgeField = document.getElementById('spouse_age');
+    
+    if (spouseBirthdayField && spouseAgeField) {
+        spouseBirthdayField.addEventListener('change', function() {
+            calculateAge(this.value, spouseAgeField);
+        });
+    }
     
     // Toggle visibility of spouse fields based on civil status
     const civilStatusSelect = document.getElementById('civil_status');
