@@ -11,5 +11,5 @@ if ($id && in_array($action, ['approved', 'rejected'], true)) {
     $_SESSION['message'] = "Application " . ucfirst($action) . " successfully.";
 }
 // Redirect back to admin list
-redirect('applications.php');
+redirect('/admin/applications.php');
 ?> 

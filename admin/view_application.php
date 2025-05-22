@@ -4,12 +4,12 @@ $body_class = "admin-view-application-page";
 require_once '../includes/config.php';
 require_admin_login();
 
-$id = $_GET['id'] ?? null;
-
-if (!$id) {
+// Ensure an 'id' parameter is provided (allow '0' as valid)
+if (!isset($_GET['id'])) {
     $_SESSION['message'] = "No application ID specified.";
-    redirect('applications.php');
+    redirect('/admin/applications.php');
 }
+$id = $_GET['id'];
 
 // Fetch the application details
 $stmt = $pdo->prepare("SELECT * FROM members_information WHERE id = ?");
@@ -18,7 +18,7 @@ $application = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$application) {
     $_SESSION['message'] = "Application not found.";
-    redirect('applications.php');
+    redirect('/admin/applications.php');
 }
 
 // Generate PDF logic
@@ -46,33 +46,13 @@ if (isset($_POST['generate_pdf'])) {
         <main class="admin-main">
             <?php include 'includes/header.php'; ?>
             
-            <div class="content-container">
+            <div class="content-container dashboard-container">
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>
                 <?php endif; ?>
                 
                 <div class="page-header">
                     <h1>View Membership Application</h1>
-                    <div class="action-buttons">
-                        <a href="applications.php" class="btn-secondary">Back to List</a>
-                        
-                        <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-primary">
-                            <i class="fas fa-eye"></i> Preview PDF
-                        </a>
-                        
-                        <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=download" class="btn-primary">
-                            <i class="fas fa-file-pdf"></i> Download PDF
-                        </a>
-                        
-                        <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
-                            <i class="fas fa-bug"></i> Debug PDF Grid
-                        </a>
-                        
-                        <?php if ($application['status'] === 'pending'): ?>
-                            <a href="verify_application.php?id=<?php echo $application['id']; ?>&action=approved" class="btn-success">Approve</a>
-                            <a href="verify_application.php?id=<?php echo $application['id']; ?>&action=rejected" class="btn-danger">Reject</a>
-                        <?php endif; ?>
-                    </div>
                 </div>
                 
                 <div class="application-status status-<?php echo strtolower($application['status']); ?>">
@@ -240,23 +220,8 @@ if (isset($_POST['generate_pdf'])) {
                                     <span><?php echo htmlspecialchars($application['present_address']); ?></span>
                                 </div>
                                 <div class="info-item">
-                                    <label>Barangay:</label>
-                                    <span><?php echo htmlspecialchars($application['present_barangay_text']); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <label>City/Municipality:</label>
-                                    <span><?php echo htmlspecialchars($application['present_city_text']); ?></span>
-                                </div>
-                            </div>
-                            
-                            <div class="info-group">
-                                <div class="info-item">
-                                    <label>Province:</label>
-                                    <span><?php echo htmlspecialchars($application['present_province_text']); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <label>Region:</label>
-                                    <span><?php echo htmlspecialchars($application['present_region_text']); ?></span>
+                                    <label>Barangay Code:</label>
+                                    <span><?php echo htmlspecialchars($application['present_brgy_code']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>ZIP Code:</label>
@@ -279,23 +244,8 @@ if (isset($_POST['generate_pdf'])) {
                                     <span><?php echo htmlspecialchars($application['permanent_address']); ?></span>
                                 </div>
                                 <div class="info-item">
-                                    <label>Barangay:</label>
-                                    <span><?php echo htmlspecialchars($application['permanent_barangay_text']); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <label>City/Municipality:</label>
-                                    <span><?php echo htmlspecialchars($application['permanent_city_text']); ?></span>
-                                </div>
-                            </div>
-                            
-                            <div class="info-group">
-                                <div class="info-item">
-                                    <label>Province:</label>
-                                    <span><?php echo htmlspecialchars($application['permanent_province_text']); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <label>Region:</label>
-                                    <span><?php echo htmlspecialchars($application['permanent_region_text']); ?></span>
+                                    <label>Barangay Code:</label>
+                                    <span><?php echo htmlspecialchars($application['permanent_brgy_code']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>ZIP Code:</label>
@@ -494,9 +444,9 @@ if (isset($_POST['generate_pdf'])) {
                         <h2>Signatures</h2>
                     </div>
                     <div class="admin-card-body">
-                        <div class="row">
+                        <div class="signature-container">
                             <?php if (!empty($application['member_signature'])): ?>
-                            <div class="col-md-6">
+                            <div class="signature-block">
                                 <h3>Member's Signature</h3>
                                 <div class="signature-image">
                                     <img src="<?php echo SITE_URL . '/' . $application['member_signature']; ?>" alt="Member Signature">
@@ -506,7 +456,7 @@ if (isset($_POST['generate_pdf'])) {
                             <?php endif; ?>
                             
                             <?php if (!empty($application['beneficiary_signature'])): ?>
-                            <div class="col-md-6">
+                            <div class="signature-block">
                                 <h3>Beneficiary's Signature</h3>
                                 <div class="signature-image">
                                     <img src="<?php echo SITE_URL . '/' . $application['beneficiary_signature']; ?>" alt="Beneficiary Signature">
@@ -518,7 +468,7 @@ if (isset($_POST['generate_pdf'])) {
                     </div>
                 </div>
                 
-                <div class="action-buttons-bottom">
+                <div class="action-buttons-bottom modern-buttons">
                     <a href="applications.php" class="btn-secondary">Back to List</a>
                     
                     <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-primary">
@@ -623,6 +573,22 @@ if (isset($_POST['generate_pdf'])) {
         margin-top: 20px;
         padding-top: 20px;
         border-top: 1px solid #eee;
+        justify-content: flex-end;
+    }
+    
+    /* Modern hover effects for bottom buttons */
+    .action-buttons-bottom a {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 10px 18px;
+    }
+    
+    .action-buttons-bottom a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     
     .application-status {
@@ -702,6 +668,18 @@ if (isset($_POST['generate_pdf'])) {
         border: 1px solid #ddd;
         border-radius: 4px;
         padding: 5px;
+    }
+    
+    /* Signature layout: align in row */
+    .signature-container {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .signature-block {
+        flex: 1;
+        min-width: 200px;
     }
     </style>
     

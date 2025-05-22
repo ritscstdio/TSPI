@@ -51,7 +51,10 @@ if (!$conn) {
 
 // Helper functions
 function redirect($path) {
-    header("Location: " . SITE_URL . $path);
+    // Normalize base URL and path to ensure a single slash between
+    $base = rtrim(SITE_URL, '/');
+    $path = '/' . ltrim($path, '/');
+    header("Location: " . $base . $path);
     exit;
 }
 

@@ -10,15 +10,14 @@
 require_once '../includes/config.php';
 require_admin_login();
 
-// Check if an ID was provided
-$id = $_GET['id'] ?? null;
+// Ensure an 'id' parameter is provided (allow '0' as valid)
+if (!isset($_GET['id'])) {
+    $_SESSION['message'] = "No application ID specified.";
+    redirect('/admin/applications.php');
+}
+$id = $_GET['id'];
 $mode = $_GET['mode'] ?? 'preview'; // Default to preview mode instead of download
 $debug = isset($_GET['debug']) ? true : false; // Debug mode to show coordinate grid
-
-if (!$id) {
-    $_SESSION['message'] = "No application ID specified.";
-    redirect('applications.php');
-}
 
 // Fetch the application details
 $stmt = $pdo->prepare("SELECT * FROM members_information WHERE id = ?");
@@ -27,7 +26,7 @@ $application = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$application) {
     $_SESSION['message'] = "Application not found.";
-    redirect('applications.php');
+    redirect('/admin/applications.php');
 }
 
 // Include TCPDF and FPDI
@@ -282,8 +281,8 @@ if (!file_exists($template_file)) {
                 $pdf->Write(0, $application['primary_business']);
 
                 // Business Address
-                $pdf->SetFont('helvetica', '', 5); // Set smaller font size using helvetica
-                $pdf->SetXY(131, 107.5); 
+                $pdf->SetFont('helvetica', '', 8); // Set smaller font size using helvetica
+                $pdf->SetXY(131, 106.8); 
                 $pdf->Write(0, $application['business_address'] ?: 'N/A');
                 
                 // Years in Business
@@ -294,21 +293,21 @@ if (!file_exists($template_file)) {
                 // Other Income Sources (if any)
                 if (!empty($application["other_income_source_1"])) {
                     $pdf->SetXY(43.7, 110.5);
-                    $pdf->Write(0, 'debugging'. $application["other_income_source_1"]);
+                    $pdf->Write(0, $application["other_income_source_1"]);
                 }
                 
                 if (!empty($application["other_income_source_2"])) {
                     $pdf->SetXY(94.2, 110.5);
-                    $pdf->Write(0, 'debugging'. $application["other_income_source_2"]);
+                    $pdf->Write(0, $application["other_income_source_2"]);
                 }
                 
                 if (!empty($application["other_income_source_3"])) {
                     $pdf->SetXY(134, 110.5);
-                    $pdf->Write(0, 'debugging'. $application["other_income_source_3"]);
+                    $pdf->Write(0, $application["other_income_source_3"]);
                 }
                 if (!empty($application["other_income_source_4"])) {
                     $pdf->SetXY(171, 110.5);
-                    $pdf->Write(0, 'debugging'. $application["other_income_source_4"]);
+                    $pdf->Write(0, $application["other_income_source_4"]);
                 }
 
                 // Spouse Information (if married)
