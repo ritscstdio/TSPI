@@ -2,8 +2,7 @@
 $page_title = "Add Category";
 $body_class = "admin-add-category-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'] ?? '';

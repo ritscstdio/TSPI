@@ -23,325 +23,8 @@ if (!$application) {
 
 // Generate PDF logic
 if (isset($_POST['generate_pdf'])) {
-    require_once '../vendor/autoload.php'; // Make sure TCPDF is installed
-    
-    // Create new PDF document
-    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-    
-    // Set document information
-    $pdf->SetCreator('TSPI CMS');
-    $pdf->SetAuthor('TSPI Admin');
-    $pdf->SetTitle('Membership Application - ' . $application['first_name'] . ' ' . $application['last_name']);
-    $pdf->SetSubject('Membership Application');
-    
-    // Remove header/footer
-    $pdf->setPrintHeader(false);
-    $pdf->setPrintFooter(false);
-    
-    // Add a page
-    $pdf->AddPage();
-    
-    // Set font
-    $pdf->SetFont('helvetica', '', 12);
-    
-    // Title
-    $pdf->SetFont('helvetica', 'B', 16);
-    $pdf->Cell(0, 10, 'TSPI Membership Application Form', 0, 1, 'C');
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->Ln(5);
-    
-    // Application ID and Date
-    $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->Cell(0, 10, 'Application #' . $application['id'] . ' - Submitted: ' . $application['created_at'], 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->Ln(5);
-    
-    // Basic Information
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Personal Information', 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    // Convert JSON data to arrays
-    $plans = $application['plans'] ? json_decode($application['plans'], true) : [];
-    $classification = $application['classification'] ? json_decode($application['classification'], true) : [];
-    
-    // Personal Information Table
-    $pdf->SetFillColor(240, 240, 240);
-    
-    // Function to add a row to the PDF
-    function addRow($pdf, $label, $value, $fill = false) {
-        $pdf->Cell(60, 10, $label, 1, 0, 'L', $fill);
-        $pdf->Cell(130, 10, $value, 1, 1, 'L', $fill);
-    }
-    
-    // Branch & ID Information
-    addRow($pdf, 'Branch', $application['branch'], true);
-    addRow($pdf, 'CID No.', $application['cid_no']);
-    addRow($pdf, 'Center No.', $application['center_no'] ?: 'N/A', true);
-    
-    // Plans and Classification
-    addRow($pdf, 'Plans', implode(', ', $plans));
-    addRow($pdf, 'Classification', implode(', ', $classification), true);
-    
-    // Basic Personal Information
-    addRow($pdf, 'Name', $application['first_name'] . ' ' . $application['middle_name'] . ' ' . $application['last_name']);
-    addRow($pdf, 'Gender', $application['gender'], true);
-    addRow($pdf, 'Civil Status', $application['civil_status']);
-    addRow($pdf, 'Birth Date', date('F j, Y', strtotime($application['birthdate'])), true);
-    addRow($pdf, 'Age', $application['age']);
-    addRow($pdf, 'Birth Place', $application['birth_place'], true);
-    addRow($pdf, 'Email', $application['email']);
-    addRow($pdf, 'Phone', '+63' . $application['cell_phone'], true);
-    addRow($pdf, 'Telephone', $application['contact_no'] ?: 'N/A');
-    addRow($pdf, 'Nationality', $application['nationality'], true);
-    addRow($pdf, 'ID Number', $application['id_number']);
-    
-    // Mother's Maiden Name
-    $pdf->Ln(5);
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, "Mother's Maiden Name", 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    addRow($pdf, 'Last Name', $application['mothers_maiden_last_name'], true);
-    addRow($pdf, 'First Name', $application['mothers_maiden_first_name']);
-    addRow($pdf, 'Middle Name', $application['mothers_maiden_middle_name'] ?: 'N/A', true);
-    
-    // Add a new page for addresses and other information
-    $pdf->AddPage();
-    
-    // Present Address
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Present Address', 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    $presentAddress = $application['present_address'] . ', ' . 
-                      $application['present_barangay_text'] . ', ' . 
-                      $application['present_city_text'] . ', ' . 
-                      $application['present_province_text'] . ', ' . 
-                      $application['present_region_text'];
-    
-    addRow($pdf, 'Complete Address', $presentAddress, true);
-    addRow($pdf, 'ZIP Code', $application['present_zip_code']);
-    
-    // Permanent Address
-    $pdf->Ln(5);
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Permanent Address', 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    $permanentAddress = $application['permanent_address'] . ', ' . 
-                       $application['permanent_barangay_text'] . ', ' . 
-                       $application['permanent_city_text'] . ', ' . 
-                       $application['permanent_province_text'] . ', ' . 
-                       $application['permanent_region_text'];
-    
-    addRow($pdf, 'Complete Address', $permanentAddress, true);
-    addRow($pdf, 'ZIP Code', $application['permanent_zip_code']);
-    
-    // Home Ownership
-    $pdf->Ln(5);
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Home Ownership', 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    addRow($pdf, 'Home Ownership', $application['home_ownership'], true);
-    addRow($pdf, 'Length of Stay', $application['length_of_stay'] . ' year(s)');
-    
-    // Business Information
-    $pdf->Ln(5);
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Business Information', 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    addRow($pdf, 'Primary Business', $application['primary_business'], true);
-    addRow($pdf, 'Years in Business', $application['years_in_business'] . ' year(s)');
-    addRow($pdf, 'Business Address', $application['business_address'], true);
-    
-    // Other Income Sources
-    if (!empty($application['other_income_source_1']) || 
-        !empty($application['other_income_source_2']) || 
-        !empty($application['other_income_source_3']) || 
-        !empty($application['other_income_source_4'])) {
-        
-        $pdf->Ln(5);
-        $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(0, 10, 'Other Income Sources', 0, 1);
-        $pdf->SetFont('helvetica', '', 12);
-        
-        if (!empty($application['other_income_source_1'])) {
-            addRow($pdf, 'Income Source 1', $application['other_income_source_1'], true);
-        }
-        if (!empty($application['other_income_source_2'])) {
-            addRow($pdf, 'Income Source 2', $application['other_income_source_2']);
-        }
-        if (!empty($application['other_income_source_3'])) {
-            addRow($pdf, 'Income Source 3', $application['other_income_source_3'], true);
-        }
-        if (!empty($application['other_income_source_4'])) {
-            addRow($pdf, 'Income Source 4', $application['other_income_source_4']);
-        }
-    }
-    
-    // Add another page for beneficiaries and spouse information
-    $pdf->AddPage();
-    
-    // Spouse Information (if married)
-    if ($application['civil_status'] === 'Married' && !empty($application['spouse_name'])) {
-        $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(0, 10, 'Spouse Information', 0, 1);
-        $pdf->SetFont('helvetica', '', 12);
-        
-        addRow($pdf, 'Spouse Name', $application['spouse_name'], true);
-        if (!empty($application['spouse_birthdate'])) {
-            addRow($pdf, 'Birth Date', date('F j, Y', strtotime($application['spouse_birthdate'])));
-        }
-        if (!empty($application['spouse_occupation'])) {
-            addRow($pdf, 'Occupation', $application['spouse_occupation'], true);
-        }
-        if (!empty($application['spouse_id_number'])) {
-            addRow($pdf, 'ID Number', $application['spouse_id_number']);
-        }
-        
-        $pdf->Ln(5);
-    }
-    
-    // Beneficiaries
-    $pdf->SetFont('helvetica', 'B', 14);
-    $pdf->Cell(0, 10, 'Beneficiaries', 0, 1);
-    $pdf->SetFont('helvetica', '', 12);
-    
-    // Table header for beneficiaries
-    $pdf->SetFillColor(220, 220, 220);
-    $pdf->Cell(60, 10, 'Name', 1, 0, 'C', true);
-    $pdf->Cell(25, 10, 'Birthdate', 1, 0, 'C', true);
-    $pdf->Cell(15, 10, 'Gender', 1, 0, 'C', true);
-    $pdf->Cell(50, 10, 'Relationship', 1, 0, 'C', true);
-    $pdf->Cell(40, 10, 'Dependent', 1, 1, 'C', true);
-    
-    // Reset fill color
-    $pdf->SetFillColor(240, 240, 240);
-    
-    // Function to add a beneficiary row
-    function addBeneficiaryRow($pdf, $firstName, $lastName, $mi, $birthdate, $gender, $relationship, $dependent, $fill = false) {
-        if (empty($firstName) && empty($lastName)) return;
-        
-        $name = $firstName . ' ' . ($mi ? $mi . '. ' : '') . $lastName;
-        $birthdate = $birthdate ? date('m/d/Y', strtotime($birthdate)) : 'N/A';
-        
-        $pdf->Cell(60, 10, $name, 1, 0, 'L', $fill);
-        $pdf->Cell(25, 10, $birthdate, 1, 0, 'C', $fill);
-        $pdf->Cell(15, 10, $gender ?: 'N/A', 1, 0, 'C', $fill);
-        $pdf->Cell(50, 10, $relationship ?: 'N/A', 1, 0, 'L', $fill);
-        $pdf->Cell(40, 10, $dependent ? 'Yes' : 'No', 1, 1, 'C', $fill);
-    }
-    
-    // Add beneficiary rows
-    addBeneficiaryRow(
-        $pdf, 
-        $application['beneficiary_fn_1'], 
-        $application['beneficiary_ln_1'], 
-        $application['beneficiary_mi_1'], 
-        $application['beneficiary_birthdate_1'], 
-        $application['beneficiary_gender_1'], 
-        $application['beneficiary_relationship_1'], 
-        $application['beneficiary_dependent_1'], 
-        true
-    );
-    
-    addBeneficiaryRow(
-        $pdf, 
-        $application['beneficiary_fn_2'], 
-        $application['beneficiary_ln_2'], 
-        $application['beneficiary_mi_2'], 
-        $application['beneficiary_birthdate_2'], 
-        $application['beneficiary_gender_2'], 
-        $application['beneficiary_relationship_2'], 
-        $application['beneficiary_dependent_2']
-    );
-    
-    addBeneficiaryRow(
-        $pdf, 
-        $application['beneficiary_fn_3'], 
-        $application['beneficiary_ln_3'], 
-        $application['beneficiary_mi_3'], 
-        $application['beneficiary_birthdate_3'], 
-        $application['beneficiary_gender_3'], 
-        $application['beneficiary_relationship_3'], 
-        $application['beneficiary_dependent_3'], 
-        true
-    );
-    
-    addBeneficiaryRow(
-        $pdf, 
-        $application['beneficiary_fn_4'], 
-        $application['beneficiary_ln_4'], 
-        $application['beneficiary_mi_4'], 
-        $application['beneficiary_birthdate_4'], 
-        $application['beneficiary_gender_4'], 
-        $application['beneficiary_relationship_4'], 
-        $application['beneficiary_dependent_4']
-    );
-    
-    // Trustee Information
-    if (!empty($application['trustee_name'])) {
-        $pdf->Ln(5);
-        $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(0, 10, 'Trustee Information', 0, 1);
-        $pdf->SetFont('helvetica', '', 12);
-        
-        addRow($pdf, 'Trustee Name', $application['trustee_name'], true);
-        if (!empty($application['trustee_birthdate'])) {
-            addRow($pdf, 'Birth Date', date('F j, Y', strtotime($application['trustee_birthdate'])));
-        }
-        if (!empty($application['trustee_relationship'])) {
-            addRow($pdf, 'Relationship', $application['trustee_relationship'], true);
-        }
-    }
-    
-    // Add a final page for signatures if they exist
-    if (!empty($application['member_signature']) || !empty($application['beneficiary_signature'])) {
-        $pdf->AddPage();
-        
-        $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(0, 10, 'Signatures', 0, 1);
-        $pdf->SetFont('helvetica', '', 12);
-        
-        if (!empty($application['member_signature'])) {
-            $pdf->Cell(0, 10, "Member's Signature:", 0, 1);
-            // Add member signature image
-            if (file_exists("../" . $application['member_signature'])) {
-                $pdf->Image("../" . $application['member_signature'], 15, $pdf->GetY(), 80, 0, 'PNG');
-                $pdf->Ln(30); // Add space after the signature
-            } else {
-                $pdf->Cell(0, 10, "[Signature file not found]", 0, 1);
-            }
-            
-            $pdf->Cell(0, 10, "Member Name: " . $application['member_name'], 0, 1);
-            $pdf->Ln(5);
-        }
-        
-        if (!empty($application['beneficiary_signature'])) {
-            $pdf->Cell(0, 10, "Beneficiary's Signature:", 0, 1);
-            // Add beneficiary signature image
-            if (file_exists("../" . $application['beneficiary_signature'])) {
-                $pdf->Image("../" . $application['beneficiary_signature'], 15, $pdf->GetY(), 80, 0, 'PNG');
-                $pdf->Ln(30); // Add space after the signature
-            } else {
-                $pdf->Cell(0, 10, "[Signature file not found]", 0, 1);
-            }
-            
-            $pdf->Cell(0, 10, "Beneficiary Name: " . $application['sig_beneficiary_name'], 0, 1);
-        }
-    }
-    
-    // Status information
-    $pdf->Ln(10);
-    $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->Cell(0, 10, 'Application Status: ' . ucfirst($application['status']), 0, 1);
-    
-    // Output the PDF
-    $filename = 'TSPI_Membership_' . $application['id'] . '_' . str_replace(' ', '_', $application['last_name']) . '.pdf';
-    $pdf->Output($filename, 'D'); // 'D' means download
+    // Use direct HTTP header for redirect to ensure correct path
+    header("Location: generate_application_pdf.php?id=" . $application['id']);
     exit;
 }
 ?>
@@ -373,11 +56,17 @@ if (isset($_POST['generate_pdf'])) {
                     <div class="action-buttons">
                         <a href="applications.php" class="btn-secondary">Back to List</a>
                         
-                        <form method="post" style="display: inline-block;">
-                            <button type="submit" name="generate_pdf" class="btn-primary">
-                                <i class="fas fa-file-pdf"></i> Generate PDF
-                            </button>
-                        </form>
+                        <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-primary">
+                            <i class="fas fa-eye"></i> Preview PDF
+                        </a>
+                        
+                        <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=download" class="btn-primary">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </a>
+                        
+                        <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
+                            <i class="fas fa-bug"></i> Debug PDF Grid
+                        </a>
                         
                         <?php if ($application['status'] === 'pending'): ?>
                             <a href="verify_application.php?id=<?php echo $application['id']; ?>&action=approved" class="btn-success">Approve</a>
@@ -832,11 +521,17 @@ if (isset($_POST['generate_pdf'])) {
                 <div class="action-buttons-bottom">
                     <a href="applications.php" class="btn-secondary">Back to List</a>
                     
-                    <form method="post" style="display: inline-block;">
-                        <button type="submit" name="generate_pdf" class="btn-primary">
-                            <i class="fas fa-file-pdf"></i> Generate PDF
-                        </button>
-                    </form>
+                    <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-primary">
+                        <i class="fas fa-eye"></i> Preview PDF
+                    </a>
+                    
+                    <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=download" class="btn-primary">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </a>
+                    
+                    <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
+                        <i class="fas fa-bug"></i> Debug PDF Grid
+                    </a>
                     
                     <?php if ($application['status'] === 'pending'): ?>
                         <a href="verify_application.php?id=<?php echo $application['id']; ?>&action=approved" class="btn-success">Approve</a>
@@ -981,6 +676,15 @@ if (isset($_POST['generate_pdf'])) {
     
     .btn-danger {
         background-color: #dc3545;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-info {
+        background-color: #17a2b8;
         color: #fff;
         padding: 8px 16px;
         border-radius: 4px;

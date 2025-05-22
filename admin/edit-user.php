@@ -2,8 +2,7 @@
 $page_title = "Edit User";
 $body_class = "admin-edit-user-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin']);
+require_admin_login();
 
 // Available roles
 $available_roles = ['admin' => 'Admin', 'editor' => 'Editor', 'comment_moderator' => 'Comment Moderator'];
@@ -13,11 +12,11 @@ $user_id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 if (!$user_id) redirect('/admin/users.php');
 
 // Fetch user
-$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt = $pdo->prepare("SELECT * FROM administrators WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 if (!$user) {
-    $_SESSION['message'] = "User not found.";
+    $_SESSION['message'] = "Administrator not found.";
     redirect('/admin/users.php');
 }
 
@@ -36,11 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!array_key_exists($role, $available_roles)) $errors[] = "Please select a valid role.";
 
     // Check unique username/email
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? AND id != ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM administrators WHERE username = ? AND id != ?");
     $stmt->execute([$username, $user_id]);
     if ($stmt->fetchColumn() > 0) $errors[] = "Username already exists.";
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ? AND id != ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM administrators WHERE email = ? AND id != ?");
     $stmt->execute([$email, $user_id]);
     if ($stmt->fetchColumn() > 0) $errors[] = "Email already exists.";
 
@@ -48,13 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Update fields
         if ($password) {
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("UPDATE users SET username = ?, password = ?, name = ?, email = ?, role = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE administrators SET username = ?, password = ?, name = ?, email = ?, role = ? WHERE id = ?");
             $stmt->execute([$username, $password_hash, $name, $email, $role, $user_id]);
         } else {
-            $stmt = $pdo->prepare("UPDATE users SET username = ?, name = ?, email = ?, role = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE administrators SET username = ?, name = ?, email = ?, role = ? WHERE id = ?");
             $stmt->execute([$username, $name, $email, $role, $user_id]);
         }
-        $_SESSION['message'] = "User updated successfully.";
+        $_SESSION['message'] = "Administrator updated successfully.";
         redirect('/admin/users.php');
     }
 }

@@ -2,8 +2,7 @@
 $page_title = "Edit Media";
 $body_class = "admin-edit-media-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
 $id = $_GET['id'] ?? null;
 if (!$id) redirect('/admin/media.php');

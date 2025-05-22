@@ -73,7 +73,7 @@ function sanitize($input) {
 function get_logged_in_user() {  // RENAMED FUNCTION from get_current_user to get_logged_in_user
     global $pdo;
     if (isset($_SESSION['user_id'])) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT * FROM administrators WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         return $stmt->fetch();
     }
@@ -115,6 +115,24 @@ function require_role($allowed_roles) {
     $user = get_logged_in_user();
     $roles = (array) $allowed_roles;
     if (!$user || !in_array($user['role'], $roles)) {
+        $_SESSION['message'] = "You do not have permission to access that page.";
+        redirect('/admin/index.php');
+    }
+}
+
+/**
+ * Require specific admin role to access a page
+ * 
+ * @param string|array $allowed_roles One or more roles that are allowed to access
+ */
+function require_admin_role($allowed_roles) {
+    // Ensure admin is logged in first
+    if (!is_admin_logged_in()) {
+        require_admin_login();
+    }
+    $admin = get_admin_user();
+    $roles = (array) $allowed_roles;
+    if (!$admin || !in_array($admin['role'], $roles)) {
         $_SESSION['message'] = "You do not have permission to access that page.";
         redirect('/admin/index.php');
     }

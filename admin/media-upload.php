@@ -1,7 +1,6 @@
 <?php
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
 header('Content-Type: application/json');
 
@@ -46,7 +45,7 @@ if (!move_uploaded_file($file['tmp_name'], $target_file)) {
 
 $file_path = 'uploads/media/' . $filename;
 $stmt = $pdo->prepare("INSERT INTO media (file_path, mime_type, uploaded_by) VALUES (?, ?, ?)");
-$stmt->execute([$file_path, $mime_type, get_logged_in_user()['id']]);
+$stmt->execute([$file_path, $mime_type, get_admin_user()['id']]);
 
 $url = SITE_URL . '/' . $file_path;
 

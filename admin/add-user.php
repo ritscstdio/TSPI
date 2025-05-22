@@ -2,8 +2,7 @@
 $page_title = "Add User";
 $body_class = "admin-add-user-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin']);
+require_admin_login();
 
 // Define available roles
 $available_roles = ['admin' => 'Admin', 'editor' => 'Editor', 'comment_moderator' => 'Comment Moderator'];
@@ -23,19 +22,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!array_key_exists($role, $available_roles)) $errors[] = "Please select a valid role.";
 
     // Unique checks
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM administrators WHERE username = ?");
     $stmt->execute([$username]);
     if ($stmt->fetchColumn() > 0) $errors[] = "Username already exists.";
 
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM administrators WHERE email = ?");
     $stmt->execute([$email]);
     if ($stmt->fetchColumn() > 0) $errors[] = "Email already exists.";
 
     if (empty($errors)) {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, password, name, email, role) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO administrators (username, password, name, email, role) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$username, $password_hash, $name, $email, $role]);
-        $_SESSION['message'] = "User created successfully.";
+        $_SESSION['message'] = "Administrator created successfully.";
         redirect('/admin/users.php');
     }
 }

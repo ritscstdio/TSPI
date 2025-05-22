@@ -1,7 +1,6 @@
 <?php
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor','comment_moderator']);
+require_admin_login();
 
 // Get parameters
 $comment_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;

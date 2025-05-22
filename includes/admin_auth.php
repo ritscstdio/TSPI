@@ -7,7 +7,16 @@
  * @return bool True if logged in as admin, false otherwise
  */
 function is_admin_logged_in() {
-    return isset($_SESSION['admin_id']);
+    global $pdo;
+    
+    if (!isset($_SESSION['admin_id'])) {
+        return false;
+    }
+    
+    // Verify the admin exists in the administrators table
+    $stmt = $pdo->prepare("SELECT id FROM administrators WHERE id = ?");
+    $stmt->execute([$_SESSION['admin_id']]);
+    return $stmt->fetch() ? true : false;
 }
 
 /**

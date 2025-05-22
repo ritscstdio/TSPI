@@ -1447,7 +1447,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
         const signaturePad = new SignaturePad(canvas, {
-            backgroundColor: 'rgb(255, 255, 255)',
+            backgroundColor: 'rgb(0, 0, 0, 0)',
             penColor: 'rgb(0, 0, 0)',
             minWidth: 0.5,
             maxWidth: 2.5

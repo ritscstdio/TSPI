@@ -2,12 +2,11 @@
 $page_title = "Media Library";
 $body_class = "admin-media-library-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
-$current_user = get_logged_in_user();
+$current_user = get_admin_user();
 
-$stmt = $pdo->query("SELECT m.*, u.name as uploader_name FROM media m JOIN users u ON m.uploaded_by = u.id ORDER BY m.uploaded_at DESC");
+$stmt = $pdo->query("SELECT m.*, u.name as uploader_name FROM media m JOIN administrators u ON m.uploaded_by = u.id ORDER BY m.uploaded_at DESC");
 $media_items = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>

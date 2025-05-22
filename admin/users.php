@@ -2,25 +2,24 @@
 $page_title = "Users";
 $body_class = "admin-users-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin']);
+require_admin_login();
 
 // Delete user if requested
 if (isset($_GET['delete'])) {
     $user_id = (int)$_GET['delete'];
     // Prevent deleting yourself
-    if ($user_id === $_SESSION['user_id']) {
+    if ($user_id === $_SESSION['admin_id']) {
         $_SESSION['message'] = "You cannot delete your own account.";
     } else {
-        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("DELETE FROM administrators WHERE id = ?");
         $stmt->execute([$user_id]);
-        $_SESSION['message'] = "User deleted successfully.";
+        $_SESSION['message'] = "Administrator deleted successfully.";
     }
     redirect('/admin/users.php');
 }
 
 // Fetch all users
-$stmt = $pdo->query("SELECT id, username, name, email, role, created_at FROM users ORDER BY created_at DESC");
+$stmt = $pdo->query("SELECT id, username, name, email, role, created_at FROM administrators ORDER BY created_at DESC");
 $users = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>

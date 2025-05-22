@@ -12,13 +12,13 @@ $stmt = $pdo->query("SELECT
                     (SELECT COUNT(*) FROM content WHERE status = 'archived') as archived_contents,
                     (SELECT COUNT(*) FROM comments) as total_comments,
                     (SELECT COUNT(*) FROM comments WHERE status = 'pending') as pending_comments,
-                    (SELECT COUNT(*) FROM users) as total_users");
+                    (SELECT COUNT(*) FROM administrators) as total_users");
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Recent contents
 $stmt = $pdo->query("SELECT a.*, u.name as author_name, u.email as author_email, u.role as author_role 
                       FROM content a 
-                      JOIN users u ON a.author_id = u.id 
+                      JOIN administrators u ON a.author_id = u.id 
                       ORDER BY a.published_at DESC
                       LIMIT 5");
 $recent_contents = $stmt->fetchAll();

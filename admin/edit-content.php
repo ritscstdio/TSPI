@@ -2,10 +2,9 @@
 $page_title = "Edit Content";
 $body_class = "admin-edit-content-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
-$current_user = get_logged_in_user();
+$current_user = get_admin_user();
 
 // Get content ID
 $content_id = isset($_GET['id']) ? (int)$_GET['id'] : null;

@@ -2,10 +2,9 @@
 $page_title = "Add content";
 $body_class = "admin-add-content-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
-$current_user = get_logged_in_user();
+$current_user = get_admin_user();
 
 // Get all categories
 $stmt = $pdo->query("SELECT * FROM categories ORDER BY name");

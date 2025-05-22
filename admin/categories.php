@@ -2,8 +2,7 @@
 $page_title = "Categories";
 $body_class = "admin-categories-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
 // Fetch categories
 $stmt = $pdo->query("SELECT c.*, COUNT(ac.content_id) AS content_count FROM categories c LEFT JOIN content_categories ac ON c.id = ac.category_id GROUP BY c.id ORDER BY c.name");

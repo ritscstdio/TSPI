@@ -2,8 +2,7 @@
 $page_title = "Content";
 $body_class = "admin-content-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
 // Delete content if requested
 if (isset($_GET['delete'])) {
@@ -119,7 +118,7 @@ $total_contents = $stmt->fetchColumn();
 $total_pages = ceil($total_contents / $items_per_page);
 
 // Get contents for current page
-$contents_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role FROM content a JOIN users u ON a.author_id = u.id";
+$contents_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role FROM content a JOIN administrators u ON a.author_id = u.id";
 if ($filter_category) {
     $contents_sql .= " JOIN content_categories ac ON a.id = ac.content_id";
 }

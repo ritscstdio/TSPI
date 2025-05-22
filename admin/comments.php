@@ -2,8 +2,7 @@
 $page_title = "Comments";
 $body_class = "admin-comments-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor','comment_moderator']);
+require_admin_login();
 
 // Define status filter options
 $status_filter_options = [

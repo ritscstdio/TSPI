@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$username || !$password) {
         $_SESSION['message'] = "Username and password are required";
     } else {
+        // Explicitly use the administrators table
         $stmt = $pdo->prepare("SELECT * FROM administrators WHERE username = ?");
         $stmt->execute([$username]);
         $admin = $stmt->fetch();

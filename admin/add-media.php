@@ -2,10 +2,9 @@
 $page_title = "Upload Media";
 $body_class = "admin-upload-media-page";
 require_once '../includes/config.php';
-require_login();
-require_role(['admin','editor']);
+require_admin_login();
 
-$current_user = get_logged_in_user();
+$current_user = get_admin_user();
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

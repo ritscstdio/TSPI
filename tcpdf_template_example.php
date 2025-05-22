@@ -91,7 +91,7 @@ function generatePDFWithTemplateImport($application) {
                 // First page specific content
                 if ($pageNo == 1) {
                     // ID - positioned at top right
-                    $pdf->SetXY(150, 20);
+                    $pdf->SetXY(21, 27);
                     $pdf->Write(0, 'ID: ' . $application['id']);
                     
                     // Name - using Y positions based on the form layout
