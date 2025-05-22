@@ -310,36 +310,28 @@ include '../includes/header.php';
                 <div class="form-page-content active" id="form-page-1">
                     <h2>Personal Information</h2>
                     
-                    <div class="form-row">
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="branch">Branch</label>
-                                <select id="branch" name="branch" required>
-                                    <option value="" disabled selected>Select Branch</option>
-                                    <?php
-                                    // Fetch branches from the database
-                                    $branch_query = "SELECT id, branch FROM branches ORDER BY branch";
-                                    $branch_result = mysqli_query($conn, $branch_query);
-                                    
-                                    if ($branch_result && mysqli_num_rows($branch_result) > 0) {
-                                        while ($branch_row = mysqli_fetch_assoc($branch_result)) {
-                                            echo '<option value="' . $branch_row['branch'] . '">' . $branch_row['branch'] . '</option>';
-                                        }
-                                    }
-                                    ?>
-                                </select>
+                    <!-- Removed visible inputs for branch, CID no, and center no, but keeping hidden fields for SQL -->
+                    <input type="hidden" id="branch" name="branch" value="">
+                    <input type="hidden" id="cid_no" name="cid_no" value="">
+                    <input type="hidden" id="center_no" name="center_no" value="">
+                    
+
+                    <div class="form-group">
+                        <label>Member Classification</label>
+                        <div class="checkbox-group">
+                          
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="class_tkp" name="classification[]" value="TKP">
+                                <label for="class_tkp">TKP (Borrower) </label>
                             </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="cid_no">CID No.</label>
-                                <input type="text" id="cid_no" name="cid_no" required pattern="[0-9]*" inputmode="numeric" placeholder="Enter Client ID Number">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="class_tpp" name="classification[]" value="TPP">
+                                <label for="class_tpp">TPP (Borrower)</label>
                             </div>
-                        </div>
-                        <div class="form-col-3">
-                            <div class="form-group">
-                                <label for="center_no">Center No. (for fillers)</label>
-                                <input type="text" id="center_no" name="center_no" placeholder="Enter Center Number">
+
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="class_borrower" name="classification[]" value="Kapamilya">
+                                <label for="class_borrower">Kapamilya</label>
                             </div>
                         </div>
                     </div>
@@ -348,8 +340,8 @@ include '../includes/header.php';
                         <label>Available Plans</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP">
-                                <label for="plan_blip">Basic Life (BLIP)</label>
+                                <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" checked onclick="return false;">
+                                <label for="plan_blip">Basic Life (BLIP) <span class="required-plan">(Required)</span></label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP">
@@ -358,44 +350,6 @@ include '../includes/header.php';
                             <div class="checkbox-item">
                                 <input type="checkbox" id="plan_lmip" name="plans[]" value="LMIP">
                                 <label for="plan_lmip">Life Max (LMIP)</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="plan_clip" name="plans[]" value="CLIP">
-                                <label for="plan_clip">Credit Life (CLIP)</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="plan_mri" name="plans[]" value="MRI">
-                                <label for="plan_mri">Mortgage Redemption (MRI)</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="plan_glip" name="plans[]" value="GLIP">
-                                <label for="plan_glip">Golden Life (GLIP)</label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Member Classification</label>
-                        <div class="checkbox-group">
-                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_borrower" name="classification[]" value="Borrower">
-                                <label for="class_borrower">Borrower</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="class_tkp" name="classification[]" value="TKP Kapamilya">
-                                <label for="class_tkp">TKP Kapamilya</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="class_tmp" name="classification[]" value="TMP">
-                                <label for="class_tmp">TMP</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="class_tpp" name="classification[]" value="TPP">
-                                <label for="class_tpp">TPP</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="class_og" name="classification[]" value="OG">
-                                <label for="class_og">OG</label>
                             </div>
                         </div>
                     </div>
@@ -968,6 +922,18 @@ include '../includes/header.php';
         margin-top: 5px;
     }
     
+    /* Plan section styles - simplified */
+    .available-plans-group .checkbox-group {
+        padding-left: 10px;
+    }
+    
+    .required-plan {
+        color: #e74c3c;
+        font-size: 0.85em;
+        font-weight: 600;
+        margin-left: 5px;
+    }
+    
     @media (max-width: 768px) {
         .review-row {
             flex-direction: column;
@@ -990,6 +956,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxBeneficiaryRows = 5; // Maximum number of beneficiary rows
     let incomeSourceCount = 0;
     let otherValidIdActive = false;
+    
+    // Set default values for hidden fields
+    document.getElementById('branch').value = "Main Branch"; // Default branch value
+    document.getElementById('cid_no').value = "000000"; // Default CID No
+    document.getElementById('center_no').value = "000"; // Default Center No
+    
+    // Ensure BLIP is checked and cannot be unchecked
+    const blipCheckbox = document.getElementById('plan_blip');
+    if (blipCheckbox) {
+        blipCheckbox.checked = true;
+        blipCheckbox.onclick = function() {
+            return false; // Prevent unchecking
+        };
+        // Double ensure it's always submitted by adding a hidden backup field
+        const hiddenBlip = document.createElement('input');
+        hiddenBlip.type = 'hidden';
+        hiddenBlip.name = 'plans[]';
+        hiddenBlip.value = 'BLIP';
+        blipCheckbox.parentNode.appendChild(hiddenBlip);
+    }
     
     // Handle submit button based on disclaimer checkbox
     if (submitButton && disclaimerCheckbox) {
@@ -1059,6 +1045,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!activePage) return true;
         const inputs = activePage.querySelectorAll('input[required], select[required], textarea[required]');
         inputs.forEach(input => {
+            // Skip hidden fields with default values 
+            if (input.type === 'hidden') return;
+            
             const val = input.value.trim();
             if ((input.type === 'checkbox' || input.type === 'radio')) {
                 if (!document.querySelector(`input[name="${input.name}"]:checked`)) {
@@ -1074,11 +1063,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (activePage.id === 'form-page-1') {
-            const planChecked = document.querySelectorAll('input[name="plans[]"]:checked');
-            if (planChecked.length === 0) {
-                isValid = false;
-                invalidElements.push(document.getElementById('plan_blip'));
-            }
+            // BLIP is now mandatory and checked by default, so no need to check this
+            // const planChecked = document.querySelectorAll('input[name="plans[]"]:checked');
+            // if (planChecked.length === 0) {
+            //     isValid = false;
+            //     invalidElements.push(document.getElementById('plan_blip'));
+            // }
             const classChecked = document.querySelectorAll('input[name="classification[]"]:checked');
             if (classChecked.length === 0) {
                 isValid = false;
@@ -1232,11 +1222,12 @@ document.addEventListener('DOMContentLoaded', function() {
         personalSection.className = 'review-section';
         personalSection.innerHTML = '<h3>Personal Information</h3>';
         
-        addReviewRow(personalSection, 'Branch', document.getElementById('branch').value);
-        addReviewRow(personalSection, 'CID No.', document.getElementById('cid_no').value);
-        addReviewRow(personalSection, 'Center No.', document.getElementById('center_no').value);
+        // Don't show hidden fields in the review
+        // addReviewRow(personalSection, 'Branch', document.getElementById('branch').value);
+        // addReviewRow(personalSection, 'CID No.', document.getElementById('cid_no').value);
+        // addReviewRow(personalSection, 'Center No.', document.getElementById('center_no').value);
         
-        // Get selected plans
+        // Get selected plans (simplified without categories)
         const selectedPlans = [];
         document.querySelectorAll('input[name="plans[]"]:checked').forEach(checkbox => {
             selectedPlans.push(checkbox.value);
@@ -1594,8 +1585,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         formData['other_valid_id_count'] = otherValidIdActive ? 1 : 0;
         
-        // Make sure branch and barangay codes are explicitly saved
-        formData['branch'] = document.getElementById('branch').value;
+        // Make sure hidden fields are explicitly saved
+        formData['branch'] = document.getElementById('branch').value || "Main Branch";
+        formData['cid_no'] = document.getElementById('cid_no').value || "000000";
+        formData['center_no'] = document.getElementById('center_no').value || "000";
+        
+        // Make sure barangay codes are explicitly saved
         formData['present_brgy_code'] = document.getElementById('present_brgy_code').value;
         formData['permanent_brgy_code'] = document.getElementById('permanent_brgy_code').value;
 
@@ -1611,10 +1606,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = JSON.parse(savedData);
             console.log('Loading form data:', formData);
             
-            // Restore branch select field first
+            // Restore hidden field values
             if (formData.branch) {
-                const branchSelect = document.getElementById('branch');
-                if (branchSelect) branchSelect.value = formData.branch;
+                document.getElementById('branch').value = formData.branch;
+            }
+            
+            if (formData.cid_no) {
+                document.getElementById('cid_no').value = formData.cid_no;
+            }
+            
+            if (formData.center_no) {
+                document.getElementById('center_no').value = formData.center_no;
             }
             
             // Restore barangay codes

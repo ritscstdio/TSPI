@@ -400,7 +400,7 @@ $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.
                 </div>
 
                 <!-- TSPI Maunlad Program (TMP) -->
-                <div class="offer-card">
+                <!-- <div class="offer-card">
                     <div class="offer-card-header">
                         <i class="fas fa-chart-line offer-card-icon"></i>
                         <h3 class="offer-card-title">TSPI Maunlad Program (TMP)</h3>
@@ -408,7 +408,7 @@ $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.
                     <div class="offer-card-description">
                         <p>Loans from Php 30,000 to Php 300,000 (collateral required above Php 100,000) for established microentrepreneurs (2+ years, Php 60,000+ capital), including existing TKP clients. Flexible weekly, semi-monthly, or monthly repayments over 3-24 months. Offers microinsurance and access to healthcare, education, housing, and sanitation loans.</p>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- TSPI Programang Pang-Agrikultura (TPP) -->
                 <div class="offer-card">
