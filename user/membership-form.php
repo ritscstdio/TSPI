@@ -55,7 +55,7 @@ function checkDuplicateApplication($email = null, $user_id = null) {
     // First check by user_id which is more reliable
     if (!empty($user_id)) {
         // This assumes you have a user_id column in your members_information table
-        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE user_id = ?");
+        $stmt = $pdo->prepare("SELECT id, status FROM members_information WHERE fk_user_id = ?");
         $stmt->execute([$user_id]);
         $result = $stmt->fetch();
         if ($result) {
@@ -114,7 +114,18 @@ if ($user) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Process form data
     $user = get_logged_in_user();
-    $email = isset($user['email']) ? sanitize($user['email']) : '';
+    
+    // Explicitly get the email from the logged-in user session and ensure it's set
+    $email = '';
+    if ($user && isset($user['email'])) {
+        $email = sanitize($user['email']);
+        // Add a log entry for debugging
+        error_log("User email retrieved for database insertion: " . $email);
+    } else {
+        // Log if we couldn't find the email
+        error_log("Warning: Could not retrieve user email for membership form submission");
+    }
+    
     // Names
     $first_name = sanitize($_POST['first_name']);
     $middle_name = sanitize($_POST['middle_name']);
@@ -236,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Dynamically build INSERT statement to match parameter count
         $columns = [
-            'branch','cid_no','center_no','plans','classification',
+            'fk_user_id','branch','cid_no','center_no','plans','classification',
             'first_name','middle_name','last_name','gender','civil_status',
             'birthdate','age','birth_place','email','cell_phone','contact_no','nationality',
             'id_number','other_valid_ids','mothers_maiden_last_name','mothers_maiden_first_name','mothers_maiden_middle_name',
@@ -273,6 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Create an array of all values to pass to execute()
         $params = [
+            $user_id,                                             // fk_user_id
             $branch,                                              // branch
             $cid_no,                                              // cid_no
             $center_no,                                           // center_no
@@ -286,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $birthdate,                                           // birthdate
             $age,                                                 // age
             $birth_place,                                         // birth_place
-            $email,                                               // email
+            $email,                                               // email - ensure this is the logged-in user's email
             $phone,                                               // cell_phone
             sanitize($_POST['contact_no'] ?? ''),                 // contact_no
             $nationality,                                         // nationality
@@ -361,6 +373,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'pending'                                             // status
         ];
 
+        // Double-check that the email parameter is set correctly before executing the query
+        if (empty($params[13])) { // Index 13 corresponds to the email parameter
+            // If somehow the email was lost in the parameters, try to get it again
+            $currentUser = get_logged_in_user();
+            if ($currentUser && isset($currentUser['email'])) {
+                $params[13] = sanitize($currentUser['email']);
+                error_log("Email parameter was empty, reset to: " . $params[13]);
+            }
+        }
+
+        // Log the email that will be inserted
+        error_log("Email being inserted into database: " . $params[13]);
+            
         $stmt->execute($params);
         $success = true;
     } catch (Exception $e) {
@@ -2706,7 +2731,7 @@ function validateBeneficiaryCount(input) {
     }
 }
 </script>
-
+<!-- 
 // Add this right before the </script> tag at the end of your main script block
 
 // Direct fix for the gender and civil status dropdown issues
@@ -2773,5 +2798,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 200);
         }, true);
     }
-});
+}); -->
 
