@@ -865,7 +865,7 @@ This will ensure that each CID must be unique in the database.
                     <button type="button" id="prev_page_btn" class="btn btn-previous"><span class="btn-icon">←</span> Previous</button>
                     <div class="page-indicator" id="page_indicator">Page 1 of 3</div>
                     <button type="button" id="next_page_btn" class="btn btn-primary btn-next"><span class="btn-icon">→</span> Next</button>
-                    <button type="submit" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none;" disabled><span class="btn-icon">✓</span> Submit Application</button> 
+                    <button type="button" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none;" disabled><span class="btn-icon">✓</span> Submit Application</button> 
                 </div>
             </form>
         <?php endif; ?>
@@ -1090,31 +1090,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
     
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            // If already confirmed (from modal), let the form submit normally
-            if (form.dataset.confirmed === 'true') {
-                console.log('Form confirmed, submitting...');
-                form.dataset.confirmed = 'false';
-                return true;
-            }
-            
-            console.log('Form submission intercepted for validation');
-            event.preventDefault(); // Prevent default submission
-            event.stopImmediatePropagation(); // Prevent duplicate submit handlers
-            
-            // Mark form as attempted for validation styling
+    // Handle the submitApplicationBtn click to show review modal
+    if (submitButton) {
+        submitButton.addEventListener('click', function(event) {
+            event.preventDefault();
             markFormAttempted();
-            
-            // Convert to uppercase before validation
             uppercaseTextInputs();
-            
-            // Validate only the current page
-            if (!validateCurrentPageFields()) {
-                return; // Stop if validation fails
-            }
-            
-            // Show the review modal
+            if (!validateCurrentPageFields()) return;
             showReviewModal();
         });
     }
@@ -1237,8 +1219,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Beneficiary rows are now optional (removing validation for beneficiary fields)
-        // Removed the specific validation for beneficiary rows that was here
+        // Beneficiary rows are optional, but if any field in a row is filled, require all fields
+        if (activePage.id === 'form-page-3') {
+            document.querySelectorAll('.beneficiary-row').forEach(row => {
+                const lastName = row.querySelector('input[name="beneficiary_last_name[]"]');
+                const firstName = row.querySelector('input[name="beneficiary_first_name[]"]');
+                const dob = row.querySelector('input[name="beneficiary_dob[]"]');
+                const gender = row.querySelector('select[name="beneficiary_gender[]"]');
+                const relationship = row.querySelector('input[name="beneficiary_relationship[]"]');
+                const vals = [
+                    lastName?.value.trim(),
+                    firstName?.value.trim(),
+                    dob?.value.trim(),
+                    gender?.value.trim(),
+                    relationship?.value.trim()
+                ];
+                const anyFilled = vals.some(v => v);
+                if (anyFilled && vals.some(v => !v)) {
+                    isValid = false;
+                    const emptyField = [lastName, firstName, dob, gender, relationship].find(f => f && !f.value.trim());
+                    if (emptyField) invalidElements.push(emptyField);
+                }
+            });
+        }
         
         if (!isValid) {
             alert('Please fill out required fields.');
@@ -1785,34 +1788,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Handle dynamic content
-            // Restore beneficiary rows
-            if ('beneficiary_row_count' in formData && formData.beneficiary_row_count > 1) {
-                // Add the necessary rows first - up to 5 max
-                const rowsToAdd = Math.min(formData.beneficiary_row_count - 1, maxBeneficiaryRows - 1);
-                for (let i = 0; i < rowsToAdd; i++) {
-                    addBeneficiaryRow(); // Call the function that adds a new row
-                }
-                
-                // Restore beneficiary data if available
-                if (formData.beneficiary_rows && Array.isArray(formData.beneficiary_rows)) {
-                    const rows = document.querySelectorAll('.beneficiary-row');
-                    formData.beneficiary_rows.forEach((rowData, index) => {
-                        if (index < rows.length) {
-                            const row = rows[index];
-                            for (const fieldName in rowData) {
-                                const input = row.querySelector(`[name="${fieldName}[]"]`);
-                                if (input) {
-                                    if (input.type === 'checkbox') {
-                                        input.checked = rowData[fieldName];
-                        } else {
-                                        input.value = rowData[fieldName];
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
+            // Restore beneficiary data into static 5 rows (optional rows)
+            if (formData.beneficiary_rows && Array.isArray(formData.beneficiary_rows)) {
+                const rows = document.querySelectorAll('.beneficiary-row');
+                rows.forEach((row, index) => {
+                    const data = formData.beneficiary_rows[index] || {};
+                    const fn = row.querySelector('input[name="beneficiary_last_name[]"]');
+                    const fi = row.querySelector('input[name="beneficiary_first_name[]"]');
+                    const mi = row.querySelector('input[name="beneficiary_mi[]"]');
+                    const dob = row.querySelector('input[name="beneficiary_dob[]"]');
+                    const gender = row.querySelector('select[name="beneficiary_gender[]"]');
+                    const rel = row.querySelector('input[name="beneficiary_relationship[]"]');
+                    const dep = row.querySelector('input[name="beneficiary_dependent[]"]');
+                    if (fn) fn.value = data.beneficiary_last_name || '';
+                    if (fi) fi.value = data.beneficiary_first_name || '';
+                    if (mi) mi.value = data.beneficiary_mi || '';
+                    if (dob) dob.value = data.beneficiary_dob || '';
+                    if (gender) gender.value = data.beneficiary_gender || '';
+                    if (rel) rel.value = data.beneficiary_relationship || '';
+                    if (dep) dep.checked = !!data.beneficiary_dependent;
+                });
             }
             
             // Restore other income sources
