@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $last_name = sanitize($_POST['last_name']);
     
     // Initialize all form fields to prevent undefined variable warnings
-    $branch = null; // Set branch to NULL rather than sanitize
+    $branch = ""; // Set branch to NULL rather than sanitize
     $cid_no = getUniqueCID(); // Generate a unique CID
     $center_no = sanitize($_POST['center_no'] ?? '');
     $gender = sanitize($_POST['gender'] ?? '');
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Dynamically build INSERT statement to match parameter count
         $columns = [
-            'user_id', 'branch','cid_no','center_no','plans','classification',
+            'branch','cid_no','center_no','plans','classification',
             'first_name','middle_name','last_name','gender','civil_status',
             'birthdate','age','birth_place','email','cell_phone','contact_no','nationality',
             'id_number','other_valid_ids','mothers_maiden_last_name','mothers_maiden_first_name','mothers_maiden_middle_name',
@@ -266,7 +266,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Create an array of all values to pass to execute()
         $params = [
-            $user['id'], // user_id
             $branch,                                              // branch
             $cid_no,                                              // cid_no
             $center_no,                                           // center_no
@@ -752,41 +751,23 @@ This will ensure that each CID must be unique in the database.
                                 <th>Gender</th>
                                 <th>Relationship</th>
                                 <th>Dependent</th>
-                                <th style="width: 5%;"></th> <!-- For remove button -->
                             </tr>
                         </thead>
-                        <tbody id="beneficiaries_tbody">
-                            <?php // Only render one row initially, rest will be added by JS ?>
+                        <tbody>
+                            <!-- Static 5 beneficiary rows -->
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
                             <tr class="beneficiary-row">
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_1" name="beneficiary_last_name[]" placeholder="Enter Last Name (optional)"></div>
-                                </td>
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_1" name="beneficiary_first_name[]" placeholder="Enter First Name (optional)"></div>
-                                </td>
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_1" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div>
-                                </td>
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_1" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></div>
-                                </td>
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_1" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div>
-                                </td>
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_1" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div>
-                                </td>
-                                <td>
-                                    <div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_1" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div>
-                                </td>
-                                <td>
-                                    <!-- Remove button placeholder for the first row, not typically removable unless it's the only one and empty? Or always not removable? For now, no remove on first static row -->
-                                </td>
+                                <td><input type="text" id="beneficiary_last_name_<?php echo $i; ?>" name="beneficiary_last_name[]" placeholder="Last Name (optional)"></td>
+                                <td><input type="text" id="beneficiary_first_name_<?php echo $i; ?>" name="beneficiary_first_name[]" placeholder="First Name (optional)"></td>
+                                <td><input type="text" id="beneficiary_mi_<?php echo $i; ?>" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></td>
+                                <td><input type="text" id="beneficiary_dob_<?php echo $i; ?>" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></td>
+                                <td><select id="beneficiary_gender_<?php echo $i; ?>" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></td>
+                                <td><input type="text" id="beneficiary_relationship_<?php echo $i; ?>" name="beneficiary_relationship[]" placeholder="Relationship (optional)"></td>
+                                <td style="text-align:center;"><input type="checkbox" id="beneficiary_dependent_<?php echo $i; ?>" name="beneficiary_dependent[]" value="1"></td>
                             </tr>
-                            <?php // End of initial row ?>
+                            <?php endfor; ?>
                         </tbody>
                     </table>
-                    <button type="button" id="add_beneficiary_btn" class="btn btn-secondary btn-add btn-sm"><span class="btn-icon">+</span> Add Beneficiary</button>
                     
                     <div class="section-divider"></div>
                     
@@ -1016,14 +997,14 @@ This will ensure that each CID must be unique in the database.
         padding-left: 10px;
     }
     
-    /* Make all text inputs uppercase */
-    input[type="text"], 
-    textarea,
-    select,
-    .phone-input-group input,
-    .beneficiaries-table input[type="text"],
-    .other-income-source-item input,
-    .other-valid-id-item input {
+    /* Make all text inputs uppercase within the membership form only */
+    .membership-form-container input[type="text"],
+    .membership-form-container textarea,
+    .membership-form-container select,
+    .membership-form-container .phone-input-group input,
+    .membership-form-container .beneficiaries-table input[type="text"],
+    .membership-form-container .other-income-source-item input,
+    .membership-form-container .other-valid-id-item input {
         text-transform: uppercase;
     }
     
@@ -1063,7 +1044,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Variables for dynamic rows
     let beneficiaryRowCount = 1; // Start with 1 row as default
-    const maxBeneficiaryRows = 6; // Maximum number of beneficiary rows (initial + 5 additional)
+    const maxBeneficiaryRows = 5; // Maximum number of beneficiary rows (initial + 5 additional)
     let incomeSourceCount = 0;
     let otherValidIdActive = false;
     
@@ -1111,7 +1092,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (form) {
         form.addEventListener('submit', function(event) {
-            return; // disabled duplicate listener
             // If already confirmed (from modal), let the form submit normally
             if (form.dataset.confirmed === 'true') {
                 console.log('Form confirmed, submitting...');
@@ -1121,6 +1101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Form submission intercepted for validation');
             event.preventDefault(); // Prevent default submission
+            event.stopImmediatePropagation(); // Prevent duplicate submit handlers
             
             // Mark form as attempted for validation styling
             markFormAttempted();
@@ -1286,7 +1267,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modify form submission event listener
     if (form) {
         form.addEventListener('submit', function(event) {
-            return; // disabled duplicate listener
             // If already confirmed (from modal), let the form submit normally
             if (form.dataset.confirmed === 'true') {
                 console.log('Form confirmed, submitting...');
@@ -1296,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Form submission intercepted for validation');
             event.preventDefault(); // Prevent default submission
+            event.stopImmediatePropagation(); // Prevent duplicate submit handlers
             
             // Mark form as attempted for validation styling
             markFormAttempted();
@@ -1954,129 +1935,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Beneficiary management
-    const addBeneficiaryBtn = document.getElementById('add_beneficiary_btn');
-    const beneficiariesTbody = document.getElementById('beneficiaries_tbody');
-    
-    // Function to add a new beneficiary row
-    function addBeneficiaryRow() {
-        if (beneficiaryRowCount >= maxBeneficiaryRows) {
-            alert('Maximum ' + maxBeneficiaryRows + ' beneficiaries allowed.');
-            return;
-        }
-        
-        beneficiaryRowCount++;
-        const newRow = document.createElement('tr');
-        newRow.className = 'beneficiary-row';
-        
-        newRow.innerHTML = `
-            <td>
-                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_last_name_${beneficiaryRowCount}" name="beneficiary_last_name[]" placeholder="Enter Last Name"></div>
-            </td>
-            <td>
-                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_first_name_${beneficiaryRowCount}" name="beneficiary_first_name[]" placeholder="Enter First Name"></div>
-            </td>
-            <td>
-                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_mi_${beneficiaryRowCount}" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></div>
-            </td>
-            <td>
-                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_dob_${beneficiaryRowCount}" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></div>
-            </td>
-            <td>
-                <div class="form-group" style="margin-bottom:0;"><select id="beneficiary_gender_${beneficiaryRowCount}" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></div>
-            </td>
-            <td>
-                <div class="form-group" style="margin-bottom:0;"><input type="text" id="beneficiary_relationship_${beneficiaryRowCount}" name="beneficiary_relationship[]" placeholder="Enter Relationship"></div>
-            </td>
-            <td>
-                <div class="form-group" style="margin-bottom:0; text-align: center;"><input type="checkbox" id="beneficiary_dependent_${beneficiaryRowCount}" name="beneficiary_dependent[]" value="1" style="display: inline-block; width: auto;"></div>
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger btn-sm remove-beneficiary">✕</button>
-            </td>
-        `;
-        
-        beneficiariesTbody.appendChild(newRow);
-        
-        // Initialize datepicker for the new date field if using Pikaday
-        const newDateInput = newRow.querySelector('.beneficiary-dob');
-        if (newDateInput && typeof Pikaday !== 'undefined') {
-            new Pikaday({ 
-                field: newDateInput,
-                format: 'MM/DD/YYYY',
-                yearRange: [1900, new Date().getFullYear()],
-                maxDate: new Date(),
-                toString(date, format) {
-                    // Format the date as MM/DD/YYYY
-                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const day = date.getDate().toString().padStart(2, '0');
-                    const year = date.getFullYear();
-                    return `${month}/${day}/${year}`;
-                },
-                onSelect: function() {
-                    newDateInput.setCustomValidity('');
-                    newDateInput.style.borderColor = '';
-                    
-                    // Remove error message if it exists
-                    const errorMsg = newDateInput.nextElementSibling;
-                    if (errorMsg && errorMsg.classList.contains('date-error')) {
-                        errorMsg.textContent = '';
-                    }
-                }
-            });
-            
-            // Add validation to the new date field
-            newDateInput.addEventListener('blur', function() {
-                const dateValue = this.value.trim();
-                if (dateValue && !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(dateValue)) {
-                    this.setCustomValidity('Please enter a valid date in MM/DD/YYYY format');
-                    
-                    // Add visual error indication
-                    this.style.borderColor = 'red';
-                    
-                    // Show error message near the field
-                    let errorMsg = this.nextElementSibling;
-                    if (!errorMsg || !errorMsg.classList.contains('date-error')) {
-                        errorMsg = document.createElement('div');
-                        errorMsg.className = 'date-error';
-                        errorMsg.style.color = 'red';
-                        errorMsg.style.fontSize = '12px';
-                        errorMsg.style.marginTop = '5px';
-                        this.parentNode.appendChild(errorMsg);
-                    }
-                    errorMsg.textContent = 'Please enter a valid date in MM/DD/YYYY format';
-                } else {
-                    this.setCustomValidity('');
-                    this.style.borderColor = '';
-                    
-                    // Remove error message if it exists
-                    const errorMsg = this.nextElementSibling;
-                    if (errorMsg && errorMsg.classList.contains('date-error')) {
-                        errorMsg.textContent = '';
-                    }
-                }
-            });
-        }
-        
-        // Add remove event listener
-        const removeBtn = newRow.querySelector('.remove-beneficiary');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function() {
-                newRow.remove();
-                beneficiaryRowCount--;
-                saveFormToLocalStorage(); // Update localStorage after removing
-            });
-        }
-        
-        saveFormToLocalStorage(); // Save the new state
-        return newRow;
-    }
-    
-    // Add beneficiary button click handler
-    if (addBeneficiaryBtn) {
-        addBeneficiaryBtn.addEventListener('click', addBeneficiaryRow);
-    }
-    
     // Other income sources management
     const addOtherIncomeSourceBtn = document.getElementById('add_other_income_source_btn');
     const otherIncomeSourcesContainer = document.getElementById('other_income_sources_container');
