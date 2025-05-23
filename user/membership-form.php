@@ -1051,12 +1051,10 @@ body.modal-open {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="member_name">Name of Member (Borrower or Kapamilya)</label>
-                                <input type="text" id="member_name" name="member_name" placeholder="Enter Full Name as Signature">
+                                <input type="text" id="member_name" name="member_name" placeholder="Enter Full Name as Signature" required>
                             </div>
                         </div>
-                        <div class="form-col-2">
-                            <!-- Empty div to maintain 2-column layout -->
-                        </div>
+                        <div class="form-col-2"></div>
                     </div>
                     
                     <!-- Name of Beneficiary under signatures -->
@@ -1248,6 +1246,14 @@ body.modal-open {
         color: #007bff;
         font-size: 14px;
         cursor: help;
+    }
+    
+    /* Submit button disabled state styling */
+    #submit_application_btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #cccccc;
+        border-color: #999999;
     }
     
     @media (max-width: 768px) {
@@ -1567,6 +1573,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open'); // Re-enable scrolling
         });
     }
     
@@ -1574,6 +1581,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editBtn) {
         editBtn.addEventListener('click', function() {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open'); // Re-enable scrolling
         });
     }
     
@@ -1638,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('click', function(event) {
         if (event.target == modal) {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open'); // Re-enable scrolling
         }
     });
     
@@ -1744,83 +1753,90 @@ document.addEventListener('DOMContentLoaded', function() {
             reviewContent.appendChild(spouseSection);
         }
         
-        // Beneficiaries Information - as a TABLE
-        const beneficiariesSection = document.createElement('div');
-        beneficiariesSection.className = 'review-section';
-        beneficiariesSection.innerHTML = '<h3>Beneficiaries</h3>';
-        
-        // Filter out empty beneficiary rows
-        const beneficiaryRows = Array.from(document.querySelectorAll('.beneficiary-row')).filter(row => {
-            const lastName = row.querySelector('input[name="beneficiary_last_name[]"]').value;
-            const firstName = row.querySelector('input[name="beneficiary_first_name[]"]').value;
-            return lastName || firstName;
-        });
-        
-        if (beneficiaryRows.length > 0) {
-            // Create a table to display beneficiaries
-            const table = document.createElement('table');
-            table.className = 'review-beneficiaries-table';
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
-            table.style.marginTop = '10px';
+        // Check if beneficiaries section is visible before adding to review
+        const beneficiariesSection = document.getElementById('beneficiaries-section');
+        if (beneficiariesSection && beneficiariesSection.style.display !== 'none') {
+            // Beneficiaries Information - as a TABLE
+            const beneficiariesReviewSection = document.createElement('div');
+            beneficiariesReviewSection.className = 'review-section';
+            beneficiariesReviewSection.innerHTML = '<h3>Beneficiaries</h3>';
             
-            // Create table header
-            const thead = document.createElement('thead');
-            thead.innerHTML = `
-                <tr style="background-color: #f3f3f3; border-bottom: 1px solid #ddd;">
-                    <th style="padding: 8px; text-align: left;">Name</th>
-                    <th style="padding: 8px; text-align: left;">DOB</th>
-                    <th style="padding: 8px; text-align: left;">Gender</th>
-                    <th style="padding: 8px; text-align: left;">Relationship</th>
-                    <th style="padding: 8px; text-align: center;">Dependent</th>
-                </tr>
-            `;
-            table.appendChild(thead);
-            
-            // Create table body
-            const tbody = document.createElement('tbody');
-            beneficiaryRows.forEach((row, index) => {
+            // Filter out empty beneficiary rows
+            const beneficiaryRows = Array.from(document.querySelectorAll('.beneficiary-row')).filter(row => {
                 const lastName = row.querySelector('input[name="beneficiary_last_name[]"]').value;
                 const firstName = row.querySelector('input[name="beneficiary_first_name[]"]').value;
-                const mi = row.querySelector('input[name="beneficiary_mi[]"]').value;
-                const dob = row.querySelector('input[name="beneficiary_dob[]"]').value;
-                const gender = row.querySelector('select[name="beneficiary_gender[]"]').value;
-                const relationship = row.querySelector('input[name="beneficiary_relationship[]"]').value;
-                const dependent = row.querySelector('input[name="beneficiary_dependent[]"]') && 
-                                 row.querySelector('input[name="beneficiary_dependent[]"]').checked ? 'Yes' : 'No';
-                
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid #eee';
-                
-                tr.innerHTML = `
-                    <td style="padding: 8px;">${lastName}, ${firstName} ${mi}</td>
-                    <td style="padding: 8px;">${dob}</td>
-                    <td style="padding: 8px;">${gender}</td>
-                    <td style="padding: 8px;">${relationship}</td>
-                    <td style="padding: 8px; text-align: center;">${dependent}</td>
-                `;
-                
-                tbody.appendChild(tr);
+                return lastName || firstName;
             });
             
-            table.appendChild(tbody);
-            beneficiariesSection.appendChild(table);
-        } else {
-            beneficiariesSection.innerHTML += '<p>No beneficiaries added.</p>';
+            if (beneficiaryRows.length > 0) {
+                // Create a table to display beneficiaries
+                const table = document.createElement('table');
+                table.className = 'review-beneficiaries-table';
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.style.marginTop = '10px';
+                
+                // Create table header
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr style="background-color: #f3f3f3; border-bottom: 1px solid #ddd;">
+                        <th style="padding: 8px; text-align: left;">Name</th>
+                        <th style="padding: 8px; text-align: left;">DOB</th>
+                        <th style="padding: 8px; text-align: left;">Gender</th>
+                        <th style="padding: 8px; text-align: left;">Relationship</th>
+                        <th style="padding: 8px; text-align: center;">Dependent</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+                
+                // Create table body
+                const tbody = document.createElement('tbody');
+                beneficiaryRows.forEach((row, index) => {
+                    const lastName = row.querySelector('input[name="beneficiary_last_name[]"]').value;
+                    const firstName = row.querySelector('input[name="beneficiary_first_name[]"]').value;
+                    const mi = row.querySelector('input[name="beneficiary_mi[]"]').value;
+                    const dob = row.querySelector('input[name="beneficiary_dob[]"]').value;
+                    const gender = row.querySelector('select[name="beneficiary_gender[]"]').value;
+                    const relationship = row.querySelector('input[name="beneficiary_relationship[]"]').value;
+                    const dependent = row.querySelector('input[name="beneficiary_dependent[]"]') && 
+                                    row.querySelector('input[name="beneficiary_dependent[]"]').checked ? 'Yes' : 'No';
+                    
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #eee';
+                    
+                    tr.innerHTML = `
+                        <td style="padding: 8px;">${lastName}, ${firstName} ${mi}</td>
+                        <td style="padding: 8px;">${dob}</td>
+                        <td style="padding: 8px;">${gender}</td>
+                        <td style="padding: 8px;">${relationship}</td>
+                        <td style="padding: 8px; text-align: center;">${dependent}</td>
+                    `;
+                    
+                    tbody.appendChild(tr);
+                });
+                
+                table.appendChild(tbody);
+                beneficiariesReviewSection.appendChild(table);
+            } else {
+                beneficiariesReviewSection.innerHTML += '<p>No beneficiaries added.</p>';
+            }
+            
+            reviewContent.appendChild(beneficiariesReviewSection);
         }
         
-        reviewContent.appendChild(beneficiariesSection);
-        
-        // Trustee Information
-        const trusteeSection = document.createElement('div');
-        trusteeSection.className = 'review-section';
-        trusteeSection.innerHTML = '<h3>Trustee Information</h3>';
-        
-        addReviewRow(trusteeSection, 'Trustee Name', document.getElementById('trustee_name').value);
-        addReviewRow(trusteeSection, 'Trustee Date of Birth', document.getElementById('trustee_dob').value);
-        addReviewRow(trusteeSection, 'Relationship to Applicant', document.getElementById('trustee_relationship').value);
-        
-        reviewContent.appendChild(trusteeSection);
+        // Trustee Information - only if the section is visible
+        const trusteeSection = document.getElementById('trustee-section');
+        if (trusteeSection && trusteeSection.style.display !== 'none') {
+            const trusteeReviewSection = document.createElement('div');
+            trusteeReviewSection.className = 'review-section';
+            trusteeReviewSection.innerHTML = '<h3>Trustee Information</h3>';
+            
+            addReviewRow(trusteeReviewSection, 'Trustee Name', document.getElementById('trustee_name').value);
+            addReviewRow(trusteeReviewSection, 'Trustee Date of Birth', document.getElementById('trustee_dob').value);
+            addReviewRow(trusteeReviewSection, 'Relationship to Applicant', document.getElementById('trustee_relationship').value);
+            
+            reviewContent.appendChild(trusteeReviewSection);
+        }
         
         // Signature Information
         const signatureSection = document.createElement('div');
@@ -1834,6 +1850,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show the modal
         modal.style.display = 'block';
+        // Prevent page scrolling while modal is open
+        document.body.classList.add('modal-open');
     }
     
     function addReviewRow(container, label, value) {
@@ -1934,241 +1952,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const formElements = formToSave ? formToSave.elements : [];
 
     function saveFormToLocalStorage() {
-        if (!formToSave) return;
-        const formData = {};
-        
-        // Special handling for select elements including branch
-        document.querySelectorAll('select').forEach(select => {
-            if (select.name) {
-                formData[select.name] = select.value;
-            }
-        });
-        
-        // Save all regular form fields
-        for (const element of formElements) {
-            // Skip saving the disclaimer agreement checkbox
-            if (element.id === 'disclaimer_agreement') continue;
-            
-            if (element.name) {
-                if (element.type === 'checkbox') {
-                    if (element.name.includes('[]')) {
-                        // For array checkboxes like plans[] or classification[]
-                        const baseName = element.name.replace('[]', '');
-                        if (!formData[baseName]) formData[baseName] = [];
-                        if (element.checked) {
-                            if (!formData[baseName].includes(element.value)) {
-                                formData[baseName].push(element.value);
-                            }
-                        }
-                    } else {
-                        // Regular checkbox
-                        formData[element.name + (element.value ? `_${element.value}` : '')] = element.checked;
-                    }
-                } else if (element.type === 'radio') {
-                    if (element.checked) {
-                        formData[element.name] = element.value;
-                    }
-                } else if (element.tagName === 'SELECT' && element.multiple) {
-                    formData[element.name] = Array.from(element.selectedOptions).map(option => option.value);
-                } else if (!formData[element.name]) { // Don't overwrite values already set
-                    formData[element.name] = element.value;
-                }
-            }
-        }
-        
-        // Special handling for beneficiary rows
-        const beneficiaryRows = document.querySelectorAll('.beneficiary-row');
-        formData.beneficiary_rows = [];
-        beneficiaryRows.forEach((row, index) => {
-            const rowData = {};
-            row.querySelectorAll('input, select').forEach(input => {
-                const fieldName = input.name.replace('[]', '');
-                if (input.type === 'checkbox') {
-                    rowData[fieldName] = input.checked;
-                } else {
-                    rowData[fieldName] = input.value;
-                }
-            });
-            formData.beneficiary_rows.push(rowData);
-        });
-        
-        // Save dynamic rows count
-        formData['beneficiary_row_count'] = beneficiaryRowCount;
-        
-        // Save other income sources
-        const incomeSourceInputs = document.querySelectorAll('.other-income-source-item input');
-        formData.other_income_sources = [];
-        incomeSourceInputs.forEach(input => {
-            formData.other_income_sources.push(input.value);
-        });
-        formData['other_income_source_count'] = incomeSourceCount;
-        
-        // Save other valid IDs
-        const otherValidIdInputs = document.querySelectorAll('.other-valid-id-item input');
-        formData.other_valid_ids = [];
-        otherValidIdInputs.forEach(input => {
-            formData.other_valid_ids.push(input.value);
-        });
-        formData['other_valid_id_count'] = otherValidIdActive ? 1 : 0;
-        
-        // Make sure hidden fields are explicitly saved
-        formData['branch'] = document.getElementById('branch').value || "Main Branch";
-        formData['cid_no'] = document.getElementById('cid_no').value || "000000";
-        formData['center_no'] = document.getElementById('center_no').value || "000";
-        
-        // Make sure barangay codes are explicitly saved
-        formData['present_brgy_code'] = document.getElementById('present_brgy_code').value;
-        formData['permanent_brgy_code'] = document.getElementById('permanent_brgy_code').value;
-
-        localStorage.setItem('membershipFormData', JSON.stringify(formData));
-        console.log('Form data saved:', formData);
+        // Function disabled to prevent form data persistence
+        return;
     }
 
     function loadFormFromLocalStorage() {
-        const savedData = localStorage.getItem('membershipFormData');
-        if (!savedData || !formToSave) return;
-        
-        try {
-            const formData = JSON.parse(savedData);
-            console.log('Loading form data:', formData);
-            
-            // Restore hidden field values
-            if (formData.branch) {
-                document.getElementById('branch').value = formData.branch;
-            }
-            
-            if (formData.cid_no) {
-                document.getElementById('cid_no').value = formData.cid_no;
-            }
-            
-            if (formData.center_no) {
-                document.getElementById('center_no').value = formData.center_no;
-            }
-            
-            // Restore barangay codes
-            if (formData.present_brgy_code) {
-                const presentBrgyCode = document.getElementById('present_brgy_code');
-                if (presentBrgyCode) presentBrgyCode.value = formData.present_brgy_code;
-            }
-            
-            if (formData.permanent_brgy_code) {
-                const permanentBrgyCode = document.getElementById('permanent_brgy_code');
-                if (permanentBrgyCode) permanentBrgyCode.value = formData.permanent_brgy_code;
-            }
-            
-            // Restore simple field values
-            for (const element of formElements) {
-                if (element.name) {
-                    // Skip select fields we've already handled
-                    if (element.name === 'branch') continue;
-                    
-                    // Skip the disclaimer agreement checkbox - should never be remembered
-                    if (element.id === 'disclaimer_agreement') continue;
-                    
-                        if (element.type === 'checkbox') {
-                        if (element.name.includes('[]')) {
-                            // Handle array checkboxes (plans, classification)
-                            const baseName = element.name.replace('[]', '');
-                            if (formData[baseName] && Array.isArray(formData[baseName])) {
-                                element.checked = formData[baseName].includes(element.value);
-                            }
-                        } else {
-                            // Regular checkbox
-                            const key = element.name + (element.value ? `_${element.value}` : '');
-                            if (key in formData) {
-                                element.checked = formData[key];
-                            }
-                        }
-                        } else if (element.type === 'radio') {
-                        if (element.name in formData && element.value === formData[element.name]) {
-                                element.checked = true;
-                            }
-                    } else if (element.name in formData) {
-                        element.value = formData[element.name];
-                    }
-                }
-            }
-            
-            // Restore beneficiary data into static 5 rows (optional rows)
-            if (formData.beneficiary_rows && Array.isArray(formData.beneficiary_rows)) {
-                const rows = document.querySelectorAll('.beneficiary-row');
-                rows.forEach((row, index) => {
-                    const data = formData.beneficiary_rows[index] || {};
-                    const fn = row.querySelector('input[name="beneficiary_last_name[]"]');
-                    const fi = row.querySelector('input[name="beneficiary_first_name[]"]');
-                    const mi = row.querySelector('input[name="beneficiary_mi[]"]');
-                    const dob = row.querySelector('input[name="beneficiary_dob[]"]');
-                    const gender = row.querySelector('select[name="beneficiary_gender[]"]');
-                    const rel = row.querySelector('input[name="beneficiary_relationship[]"]');
-                    const dep = row.querySelector('input[name="beneficiary_dependent[]"]');
-                    if (fn) fn.value = data.beneficiary_last_name || '';
-                    if (fi) fi.value = data.beneficiary_first_name || '';
-                    if (mi) mi.value = data.beneficiary_mi || '';
-                    if (dob) dob.value = data.beneficiary_dob || '';
-                    if (gender) gender.value = data.beneficiary_gender || '';
-                    if (rel) rel.value = data.beneficiary_relationship || '';
-                    if (dep) dep.checked = !!data.beneficiary_dependent;
-                });
-            }
-            
-            // Restore other income sources
-            if (formData.other_income_sources && Array.isArray(formData.other_income_sources)) {
-                // Clear any existing income source fields
-                document.querySelectorAll('.other-income-source-item').forEach(item => item.remove());
-                incomeSourceCount = 0;
-                
-                // Add new ones with the saved data
-                formData.other_income_sources.forEach((value, index) => {
-                    if (value && index < 4) { // Limit to 4 sources
-                        const newSource = addOtherIncomeSource();
-                        if (newSource) {
-                            const input = newSource.querySelector('input');
-                            if (input) input.value = value;
-                        }
-                    }
-                });
-            }
-            
-            // Restore other valid IDs
-            if (formData.other_valid_ids && Array.isArray(formData.other_valid_ids) && formData.other_valid_ids.length > 0) {
-                // Clear any existing fields
-                document.querySelectorAll('.other-valid-id-item').forEach(item => item.remove());
-                otherValidIdActive = false;
-                
-                // Add new one with the saved data if available
-                const idValue = formData.other_valid_ids[0];
-                if (idValue) {
-                    const newId = addOtherValidId();
-                    if (newId) {
-                        const input = newId.querySelector('input');
-                        if (input) input.value = idValue;
-                    }
-                }
-            }
-            
-            // Check if spouse fields need to be shown
-            if (document.getElementById('civil_status').value === 'Married') {
-                const spouseInfoSection = document.getElementById('spouse_information_section');
-                if (spouseInfoSection) {
-                    spouseInfoSection.style.display = 'block';
-                }
-            }
-            
-            console.log('Form data loaded from localStorage');
-        } catch (e) {
-            console.error('Error loading form data:', e);
-        }
+        // Function disabled to prevent form data persistence
+        return;
     }
 
     // Call saveFormToLocalStorage on form changes
     if (formToSave) {
-        formToSave.addEventListener('input', saveFormToLocalStorage);
-        // Also save for select changes
-        const selects = formToSave.querySelectorAll('select');
-        selects.forEach(select => select.addEventListener('change', saveFormToLocalStorage));
+        // Listeners removed to prevent form data persistence
+        // formToSave.addEventListener('input', saveFormToLocalStorage);
+        // const selects = formToSave.querySelectorAll('select');
+        // selects.forEach(select => select.addEventListener('change', saveFormToLocalStorage));
         
-        // Load saved data on page load
-        loadFormFromLocalStorage();
+        // Load saved data on page load - disabled
+        // loadFormFromLocalStorage();
+        
         // Re-trigger spouse section toggle in case civil status was loaded as Married
         if (civilStatusSelect) {
             civilStatusSelect.dispatchEvent(new Event('change'));
@@ -2503,10 +2305,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const beneficiaryCountContainer = document.getElementById('beneficiary-count-container');
     const beneficiaryCountInput = document.getElementById('beneficiary-count');
     
-    // Show agreement modal immediately
-    agreementModal.classList.add('active');
-    pageOverlay.classList.add('active');
-    document.body.classList.add('modal-open'); // Disable scrolling
+    // Check if this is a success page after form submission
+    const isSuccessPage = <?php echo $success ? 'true' : 'false'; ?>;
+    
+    // Show agreement modal immediately if not success page
+    if (!isSuccessPage) {
+        agreementModal.classList.add('active');
+        pageOverlay.classList.add('active');
+        document.body.classList.add('modal-open'); // Disable scrolling
+    }
     
     // Initialize beneficiary count with default value
     if (beneficiaryCountInput) {
