@@ -169,6 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Spouse (if married)
     $spouse_name = '';
     $spouse_birthdate = null;
+    $spouse_age = null;
     if (isset($_POST['civil_status']) && $_POST['civil_status'] === 'Married') {
         $spouse_name = sanitize(
             trim(
@@ -178,6 +179,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             )
         );
         $spouse_birthdate = formatMembershipDate($_POST['spouse_birthday']);
+        
+        // Calculate spouse age if spouse birthdate is provided
+        if ($spouse_birthdate) {
+            $spouseBirthdateObj = DateTime::createFromFormat('Y-m-d', $spouse_birthdate);
+            $spouse_age = $spouseBirthdateObj->diff(new DateTime('today'))->y;
+        }
     }
     // Beneficiary 1
     $beneficiary_1_firstname = sanitize($_POST['beneficiary_first_name'][0] ?? '');
@@ -237,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'permanent_address','permanent_brgy_code','permanent_zip_code',
             'home_ownership','length_of_stay','primary_business','years_in_business','business_address',
             'other_income_source_1','other_income_source_2','other_income_source_3','other_income_source_4',
-            'spouse_name','spouse_birthdate','spouse_occupation','spouse_id_number',
+            'spouse_name','spouse_birthdate','spouse_occupation','spouse_id_number','spouse_age',
             'beneficiary_fn_1','beneficiary_ln_1','beneficiary_mi_1','beneficiary_birthdate_1','beneficiary_gender_1','beneficiary_relationship_1','beneficiary_dependent_1',
             'beneficiary_fn_2','beneficiary_ln_2','beneficiary_mi_2','beneficiary_birthdate_2','beneficiary_gender_2','beneficiary_relationship_2','beneficiary_dependent_2',
             'beneficiary_fn_3','beneficiary_ln_3','beneficiary_mi_3','beneficiary_birthdate_3','beneficiary_gender_3','beneficiary_relationship_3','beneficiary_dependent_3',
@@ -256,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Convert plans and classification arrays to JSON
         $plansJson = isset($_POST['plans']) ? json_encode(array_unique($_POST['plans'])) : null;
-        $classificationJson = isset($_POST['classification']) ? json_encode($_POST['classification']) : null;
+        $classificationValue = isset($_POST['classification']) ? $_POST['classification'] : null;
         $otherValidIdsJson = isset($_POST['other_valid_id']) ? json_encode($_POST['other_valid_id']) : null;
         
         // Get values for mother's maiden name that weren't initialized before
@@ -270,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cid_no,                                              // cid_no
             $center_no,                                           // center_no
             $plansJson,                                           // plans
-            $classificationJson,                                  // classification
+            $classificationValue,                                 // classification
             $first_name,                                          // first_name
             $middle_name,                                         // middle_name
             $last_name,                                           // last_name
@@ -307,6 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $spouse_birthdate,                                    // spouse_birthdate
             sanitize($_POST['spouse_occupation'] ?? ''),          // spouse_occupation
             sanitize($_POST['spouse_id_number'] ?? ''),           // spouse_id_number
+            $spouse_age,                                          // spouse_age
             $beneficiary_1_firstname,                             // beneficiary_fn_1
             $beneficiary_1_lastname,                              // beneficiary_ln_1
             sanitize($_POST['beneficiary_mi'][0] ?? ''),          // beneficiary_mi_1
@@ -637,16 +645,16 @@ body.modal-open {
                         <div class="checkbox-group">
                           
                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_tkp" name="classification[]" value="TKP" title="TKP borrower classification - For individual borrowers">
+                                <input type="radio" id="class_tkp" name="classification" value="TKP" title="TKP borrower classification - For individual borrowers">
                                 <label for="class_tkp">TKP (Borrower) <span class="tooltip-icon" title="TKP borrower classification - For individual borrowers">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_tpp" name="classification[]" value="TPP" title="TPP borrower classification - For business or partnership borrowers">
+                                <input type="radio" id="class_tpp" name="classification" value="TPP" title="TPP borrower classification - For business or partnership borrowers">
                                 <label for="class_tpp">TPP (Borrower) <span class="tooltip-icon" title="TPP borrower classification - For business or partnership borrowers">ⓘ</span></label>
                         </div>
 
                             <div class="checkbox-item">
-                                <input type="checkbox" id="class_borrower" name="classification[]" value="Kapamilya" title="Kapamilya classification - For family members of borrowers">
+                                <input type="radio" id="class_borrower" name="classification" value="Kapamilya" title="Kapamilya classification - For family members of borrowers">
                                 <label for="class_borrower">Kapamilya <span class="tooltip-icon" title="Kapamilya classification - For family members of borrowers">ⓘ</span></label>
                             </div>
                         </div>
@@ -689,7 +697,7 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="middle_name">Middle Name</label>
-                                <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name (optional)">
+                                <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name">
                             </div>
                         </div>
                         <div class="form-col-3">
@@ -747,7 +755,7 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="contact_no">Telephone no./ Landline</label>
-                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="7" title="7-digit landline number" placeholder="Optional">
+                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="7" title="7-digit landline number" placeholder="Enter Landline Number">
                             </div>
                         </div>
                     </div>
@@ -793,7 +801,7 @@ body.modal-open {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name</label>
-                                <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name (optional)">
+                                <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name">
                             </div>
                         </div>
                         <div class="form-col-2">
@@ -929,7 +937,7 @@ body.modal-open {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_middle_name">Spouse's Middle Name</label>
-                                    <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name (optional)">
+                                    <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name">
                                 </div>
                             </div>
                             <div class="form-col-2">
@@ -955,6 +963,9 @@ body.modal-open {
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Hidden spouse age field to store calculated age -->
+                        <input type="hidden" id="spouse_age" name="spouse_age">
                      
                     </div>
                 </div> <!-- End of Page 2 -->
@@ -978,12 +989,12 @@ body.modal-open {
                             <!-- Static 5 beneficiary rows -->
                             <?php for ($i = 1; $i <= 5; $i++): ?>
                             <tr class="beneficiary-row">
-                                <td><input type="text" id="beneficiary_last_name_<?php echo $i; ?>" name="beneficiary_last_name[]" placeholder="Last Name (optional)"></td>
-                                <td><input type="text" id="beneficiary_first_name_<?php echo $i; ?>" name="beneficiary_first_name[]" placeholder="First Name (optional)"></td>
+                                <td><input type="text" id="beneficiary_last_name_<?php echo $i; ?>" name="beneficiary_last_name[]" placeholder="Last Name"></td>
+                                <td><input type="text" id="beneficiary_first_name_<?php echo $i; ?>" name="beneficiary_first_name[]" placeholder="First Name"></td>
                                 <td><input type="text" id="beneficiary_mi_<?php echo $i; ?>" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></td>
                                 <td><input type="text" id="beneficiary_dob_<?php echo $i; ?>" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></td>
                                 <td><select id="beneficiary_gender_<?php echo $i; ?>" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></td>
-                                <td><input type="text" id="beneficiary_relationship_<?php echo $i; ?>" name="beneficiary_relationship[]" placeholder="Relationship (optional)"></td>
+                                <td><input type="text" id="beneficiary_relationship_<?php echo $i; ?>" name="beneficiary_relationship[]" placeholder="Relationship"></td>
                                 <td style="text-align:center;"><input type="checkbox" id="beneficiary_dependent_<?php echo $i; ?>" name="beneficiary_dependent[]" value="1"></td>
                             </tr>
                             <?php endfor; ?>
@@ -998,19 +1009,19 @@ body.modal-open {
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_name">Name of Trustee (optional)</label>
-                                <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name (optional)">
+                                <label for="trustee_name">Name of Trustee</label>
+                                <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_dob">Date of Birth (optional)</label>
+                                <label for="trustee_dob">Date of Birth</label>
                                 <input type="text" id="trustee_dob" name="trustee_dob" placeholder="MM/DD/YYYY">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_relationship">Relationship to Applicant (optional)</label>
+                                <label for="trustee_relationship">Relationship to Applicant</label>
                                 <input type="text" id="trustee_relationship" name="trustee_relationship" placeholder="Enter Relationship to Beneficiary">
                             </div>
                         </div>
@@ -1035,7 +1046,7 @@ body.modal-open {
                         </div>
                         <div class="form-col-2">
                             <div id="beneficiary-signature-section" class="form-group">
-                                <label for="beneficiary_signature">Beneficiary's Signature (optional)</label>
+                                <label for="beneficiary_signature">Beneficiary's Signature</label>
                                 <div class="signature-container">
                                     <canvas id="beneficiary_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
@@ -1061,8 +1072,8 @@ body.modal-open {
                     <div id="beneficiary-name-field" class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="sig_beneficiary_name">Name of Beneficiary (optional)</label>
-                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name (optional)">
+                                <label for="sig_beneficiary_name">Name of Beneficiary</label>
+                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name">
                             </div>
                         </div>
                         <div class="form-col-2"></div>
@@ -1380,16 +1391,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (spouseBirthdayField && spouseAgeField) {
         spouseBirthdayField.addEventListener('change', function() {
-            // Create hidden field for spouse age if it doesn't exist
-            let hiddenAgeField = document.getElementById('spouse_age');
-            if (!hiddenAgeField) {
-                hiddenAgeField = document.createElement('input');
-                hiddenAgeField.type = 'hidden';
-                hiddenAgeField.id = 'spouse_age';
-                hiddenAgeField.name = 'spouse_age';
-                this.parentNode.appendChild(hiddenAgeField);
-            }
-            calculateAge(this.value, hiddenAgeField);
+            calculateAge(this.value, spouseAgeField);
         });
     }
     
@@ -1477,8 +1479,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (activePage.id === 'form-page-1') {
             // BLIP is now mandatory and checked by default, so no need to check this
-            const classChecked = document.querySelectorAll('input[name="classification[]"]:checked');
-            if (classChecked.length === 0) {
+            const classChecked = document.querySelector('input[name="classification"]:checked');
+            if (!classChecked) {
                 isValid = false;
                 invalidElements.push(document.getElementById('class_borrower'));
             }
@@ -1671,12 +1673,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         addReviewRow(personalSection, 'Plans', selectedPlans.join(', '));
         
-        // Get selected classifications
-        const selectedClassifications = [];
-        document.querySelectorAll('input[name="classification[]"]:checked').forEach(checkbox => {
-            selectedClassifications.push(checkbox.value);
-        });
-        addReviewRow(personalSection, 'Classification', selectedClassifications.join(', '));
+        // Get selected classification
+        const selectedClassification = document.querySelector('input[name="classification"]:checked');
+        if (selectedClassification) {
+            addReviewRow(personalSection, 'Classification', selectedClassification.value);
+        }
         
         addReviewRow(personalSection, 'Last Name', document.getElementById('last_name').value);
         addReviewRow(personalSection, 'First Name', document.getElementById('first_name').value);
