@@ -732,7 +732,7 @@ input[readonly]:hover {
 
     .signature-container canvas {
         border: 1px solid #ddd;
-        background-color: #fff;
+        background-color: transparent;
         width: 100%; /* Canvas takes full width of its container */
         height: 200px; /* Fixed height, or make it responsive with JS aspect ratio */
         display: block; /* Remove extra space below canvas */
@@ -1045,7 +1045,7 @@ input[readonly]:hover {
 
 .signature-container canvas {
     border: 1px solid #ddd;
-    background-color: #fff;
+    background-color: transparent;
     width: 100%; /* Canvas takes full width of its container */
     height: 200px; /* Fixed height, or make it responsive with JS aspect ratio */
     display: block; /* Remove extra space below canvas */

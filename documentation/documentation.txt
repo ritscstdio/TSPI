@@ -249,44 +249,51 @@ The website includes a comprehensive membership form for users to join TSPI. Thi
    - Includes spouse's name, occupation, birthday, ID number, and age
 
 4. **Beneficiaries and Dependents**
-   - Table for up to 5 beneficiaries
-   - Fields for name, date of birth, gender, relationship, and dependent status
+   - Added based on initial agreement modal selection
+   - Up to 5 beneficiaries with relationship details and dependency status
+   - Includes trustee designation
 
-5. **Trustee**
-   - Trustee name, date of birth, and relationship fields
+5. **Signature Section**
+   - Digital signature pads for member and beneficiary
+   - Disclaimer agreement checkbox
 
-6. **Signatures**
-   - Date of signing (defaults to current date)
-   - CID number (auto-populated from earlier field)
-   - Proxy information
-   - Member/beneficiary signature fields
+### Key Form Features:
 
-### JavaScript Functionality:
+- **Multi-page Navigation:** The form is divided into multiple pages for better usability
+- **Conditional Fields:** Some fields are only displayed based on user selections (e.g., spouse information)
+- **Dynamic Rows:** Ability to add multiple income sources and beneficiaries
+- **Input Validation:** 
+  - Text inputs are automatically converted to uppercase
+  - Phone/telephone fields accept only numeric input
+  - Date fields have proper format validation
+  - Required fields are validated before proceeding to next page
+- **Signature Pads:** Digital signature capture with clear buttons and proper validation
+- **Review Modal:** Final review of all entered information before submission
 
-1. **Age Calculation**
-   - Automatically calculates age from entered birthdate for both member and spouse
+### Recent Enhancements (2023):
 
-2. **Field Synchronization**
-   - Copies CID number from personal info section to signature section automatically
+1. **Code Separation:** 
+   - Extracted inline CSS to forms.css
+   - Moved JavaScript to dedicated membership-form.js file
+   - Better organized functions with proper documentation
 
-3. **Conditional Display**
-   - Toggles visibility of spouse section based on civil status selection
+2. **Form Validation Improvements:**
+   - Proper validation of beneficiary fields when required
+   - Better phone/telephone field validation to accept only numbers
+   - Consistent uppercase text handling
+   - Automatic disabling of submit button until disclaimer is checked
 
-4. **Form Validation**
-   - Ensures at least one plan and one member classification are selected
-   - Validates that at least one beneficiary is added
-   - Displays error messages for invalid submissions
+3. **Signature Pad Enhancements:**
+   - Transparent background for better visibility
+   - Proper validation based on whether beneficiaries are selected
+   - Improved mobile responsiveness
 
-5. **Default Values**
-   - Sets the signing date to the current date by default
+4. **Agreement Modal Workflow:**
+   - Initial agreement with option to add beneficiaries
+   - Dynamic validation based on user choices
+   - Proper conditional field requirements
 
-### Integration:
-
-- The membership form is linked from the verification page after successful email verification
-- The "Join Us" button on the homepage links directly to the membership form
-- Form state is managed through URL parameters (`verified=true` or `join=true`) to track entry point
-
-This feature enhances user onboarding by providing a seamless path from account verification or homepage interest to full membership application.
+These enhancements improve form usability, validation, and overall user experience while maintaining a clean separation of concerns between HTML, CSS, and JavaScript.
 
 ## Project Documentation
 

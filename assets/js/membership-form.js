@@ -151,16 +151,16 @@ function initFormValidation() {
         const genderValue = document.getElementById('gender')?.value;
         const civilStatusValue = document.getElementById('civil_status')?.value;
         
-        // Process only text inputs, not select elements
+        // Process all text inputs
         document.querySelectorAll('input[type="text"], textarea').forEach(input => {
-            if (input.value) {
-                input.value = input.value.toUpperCase();
+            if (input.value && !input.readOnly) {
+                // Force uppercase and set the value back to the input
+                input.value = input.value.toUpperCase().trim();
             }
         });
         
         // For select elements, modify only the display text, not the value
         document.querySelectorAll('select').forEach(select => {
-            // Don't modify select values themselves to prevent resetting
             if (select.value && select.options[select.selectedIndex]) {
                 // Only uppercase the text content of the option, not the value
                 const selectedOption = select.options[select.selectedIndex];
@@ -179,6 +179,9 @@ function initFormValidation() {
     
     // Handle submit button based on disclaimer checkbox
     if (submitButton && disclaimerCheckbox) {
+        // Initially disable the submit button if checkbox is not checked
+        submitButton.disabled = !disclaimerCheckbox.checked;
+        
         disclaimerCheckbox.addEventListener('change', function() {
             submitButton.disabled = !this.checked;
         });
@@ -342,59 +345,78 @@ function validateCurrentPageFields() {
             return false;
         }
         
-        // Only check beneficiary signature if beneficiary section is visible
+        // Check if user has selected to add beneficiaries
+        const hasBeneficiaries = document.getElementById('has_beneficiaries')?.value === 'yes';
+        
+        // Only check beneficiary signature if beneficiary section is visible and required
         const beneficiarySignatureSection = document.getElementById('beneficiary-signature-section');
         const beneficiaryPad = document.getElementById('beneficiary_signature_canvas')?._signaturePad;
         
-        if (beneficiarySignatureSection && 
+        if (hasBeneficiaries && 
+            beneficiarySignatureSection && 
             beneficiarySignatureSection.style.display !== 'none' && 
-            beneficiaryPad && 
-            beneficiaryPad.isEmpty()) {
-            isValid = false;
-            alert('Please provide a signature in the Beneficiary Signature field');
-            document.getElementById('beneficiary_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
-            return false;
+            beneficiaryPad) {
+            if (beneficiaryPad.isEmpty()) {
+                isValid = false;
+                alert('Please provide a signature in the Beneficiary Signature field');
+                document.getElementById('beneficiary_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
+                return false;
+            }
         }
     }
     
-    // Beneficiary rows are optional, but if any field in a row is filled, require all fields
+    // Beneficiary rows validation
     if (activePage.id === 'form-page-3') {
-        // Only validate beneficiary section if it's visible
+        // Check if user has selected to add beneficiaries
+        const hasBeneficiaries = document.getElementById('has_beneficiaries')?.value === 'yes';
+        
+        // Only validate beneficiary section if it's visible and required
         const beneficiariesSection = document.getElementById('beneficiaries-section');
-        if (beneficiariesSection && beneficiariesSection.style.display !== 'none') {
-            document.querySelectorAll('.beneficiary-row').forEach(row => {
-                // Skip rows that are hidden (beyond the selected count)
-                if (row.style.display === 'none') return;
+        if (hasBeneficiaries && beneficiariesSection && beneficiariesSection.style.display !== 'none') {
+            // Get beneficiary count
+            const beneficiaryCount = parseInt(document.getElementById('beneficiary-count')?.value || '1', 10);
+            
+            // Validate visible beneficiary rows (based on count)
+            document.querySelectorAll('.beneficiary-row').forEach((row, index) => {
+                // Skip rows that are beyond the selected count
+                if (index >= beneficiaryCount) return;
                 
                 const lastName = row.querySelector('input[name="beneficiary_last_name[]"]');
                 const firstName = row.querySelector('input[name="beneficiary_first_name[]"]');
                 const dob = row.querySelector('input[name="beneficiary_dob[]"]');
                 const gender = row.querySelector('select[name="beneficiary_gender[]"]');
                 const relationship = row.querySelector('input[name="beneficiary_relationship[]"]');
-                const vals = [
-                    lastName?.value.trim(),
-                    firstName?.value.trim(),
-                    dob?.value.trim(),
-                    gender?.value.trim(),
-                    relationship?.value.trim()
-                ];
-                const anyFilled = vals.some(v => v);
-                if (anyFilled && vals.some(v => !v)) {
-                    isValid = false;
-                    const emptyField = [lastName, firstName, dob, gender, relationship].find(f => f && !f.value.trim());
-                    if (emptyField) invalidElements.push(emptyField);
-                }
-                // If we're requiring full beneficiary info, check if all required fields are empty
-                else if (!anyFilled) {
-                    isValid = false;
-                    if (lastName) invalidElements.push(lastName);
-                }
+                
+                // Check each required field
+                [lastName, firstName, dob, gender, relationship].forEach(field => {
+                    if (field && (!field.value || field.value.trim() === '')) {
+                        isValid = false;
+                        invalidElements.push(field);
+                        field.classList.add('attempted');
+                        field.style.borderColor = 'red';
+                    }
+                });
             });
+            
+            // Validate trustee fields if section is visible
+            const trusteeSection = document.getElementById('trustee-section');
+            if (trusteeSection && trusteeSection.style.display !== 'none') {
+                const trusteeFields = ['trustee_name', 'trustee_dob', 'trustee_relationship'];
+                trusteeFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field && (!field.value || field.value.trim() === '')) {
+                        isValid = false;
+                        invalidElements.push(field);
+                        field.classList.add('attempted');
+                        field.style.borderColor = 'red';
+                    }
+                });
+            }
         }
     }
     
     if (!isValid) {
-        alert('Please fill out required fields.');
+        alert('Please fill out all required fields.');
         if (invalidElements.length) {
             invalidElements[0].scrollIntoView({behavior:'smooth', block:'center'});
             invalidElements[0].focus();
@@ -662,7 +684,7 @@ function initSignaturePads() {
         
         if (memberCanvas) {
             const memberPad = new SignaturePad(memberCanvas, {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
                 penColor: 'black'
             });
             memberCanvas._signaturePad = memberPad; // Store reference for later
@@ -713,7 +735,7 @@ function initSignaturePads() {
         
         if (beneficiaryCanvas) {
             const beneficiaryPad = new SignaturePad(beneficiaryCanvas, {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
                 penColor: 'black'
             });
             beneficiaryCanvas._signaturePad = beneficiaryPad; // Store reference for later
@@ -764,6 +786,51 @@ function initSignaturePads() {
  * Initialize dynamic fields like other income sources and other valid IDs
  */
 function initDynamicFields() {
+    // Phone number and telephone number - restrict to numbers only
+    const phoneField = document.getElementById('cell_phone');
+    const telephoneField = document.getElementById('contact_no');
+    
+    // Function to restrict input to numbers only
+    const restrictToNumbers = (event) => {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([46, 8, 9, 27, 13].indexOf(event.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (event.keyCode === 65 && event.ctrlKey === true) ||
+            (event.keyCode === 67 && event.ctrlKey === true) ||
+            (event.keyCode === 86 && event.ctrlKey === true) ||
+            (event.keyCode === 88 && event.ctrlKey === true) ||
+            // Allow: home, end, left, right
+            (event.keyCode >= 35 && event.keyCode <= 39)) {
+            // let it happen, don't do anything
+            return;
+        }
+        // Ensure that it is a number and stop the keypress if not
+        if ((event.shiftKey || (event.keyCode < 48 || event.keyCode > 57)) && 
+            (event.keyCode < 96 || event.keyCode > 105)) {
+            event.preventDefault();
+        }
+    };
+    
+    // Function to clean any non-numeric characters on paste or blur
+    const cleanNonNumeric = (event) => {
+        const input = event.target;
+        input.value = input.value.replace(/[^0-9]/g, '');
+    };
+    
+    // Apply restrictions to phone field
+    if (phoneField) {
+        phoneField.addEventListener('keydown', restrictToNumbers);
+        phoneField.addEventListener('paste', cleanNonNumeric);
+        phoneField.addEventListener('blur', cleanNonNumeric);
+    }
+    
+    // Apply restrictions to telephone field
+    if (telephoneField) {
+        telephoneField.addEventListener('keydown', restrictToNumbers);
+        telephoneField.addEventListener('paste', cleanNonNumeric);
+        telephoneField.addEventListener('blur', cleanNonNumeric);
+    }
+    
     // Other income sources management
     const addOtherIncomeSourceBtn = document.getElementById('add_other_income_source_btn');
     const otherIncomeSourcesContainer = document.getElementById('other_income_sources_container');
@@ -978,10 +1045,35 @@ function handleAgreementConfirmed() {
         rows.forEach((row, index) => {
             if (index < visibleCount) {
                 row.style.display = '';
+                
+                // Make visible beneficiary fields required
+                row.querySelectorAll('input:not([type="checkbox"]), select').forEach(field => {
+                    field.setAttribute('required', 'required');
+                });
             } else {
                 row.style.display = 'none';
+                
+                // Remove required attribute from hidden rows
+                row.querySelectorAll('input:not([type="checkbox"]), select').forEach(field => {
+                    field.removeAttribute('required');
+                });
             }
         });
+        
+        // Make trustee fields required
+        if (trusteeSection) {
+            trusteeSection.querySelectorAll('input').forEach(field => {
+                field.setAttribute('required', 'required');
+            });
+        }
+        
+        // Make beneficiary signature required
+        if (beneficiarySignatureSection) {
+            const beneficiaryNameInput = document.getElementById('sig_beneficiary_name');
+            if (beneficiaryNameInput) {
+                beneficiaryNameInput.setAttribute('required', 'required');
+            }
+        }
         
         // Make sure the beneficiary sections are visible
         if (beneficiariesSection) beneficiariesSection.style.display = '';
@@ -994,7 +1086,32 @@ function handleAgreementConfirmed() {
         if (trusteeSection) trusteeSection.style.display = 'none';
         if (beneficiarySignatureSection) beneficiarySignatureSection.style.display = 'none';
         if (beneficiaryNameField) beneficiaryNameField.style.display = 'none';
+        
+        // Remove required attribute from all beneficiary fields
+        document.querySelectorAll('.beneficiary-row input, .beneficiary-row select').forEach(field => {
+            field.removeAttribute('required');
+        });
+        
+        // Remove required attribute from trustee fields
+        if (trusteeSection) {
+            trusteeSection.querySelectorAll('input').forEach(field => {
+                field.removeAttribute('required');
+            });
+        }
+        
+        // Remove required from beneficiary signature
+        const beneficiaryNameInput = document.getElementById('sig_beneficiary_name');
+        if (beneficiaryNameInput) {
+            beneficiaryNameInput.removeAttribute('required');
+        }
     }
+    
+    // Store the user's beneficiary choice in a hidden input for later validation
+    const hasBeneficiariesInput = document.createElement('input');
+    hasBeneficiariesInput.type = 'hidden';
+    hasBeneficiariesInput.id = 'has_beneficiaries';
+    hasBeneficiariesInput.value = wantsBeneficiaries ? 'yes' : 'no';
+    document.getElementById('membership-form').appendChild(hasBeneficiariesInput);
 }
 
 /**

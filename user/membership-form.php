@@ -637,7 +637,7 @@ include '../includes/header.php';
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="contact_no">Telephone no./ Landline</label>
-                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="7" title="7-digit landline number" placeholder="Enter Landline Number" autocomplete="tel-local">
+                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="8" title="8-digit landline number" placeholder="Enter Landline Number" autocomplete="tel-local">
                             </div>
                         </div>
                     </div>
