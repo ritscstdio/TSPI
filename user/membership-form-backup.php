@@ -355,6 +355,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $stmt->execute($params);
         $success = true;
+        
+        // Clear localStorage after successful submission
+        echo '<script>localStorage.removeItem("membershipFormData");</script>';
     } catch (Exception $e) {
         $errors[] = 'Submission error: ' . $e->getMessage();
     }
@@ -1394,24 +1397,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (civilStatusSelect && spouseInfoSection) {
         const toggleSpouseSection = (isMarried) => {
             spouseInfoSection.style.display = isMarried ? 'block' : 'none';
-            // Update spouse fields required status based on marriage status
+            // Reset spouse fields if not married (optional)
             if (!isMarried) {
                 spouseInfoSection.querySelectorAll('input, select').forEach(input => {
-                    // Remove required attribute
-                    input.removeAttribute('required');
                     if (input.type === 'checkbox' || input.type === 'radio') {
                         input.checked = false;
                     } else {
                         input.value = '';
-                    }
-                });
-            } else {
-                // Make important spouse fields required
-                const requiredFields = ['spouse_last_name', 'spouse_first_name', 'spouse_birthday'];
-                requiredFields.forEach(fieldId => {
-                    const field = document.getElementById(fieldId);
-                    if (field) {
-                        field.setAttribute('required', 'required');
                     }
                 });
             }
@@ -1488,7 +1480,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activePage.id === 'form-page-3') {
             // Always check member signature
             const memberPad = document.getElementById('member_signature_canvas')?._signaturePad;
-            if (!memberPad || memberPad.isEmpty()) {
+            if (memberPad && memberPad.isEmpty()) {
                 isValid = false;
                 alert('Please provide your signature in the Member Signature field');
                 document.getElementById('member_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
@@ -1908,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', function() {
         nextBtn.addEventListener('click', function() {
             if (validateCurrentPageFields()) {
             if (currentPage < totalPages - 1) {
+                    saveFormToLocalStorage(); // Save form data before navigating
                 currentPage++;
                 updatePageDisplay();
                  window.scrollTo(0, 0); // Scroll to top of page
@@ -1919,6 +1912,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
             if (currentPage > 0) {
+                saveFormToLocalStorage(); // Save form data before navigating
                 currentPage--;
                 updatePageDisplay();
                 window.scrollTo(0, 0); // Scroll to top of page
