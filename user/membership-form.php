@@ -1109,26 +1109,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Convert to uppercase before validation
             uppercaseTextInputs();
             
-            // Validate the current page
-            let allValid = true;
-            for (let i = 0; i < totalPages; i++) {
-                // Temporarily activate each page for validation
-                pages.forEach((p, idx) => p.classList.toggle('active', idx === i));
-                if (!validateCurrentPageFields()) {
-                    allValid = false;
-                    console.log('Validation failed on page', i+1);
-                    break;
-                }
+            // Validate only the current page
+            if (!validateCurrentPageFields()) {
+                return; // Stop if validation fails
             }
             
-            // Restore the last page view
-            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages-1)));
-            updatePageDisplay();
-            
-            if (allValid) {
-                console.log('Form validation passed, showing review modal');
-                showReviewModal();
-            }
+            // Show the review modal
+            showReviewModal();
         });
     }
     
@@ -1264,49 +1251,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
-    // Modify form submission event listener
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            // If already confirmed (from modal), let the form submit normally
-            if (form.dataset.confirmed === 'true') {
-                console.log('Form confirmed, submitting...');
-                form.dataset.confirmed = 'false';
-                return true;
-            }
-            
-            console.log('Form submission intercepted for validation');
-            event.preventDefault(); // Prevent default submission
-            event.stopImmediatePropagation(); // Prevent duplicate submit handlers
-            
-            // Mark form as attempted for validation styling
-            markFormAttempted();
-            
-            // Convert to uppercase before validation
-            uppercaseTextInputs();
-            
-            // Validate the current page
-            let allValid = true;
-            for (let i = 0; i < totalPages; i++) {
-                // Temporarily activate each page for validation
-                pages.forEach((p, idx) => p.classList.toggle('active', idx === i));
-                if (!validateCurrentPageFields()) {
-                    allValid = false;
-                    console.log('Validation failed on page', i+1);
-                    break;
-                }
-            }
-            
-            // Restore the last page view
-            pages.forEach((p, idx) => p.classList.toggle('active', idx === (totalPages-1)));
-            updatePageDisplay();
-            
-            if (allValid) {
-                console.log('Form validation passed, showing review modal');
-                showReviewModal();
-            }
-        });
-    }
-    
     // Review modal functionality
     const modal = document.getElementById('review-modal');
     const closeBtn = document.querySelector('.close');
