@@ -587,8 +587,8 @@ include '../includes/header.php';
                                 <label for="gender">Gender</label>
                                 <select id="gender" name="gender" required autocomplete="sex">
                                     <option value="" selected>Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
+                                    <option value="Male">MALE</option>
+                                    <option value="Female">FEMALE</option>
                                 </select>
                             </div>
                         </div>
@@ -600,10 +600,10 @@ include '../includes/header.php';
                                 <label for="civil_status">Civil Status</label>
                                 <select id="civil_status" name="civil_status" required>
                                     <option value="" selected>Select Civil Status</option>
-                                    <option value="Single">Single</option>
-                                    <option value="Married">Married</option>
-                                    <option value="Widowed">Widowed</option>
-                                    <option value="Separated">Separated</option>
+                                    <option value="Single">SINGLE</option>
+                                    <option value="Married">MARRIED</option>
+                                    <option value="Widowed">WIDOWED</option>
+                                    <option value="Separated">SEPARATED</option>
                                 </select>
                             </div>
                         </div>
@@ -984,7 +984,7 @@ include '../includes/header.php';
                     <button type="button" id="prev_page_btn" class="btn btn-previous"><span class="btn-icon">←</span> Previous</button>
                     <div class="page-indicator" id="page_indicator">Page 1 of 3</div>
                     <button type="button" id="next_page_btn" class="btn btn-primary btn-next"><span class="btn-icon">→</span> Next</button>
-                    <button type="button" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none;" disabled data-preserve-form="true"><span class="btn-icon">✓</span> Submit Application</button> 
+                    <button type="button" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none; background-color: #cccccc; cursor: not-allowed;" disabled data-preserve-form="true"><span class="btn-icon">✓</span> Submit Application</button> 
                 </div>
             </form>
         <?php endif; ?>

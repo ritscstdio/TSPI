@@ -6,6 +6,15 @@
 document.addEventListener('DOMContentLoaded', function() {
     initializeMembershipForm();
     initializeAgreementModal();
+    
+    // Additional check for disclaimer checkbox and submit button
+    const submitButton = document.getElementById('submit_application_btn');
+    const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
+    
+    if (submitButton && disclaimerCheckbox) {
+        // Ensure button is properly disabled on page load
+        submitButton.disabled = !disclaimerCheckbox.checked;
+    }
 });
 
 /**
@@ -127,6 +136,22 @@ function initFormValidation() {
     const submitButton = document.getElementById('submit_application_btn');
     const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
     
+    // Handle submit button based on disclaimer checkbox
+    if (submitButton && disclaimerCheckbox) {
+        // Initially disable the submit button if checkbox is not checked
+        submitButton.disabled = !disclaimerCheckbox.checked;
+        
+        // Update submit button state when checkbox changes
+        disclaimerCheckbox.addEventListener('change', function() {
+            submitButton.disabled = !this.checked;
+        });
+        
+        // Ensure the button is properly disabled initially
+        setTimeout(() => {
+            submitButton.disabled = !disclaimerCheckbox.checked;
+        }, 100);
+    }
+    
     // Function to mark the form as attempted (for validation styling)
     const markCurrentPageAttempted = () => {
         if (!form) return;
@@ -176,16 +201,6 @@ function initFormValidation() {
             if (civilStatusValue) document.getElementById('civil_status').value = civilStatusValue;
         }, 10);
     };
-    
-    // Handle submit button based on disclaimer checkbox
-    if (submitButton && disclaimerCheckbox) {
-        // Initially disable the submit button if checkbox is not checked
-        submitButton.disabled = !disclaimerCheckbox.checked;
-        
-        disclaimerCheckbox.addEventListener('change', function() {
-            submitButton.disabled = !this.checked;
-        });
-    }
     
     // Handle the submitApplicationBtn click to show review modal
     if (submitButton) {
@@ -338,7 +353,10 @@ function validateCurrentPageFields() {
     if (activePage.id === 'form-page-3') {
         // Always check member signature
         const memberPad = document.getElementById('member_signature_canvas')?._signaturePad;
-        if (!memberPad || memberPad.isEmpty()) {
+        const memberSignatureInput = document.getElementById('member_signature');
+        
+        // Check if signature exists by checking the input value, which is set on endStroke
+        if (!memberSignatureInput || !memberSignatureInput.value) {
             isValid = false;
             alert('Please provide your signature in the Member Signature field');
             document.getElementById('member_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
@@ -350,13 +368,12 @@ function validateCurrentPageFields() {
         
         // Only check beneficiary signature if beneficiary section is visible and required
         const beneficiarySignatureSection = document.getElementById('beneficiary-signature-section');
-        const beneficiaryPad = document.getElementById('beneficiary_signature_canvas')?._signaturePad;
+        const beneficiarySignatureInput = document.getElementById('beneficiary_signature');
         
         if (hasBeneficiaries && 
             beneficiarySignatureSection && 
-            beneficiarySignatureSection.style.display !== 'none' && 
-            beneficiaryPad) {
-            if (beneficiaryPad.isEmpty()) {
+            beneficiarySignatureSection.style.display !== 'none') {
+            if (!beneficiarySignatureInput || !beneficiarySignatureInput.value) {
                 isValid = false;
                 alert('Please provide a signature in the Beneficiary Signature field');
                 document.getElementById('beneficiary_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
@@ -465,6 +482,19 @@ function initFormNavigation() {
         }
         if (submitApplicationBtn) {
             submitApplicationBtn.style.display = currentPage === totalPages - 1 ? 'inline-flex' : 'none';
+            // Force update the submit button state whenever it becomes visible
+            if (currentPage === totalPages - 1) {
+                forceUpdateSubmitButtonState();
+                
+                // Add event listener to disclaimer checkbox on the final page
+                const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
+                if (disclaimerCheckbox) {
+                    // Remove any existing listeners first to prevent duplicates
+                    disclaimerCheckbox.removeEventListener('change', forceUpdateSubmitButtonState);
+                    // Add the new listener
+                    disclaimerCheckbox.addEventListener('change', forceUpdateSubmitButtonState);
+                }
+            }
         }
         
         // Restore saved dropdown values if navigating back to page 1
@@ -703,9 +733,11 @@ function initSignaturePads() {
                 });
             }
             
-            // On end event - save signature data
+            // Save on any change to ensure we catch all signature actions
             memberPad.addEventListener('endStroke', function() {
-                if (memberSignatureInput) memberSignatureInput.value = memberPad.toDataURL();
+                if (memberSignatureInput) {
+                    memberSignatureInput.value = memberPad.toDataURL();
+                }
             });
             
             // Resize function
@@ -754,9 +786,11 @@ function initSignaturePads() {
                 });
             }
             
-            // On end event - save signature data
+            // Save on any change to ensure we catch all signature actions
             beneficiaryPad.addEventListener('endStroke', function() {
-                if (beneficiarySignatureInput) beneficiarySignatureInput.value = beneficiaryPad.toDataURL();
+                if (beneficiarySignatureInput) {
+                    beneficiarySignatureInput.value = beneficiaryPad.toDataURL();
+                }
             });
             
             // Resize function
@@ -786,6 +820,16 @@ function initSignaturePads() {
  * Initialize dynamic fields like other income sources and other valid IDs
  */
 function initDynamicFields() {
+    // Convert text inputs to uppercase as the user types
+    document.querySelectorAll('input[type="text"], textarea').forEach(input => {
+        input.addEventListener('input', function() {
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.toUpperCase();
+            this.setSelectionRange(start, end);
+        });
+    });
+    
     // Phone number and telephone number - restrict to numbers only
     const phoneField = document.getElementById('cell_phone');
     const telephoneField = document.getElementById('contact_no');
@@ -1172,7 +1216,17 @@ function showReviewModal() {
     const civilStatusValue = civilStatusSelect && civilStatusSelect.selectedIndex > 0 ? civilStatusSelect.value : '';
     addReviewRow(personalSection, 'Civil Status', civilStatusValue);
     
-    addReviewRow(personalSection, 'Birthday', document.getElementById('birthday')?.value);
+    const birthday = document.getElementById('birthday')?.value;
+    addReviewRow(personalSection, 'Birthday', birthday);
+    
+    // Calculate and display age based on birthday
+    if (birthday) {
+        const age = calculateAgeFromDateString(birthday);
+        if (age !== null) {
+            addReviewRow(personalSection, 'Age', age.toString());
+        }
+    }
+    
     addReviewRow(personalSection, 'Birth Place', document.getElementById('birth_place')?.value);
     
     const cellPhone = document.getElementById('cell_phone')?.value;
@@ -1334,7 +1388,14 @@ function showReviewModal() {
     signatureSection.innerHTML = '<h3>Signature Information</h3>';
     
     addReviewRow(signatureSection, 'Member Name', document.getElementById('member_name')?.value);
-    addReviewRow(signatureSection, 'Beneficiary Name', document.getElementById('sig_beneficiary_name')?.value);
+    
+    // Check if user selected to add beneficiaries
+    const hasBeneficiaries = document.getElementById('has_beneficiaries')?.value === 'yes';
+    
+    // Only show beneficiary name if user selected to add beneficiaries
+    if (hasBeneficiaries) {
+        addReviewRow(signatureSection, 'Beneficiary Name', document.getElementById('sig_beneficiary_name')?.value);
+    }
     
     reviewContent.appendChild(signatureSection);
     
@@ -1629,4 +1690,54 @@ function initFormStateManager() {
     setTimeout(() => {
         window.formStateManager.restoreValues();
     }, 300);
+}
+
+/**
+ * Force update the submit button state based on the disclaimer checkbox
+ * This is crucial for when pages change or elements are dynamically shown/hidden
+ */
+function forceUpdateSubmitButtonState() {
+    const submitButton = document.getElementById('submit_application_btn');
+    const disclaimerCheckbox = document.getElementById('disclaimer_agreement');
+    
+    if (submitButton && disclaimerCheckbox) {
+        // Explicitly set disabled state based on checkbox
+        submitButton.disabled = !disclaimerCheckbox.checked;
+        
+        // Apply additional styling if needed
+        if (disclaimerCheckbox.checked) {
+            submitButton.removeAttribute('style');
+        } else {
+            submitButton.setAttribute('style', 'background-color: #cccccc !important; cursor: not-allowed !important;');
+        }
+    }
+}
+
+// Add helper function to calculate age from date string in format MM/DD/YYYY
+function calculateAgeFromDateString(dateString) {
+    if (!dateString) return null;
+    
+    // Parse the date string (MM/DD/YYYY format)
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return null;
+    
+    const month = parseInt(parts[0], 10);
+    const day = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    
+    // Check if valid date parts
+    if (isNaN(month) || isNaN(day) || isNaN(year)) return null;
+    
+    const birthDate = new Date(year, month - 1, day); // Month is 0-based in JS Date
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    return age >= 0 ? age : null; // Return null for negative ages
 }
