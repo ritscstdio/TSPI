@@ -704,7 +704,7 @@ body.modal-open {
                             <div class="form-group">
                                 <label for="gender">Gender</label>
                                 <select id="gender" name="gender" required autocomplete="sex">
-                                    <option value="" disabled selected>Select Gender</option>
+                                    <option value="" selected>Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                 </select>
@@ -717,7 +717,7 @@ body.modal-open {
                             <div class="form-group">
                                 <label for="civil_status">Civil Status</label>
                                 <select id="civil_status" name="civil_status" required>
-                                    <option value="" disabled selected>Select Civil Status</option>
+                                    <option value="" selected>Select Civil Status</option>
                                     <option value="Single">Single</option>
                                     <option value="Married">Married</option>
                                     <option value="Widowed">Widowed</option>
@@ -993,7 +993,11 @@ body.modal-open {
                                 <td><input type="text" id="beneficiary_first_name_<?php echo $i; ?>" name="beneficiary_first_name[]" placeholder="First Name"></td>
                                 <td><input type="text" id="beneficiary_mi_<?php echo $i; ?>" name="beneficiary_mi[]" maxlength="1" placeholder="MI"></td>
                                 <td><input type="text" id="beneficiary_dob_<?php echo $i; ?>" name="beneficiary_dob[]" class="beneficiary-dob" placeholder="MM/DD/YYYY"></td>
-                                <td><select id="beneficiary_gender_<?php echo $i; ?>" name="beneficiary_gender[]"><option value="" selected></option><option value="M">M</option><option value="F">F</option></select></td>
+                                <td><select id="beneficiary_gender_<?php echo $i; ?>" name="beneficiary_gender[]">
+                                    <option value="" selected>Select</option>
+                                    <option value="M">M</option>
+                                    <option value="F">F</option>
+                                </select></td>
                                 <td><input type="text" id="beneficiary_relationship_<?php echo $i; ?>" name="beneficiary_relationship[]" placeholder="Relationship"></td>
                                 <td style="text-align:center;"><input type="checkbox" id="beneficiary_dependent_<?php echo $i; ?>" name="beneficiary_dependent[]" value="1"></td>
                             </tr>
@@ -1098,7 +1102,7 @@ body.modal-open {
                     <button type="button" id="prev_page_btn" class="btn btn-previous"><span class="btn-icon">←</span> Previous</button>
                     <div class="page-indicator" id="page_indicator">Page 1 of 3</div>
                     <button type="button" id="next_page_btn" class="btn btn-primary btn-next"><span class="btn-icon">→</span> Next</button>
-                    <button type="button" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none;" disabled><span class="btn-icon">✓</span> Submit Application</button> 
+                    <button type="button" id="submit_application_btn" class="btn btn-primary btn-submit" style="display: none;" disabled data-preserve-form="true"><span class="btn-icon">✓</span> Submit Application</button> 
                 </div>
             </form>
         <?php endif; ?>
@@ -1325,34 +1329,87 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Convert all text inputs to uppercase on submit
     const uppercaseTextInputs = () => {
+        // Save dropdown values before transforming
+        const genderValue = document.getElementById('gender').value;
+        const civilStatusValue = document.getElementById('civil_status').value;
+        
+        // Process only text inputs, not select elements
         document.querySelectorAll('input[type="text"], textarea').forEach(input => {
             if (input.value) {
                 input.value = input.value.toUpperCase();
             }
         });
         
-        // Also uppercase select values
+        // For select elements, modify only the display text, not the value
         document.querySelectorAll('select').forEach(select => {
-            if (select.value) {
-                select.value = select.value.toUpperCase();
-                
-                // Update the select's selected option text to uppercase for display
+            // Don't modify select values themselves to prevent resetting
+            if (select.value && select.options[select.selectedIndex]) {
+                // Only uppercase the text content of the option, not the value
                 const selectedOption = select.options[select.selectedIndex];
                 if (selectedOption) {
                     selectedOption.text = selectedOption.text.toUpperCase();
                 }
             }
         });
+        
+        // Restore dropdown values to ensure they weren't changed
+        setTimeout(() => {
+            if (genderValue) document.getElementById('gender').value = genderValue;
+            if (civilStatusValue) document.getElementById('civil_status').value = civilStatusValue;
+        }, 10);
     };
     
     // Handle the submitApplicationBtn click to show review modal
     if (submitButton) {
         submitButton.addEventListener('click', function(event) {
             event.preventDefault();
+            
+            // IMPORTANT: Capture current dropdown values BEFORE any processing
+            const currentGenderValue = document.getElementById('gender').value;
+            const currentCivilStatusValue = document.getElementById('civil_status').value;
+            
+            console.log("Before validation - Gender: ", currentGenderValue);
+            console.log("Before validation - Civil Status: ", currentCivilStatusValue);
+            
+            // Store these in the form state manager
+            if (window.formStateManager) {
+                window.formStateManager.state.gender = currentGenderValue;
+                window.formStateManager.state.civilStatus = currentCivilStatusValue;
+            }
+            
+            // Now do the form validation and processing
             markCurrentPageAttempted();
             uppercaseTextInputs();
-            if (!validateCurrentPageFields()) return;
+            
+            // If validation fails, restore dropdown values and return
+            if (!validateCurrentPageFields()) {
+                // Force restore values from our saved copies
+                setTimeout(() => {
+                    document.getElementById('gender').value = currentGenderValue;
+                    document.getElementById('civil_status').value = currentCivilStatusValue;
+                    console.log("Restored after failed validation - Gender: ", currentGenderValue);
+                    console.log("Restored after failed validation - Civil Status: ", currentCivilStatusValue);
+                }, 10);
+                return;
+            }
+            
+            // Validation passed, show review modal
+            // Before showing modal, ensure dropdown values are preserved
             showReviewModal();
+            
+            // After showing modal, restore dropdown values anyway as a fallback
+            setTimeout(() => {
+                document.getElementById('gender').value = currentGenderValue;
+                document.getElementById('civil_status').value = currentCivilStatusValue;
+                
+                // Update state manager values for any additional processing
+                if (window.formStateManager) {
+                    window.formStateManager.state.gender = currentGenderValue;
+                    window.formStateManager.state.civilStatus = currentCivilStatusValue;
+                }
+                console.log("Restored after showing modal - Gender: ", currentGenderValue);
+                console.log("Restored after showing modal - Civil Status: ", currentCivilStatusValue);
+            }, 100);
         });
     }
     
@@ -1444,7 +1501,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!activePage) return true;
         
         // Check if we're on page 2 and the user is married
-        const isMarried = document.getElementById('civil_status').value === 'Married';
+        const civilStatusSelect = document.getElementById('civil_status');
+        const isMarried = civilStatusSelect && civilStatusSelect.value === 'Married';
         const isPage2 = activePage.id === 'form-page-2';
         
         if (isPage2 && isMarried) {
@@ -1458,7 +1516,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        const inputs = activePage.querySelectorAll('input[required], select[required], textarea[required]');
+        const inputs = activePage.querySelectorAll('input[required], textarea[required]');
         inputs.forEach(input => {
             // Skip hidden fields with default values 
             if (input.type === 'hidden') return;
@@ -1466,24 +1524,37 @@ document.addEventListener('DOMContentLoaded', function() {
             const val = input.value.trim();
             if ((input.type === 'checkbox' || input.type === 'radio')) {
                 if (!document.querySelector(`input[name="${input.name}"]:checked`)) {
-                isValid = false;
+                    isValid = false;
                     invalidElements.push(input);
                 }
             } else {
                 if (!val) {
-                isValid = false;
+                    isValid = false;
                     invalidElements.push(input);
                 }
             }
         });
         
+        // Validate select fields separately to check for actual selection (not just first option)
+        const selects = activePage.querySelectorAll('select[required]');
+        selects.forEach(select => {
+            if (select.selectedIndex === 0) {
+                isValid = false;
+                invalidElements.push(select);
+                select.classList.add('attempted');
+                select.style.borderColor = 'red';
+            }
+        });
+        
         if (activePage.id === 'form-page-1') {
-            // BLIP is now mandatory and checked by default, so no need to check this
+            // Check classification
             const classChecked = document.querySelector('input[name="classification"]:checked');
             if (!classChecked) {
                 isValid = false;
-                invalidElements.push(document.getElementById('class_borrower'));
+                invalidElements.push(document.getElementById('class_tkp') || document.getElementById('class_borrower'));
             }
+            
+            // Check for at least one phone number
             const cellPhone = document.getElementById('cell_phone');
             const contactNo = document.getElementById('contact_no');
             if (!cellPhone.value.trim() && !contactNo.value.trim()) {
@@ -1582,8 +1653,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close modal when clicking Edit button
     if (editBtn) {
         editBtn.addEventListener('click', function() {
+            // Save current dropdown values before closing modal
+            const genderValue = document.getElementById('gender').value;
+            const civilStatusValue = document.getElementById('civil_status').value;
+            
             modal.style.display = 'none';
             document.body.classList.remove('modal-open'); // Re-enable scrolling
+            
+            // If we need to go back to page 1, restore the dropdown values
+            setTimeout(() => {
+                const genderSelect = document.getElementById('gender');
+                const civilStatusSelect = document.getElementById('civil_status');
+                
+                if (genderSelect && genderValue) genderSelect.value = genderValue;
+                if (civilStatusSelect && civilStatusValue) civilStatusSelect.value = civilStatusValue;
+            }, 50);
         });
     }
     
@@ -1591,7 +1675,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function(e) {
             e.preventDefault(); // Prevent the default action
-            console.log('Confirm button clicked, preparing submission');
+            
+            // Store the current values for gender and civil status
+            const selectedGender = document.getElementById('gender').value;
+            const selectedCivilStatus = document.getElementById('civil_status').value;
+            
+            // Save to the state manager if it exists
+            if (window.formStateManager) {
+                window.formStateManager.state.gender = selectedGender;
+                window.formStateManager.state.civilStatus = selectedCivilStatus;
+            }
             
             // Convert all inputs to uppercase before final submission
             uppercaseTextInputs();
@@ -1623,6 +1716,79 @@ document.addEventListener('DOMContentLoaded', function() {
                 blipCheckbox.checked = true;
             }
             
+            // Make sure dropdown values are properly selected before submission
+            const genderSelect = document.getElementById('gender');
+            const civilStatusSelect = document.getElementById('civil_status');
+            
+            // Check for empty or default selected values - using selectedIndex which is more reliable
+            if (genderSelect.selectedIndex === 0) {
+                alert('Please select your gender.');
+                // Close modal and go back to page 1 to fix the issue
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                
+                currentPage = 0;
+                updatePageDisplay();
+                
+                // Immediately try to set the values directly
+                genderSelect.value = selectedGender;
+                
+                // Add a small delay to ensure the page is updated before focusing
+                setTimeout(() => {
+                    // Try to set the value again after the delay
+                    genderSelect.value = selectedGender;
+                    
+                    // Also update the state manager
+                    if (window.formStateManager) {
+                        window.formStateManager.state.gender = selectedGender;
+                        window.formStateManager.restoreValues();
+                    }
+                    
+                    // Focus and highlight the field that needs attention
+                    genderSelect.focus();
+                    genderSelect.classList.add('attempted');
+                    genderSelect.style.borderColor = 'red';
+                    genderSelect.scrollIntoView({behavior:'smooth', block:'center'});
+                }, 100);
+                
+                confirmBtn.disabled = false;
+                return false;
+            }
+            
+            if (civilStatusSelect.selectedIndex === 0) {
+                alert('Please select your civil status.');
+                // Close modal and go back to page 1 to fix the issue
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                
+                currentPage = 0;
+                updatePageDisplay();
+                
+                // Immediately try to set the values directly
+                civilStatusSelect.value = selectedCivilStatus;
+                
+                // Add a small delay to ensure the page is updated before focusing
+                setTimeout(() => {
+                    // Try to set the value again after the delay
+                    civilStatusSelect.value = selectedCivilStatus;
+                    
+                    // Also update the state manager
+                    if (window.formStateManager) {
+                        window.formStateManager.state.civilStatus = selectedCivilStatus;
+                        window.formStateManager.restoreValues();
+                    }
+                    
+                    // Focus and highlight the field that needs attention
+                    civilStatusSelect.focus();
+                    civilStatusSelect.classList.add('attempted');
+                    civilStatusSelect.style.borderColor = 'red';
+                    civilStatusSelect.scrollIntoView({behavior:'smooth', block:'center'});
+                }, 100);
+                
+                confirmBtn.disabled = false;
+                return false;
+            }
+            
             try {
                 // Set the confirmed flag and submit the form
                 form.dataset.confirmed = 'true';
@@ -1631,7 +1797,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = 'Submitting...';
                 
-                console.log('Submitting form...');
                 setTimeout(function() {
                     form.submit();
                 }, 100); // Small delay to ensure UI updates
@@ -1653,6 +1818,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function showReviewModal() {
+        // Important: Save the current state before showing the modal
+        if (window.formStateManager) {
+            const genderSelect = document.getElementById('gender');
+            const civilStatusSelect = document.getElementById('civil_status');
+            
+            if (genderSelect && genderSelect.value) {
+                window.formStateManager.state.gender = genderSelect.value;
+            }
+            
+            if (civilStatusSelect && civilStatusSelect.value) {
+                window.formStateManager.state.civilStatus = civilStatusSelect.value;
+            }
+        }
+
         const reviewContent = document.getElementById('review-content');
         reviewContent.innerHTML = '';
         
@@ -1662,9 +1841,6 @@ document.addEventListener('DOMContentLoaded', function() {
         personalSection.innerHTML = '<h3>Personal Information</h3>';
         
         // Don't show hidden fields in the review
-        // addReviewRow(personalSection, 'Branch', document.getElementById('branch').value);
-        // addReviewRow(personalSection, 'CID No.', document.getElementById('cid_no').value);
-        // addReviewRow(personalSection, 'Center No.', document.getElementById('center_no').value);
         
         // Get selected plans (simplified without categories)
         const selectedPlans = [];
@@ -1682,8 +1858,18 @@ document.addEventListener('DOMContentLoaded', function() {
         addReviewRow(personalSection, 'Last Name', document.getElementById('last_name').value);
         addReviewRow(personalSection, 'First Name', document.getElementById('first_name').value);
         addReviewRow(personalSection, 'Middle Name', document.getElementById('middle_name').value);
-        addReviewRow(personalSection, 'Gender', document.getElementById('gender').value);
-        addReviewRow(personalSection, 'Civil Status', document.getElementById('civil_status').value);
+        
+        // Get selected values from dropdowns - IMPROVED HANDLING
+        const genderSelect = document.getElementById('gender');
+        // Check if a valid option (not the default) is selected
+        const genderValue = genderSelect.selectedIndex > 0 ? genderSelect.value : '';
+        addReviewRow(personalSection, 'Gender', genderValue);
+        
+        const civilStatusSelect = document.getElementById('civil_status');
+        // Check if a valid option (not the default) is selected
+        const civilStatusValue = civilStatusSelect.selectedIndex > 0 ? civilStatusSelect.value : '';
+        addReviewRow(personalSection, 'Civil Status', civilStatusValue);
+        
         addReviewRow(personalSection, 'Birthday', document.getElementById('birthday').value);
         addReviewRow(personalSection, 'Birth Place', document.getElementById('birth_place').value);
         addReviewRow(personalSection, 'Phone No.', '+63' + document.getElementById('cell_phone').value);
@@ -1856,8 +2042,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function addReviewRow(container, label, value) {
-        if (!value) return; // Skip empty values
-        
+        // Modified to show empty values with a placeholder
         const row = document.createElement('div');
         row.className = 'review-row';
         
@@ -1867,7 +2052,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const valueDiv = document.createElement('div');
         valueDiv.className = 'review-value';
-        valueDiv.textContent = value;
+        
+        // Handle specific required fields - like Gender and Civil Status
+        if (!value && (label === 'Gender' || label === 'Civil Status')) {
+            valueDiv.style.color = '#d9534f'; // Bootstrap danger color
+            valueDiv.innerHTML = '<span style="font-weight: bold;">⚠️ Required - Please select</span>';
+        } else {
+            valueDiv.textContent = value || '—';
+        }
         
         row.appendChild(labelDiv);
         row.appendChild(valueDiv);
@@ -1886,6 +2078,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalPages = pages.length;
 
     function updatePageDisplay() {
+        // First, save the current state of important dropdowns if we're on page 1
+        let savedGenderValue = null;
+        let savedCivilStatusValue = null;
+        
+        if (currentPage === 0) {
+            const genderSelect = document.getElementById('gender');
+            const civilStatusSelect = document.getElementById('civil_status');
+            if (genderSelect) savedGenderValue = genderSelect.value;
+            if (civilStatusSelect) savedCivilStatusValue = civilStatusSelect.value;
+        }
+        
+        // Update page display as usual
         pages.forEach((page, index) => {
             page.classList.toggle('active', index === currentPage);
         });
@@ -1901,17 +2105,31 @@ document.addEventListener('DOMContentLoaded', function() {
             submitApplicationBtn.style.display = currentPage === totalPages - 1 ? 'inline-flex' : 'none'; // use inline-flex
         }
         
+        // Restore saved dropdown values if navigating back to page 1
+        if (currentPage === 0) {
+            const genderSelect = document.getElementById('gender');
+            const civilStatusSelect = document.getElementById('civil_status');
+            
+            // Restore values if they were previously set
+            if (genderSelect && savedGenderValue) {
+                genderSelect.value = savedGenderValue;
+            }
+            if (civilStatusSelect && savedCivilStatusValue) {
+                civilStatusSelect.value = savedCivilStatusValue;
+            }
+        }
+        
         const disclaimerBox = document.querySelector('.disclaimer-box');
 
         if (currentPage === totalPages - 1) {
             if (disclaimerBox) disclaimerBox.style.display = 'block';
-
-             // Attempt to resize signature canvases if they are on this page and now visible
+            
+            // Attempt to resize signature canvases if they are on this page and now visible
             const signatureCanvases = pages[currentPage].querySelectorAll('canvas[id*=\'_signature_canvas\']');
             signatureCanvases.forEach(canvas => {
                 const pad = canvas._signaturePad; // Assuming we store the pad instance on the canvas element
                 if (pad) {
-                     // Call the resize function associated with this pad's canvas
+                    // Call the resize function associated with this pad's canvas
                     const resizeFn = window[`resize_${canvas.id}`]; // e.g., window.resize_member_signature_canvas
                     if (typeof resizeFn === 'function') {
                         resizeFn();
@@ -2292,6 +2510,74 @@ document.addEventListener('DOMContentLoaded', function() {
             window.resize_beneficiary_signature_canvas(); // Call once on init
         }
     }
+    
+    // Add form state persistence mechanism to fix dropdown value retention issues
+    const formStateManager = {
+        state: {
+            gender: '',
+            civilStatus: ''
+        },
+        
+        init: function() {
+            // Set up listeners for key fields
+            const genderSelect = document.getElementById('gender');
+            const civilStatusSelect = document.getElementById('civil_status');
+            
+            // Listen for changes on the gender dropdown
+            if (genderSelect) {
+                genderSelect.addEventListener('change', (e) => {
+                    this.state.gender = e.target.value;
+                    console.log('Gender stored:', this.state.gender);
+                });
+            }
+            
+            // Listen for changes on the civil status dropdown
+            if (civilStatusSelect) {
+                civilStatusSelect.addEventListener('change', (e) => {
+                    this.state.civilStatus = e.target.value;
+                    console.log('Civil status stored:', this.state.civilStatus);
+                });
+            }
+            
+            // Attach to navigation events
+            const nextBtn = document.getElementById('next_page_btn');
+            const prevBtn = document.getElementById('prev_page_btn');
+            const submitBtn = document.getElementById('submit_application_btn');
+            
+            if (nextBtn) nextBtn.addEventListener('click', () => this.restoreValuesAfterDelay());
+            if (prevBtn) prevBtn.addEventListener('click', () => this.restoreValuesAfterDelay());
+            if (submitBtn) submitBtn.addEventListener('click', () => this.restoreValuesAfterDelay());
+        },
+        
+        restoreValuesAfterDelay: function() {
+            setTimeout(() => {
+                this.restoreValues();
+            }, 100);
+        },
+        
+        restoreValues: function() {
+            const genderSelect = document.getElementById('gender');
+            const civilStatusSelect = document.getElementById('civil_status');
+            
+            if (genderSelect && this.state.gender) {
+                genderSelect.value = this.state.gender;
+                console.log('Gender restored to:', this.state.gender);
+            }
+            
+            if (civilStatusSelect && this.state.civilStatus) {
+                civilStatusSelect.value = this.state.civilStatus;
+                console.log('Civil status restored to:', this.state.civilStatus);
+            }
+        }
+    };
+    
+    // Initialize form state manager
+    formStateManager.init();
+    
+    // Apply initial restore to capture any initial values
+    setTimeout(() => {
+        formStateManager.restoreValues();
+    }, 300);
 });
 </script>
 
@@ -2420,4 +2706,72 @@ function validateBeneficiaryCount(input) {
     }
 }
 </script>
+
+// Add this right before the </script> tag at the end of your main script block
+
+// Direct fix for the gender and civil status dropdown issues
+document.addEventListener('DOMContentLoaded', function() {
+    // Get references to important elements
+    const submitButton = document.getElementById('submit_application_btn');
+    const genderSelect = document.getElementById('gender');
+    const civilStatusSelect = document.getElementById('civil_status');
+    
+    if (submitButton && genderSelect && civilStatusSelect) {
+        // Create a MutationObserver to monitor for value changes
+        const dropdownObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                // If we detect a value change in the dropdown, restore from our state manager
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    if (window.formStateManager) {
+                        if (mutation.target.id === 'gender' && window.formStateManager.state.gender) {
+                            setTimeout(() => genderSelect.value = window.formStateManager.state.gender, 0);
+                        }
+                        if (mutation.target.id === 'civil_status' && window.formStateManager.state.civilStatus) {
+                            setTimeout(() => civilStatusSelect.value = window.formStateManager.state.civilStatus, 0);
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Configure the observer to watch for attribute changes
+        const observerConfig = { attributes: true, childList: false, subtree: false };
+        
+        // Start observing the dropdowns
+        dropdownObserver.observe(genderSelect, observerConfig);
+        dropdownObserver.observe(civilStatusSelect, observerConfig);
+        
+        // Also add a direct override to the validation process
+        const originalValidateCurrentPageFields = validateCurrentPageFields;
+        window.validateCurrentPageFields = function() {
+            // Store current values before validation
+            const genderVal = genderSelect.value;
+            const civilStatusVal = civilStatusSelect.value;
+            
+            // Call the original validation function
+            const result = originalValidateCurrentPageFields.apply(this, arguments);
+            
+            // Always restore values after validation, regardless of result
+            setTimeout(() => {
+                if (genderVal) genderSelect.value = genderVal;
+                if (civilStatusVal) civilStatusSelect.value = civilStatusVal;
+            }, 10);
+            
+            return result;
+        };
+        
+        // Add a direct event listener to the submit button that will run AFTER all other handlers
+        submitButton.addEventListener('click', function(e) {
+            // Store current values
+            const gVal = genderSelect.value;
+            const csVal = civilStatusSelect.value;
+            
+            // After all other handlers have run, restore values
+            setTimeout(() => {
+                if (gVal) genderSelect.value = gVal;
+                if (csVal) civilStatusSelect.value = csVal;
+            }, 200);
+        }, true);
+    }
+});
 
