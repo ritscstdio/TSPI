@@ -246,7 +246,7 @@ if (!file_exists($template_file)) {
                 $pdf->Write(0, $application['age']);
                 
                 // Birth Place
-                $pdf->SetXY(100, 72.6); 
+                $pdf->SetXY(85, 72.9); 
                 $pdf->Write(0, $application['birth_place']);
                 
                 // Nationality
@@ -438,7 +438,7 @@ if (!file_exists($template_file)) {
                 // Second beneficiary
                 if (!empty($application['beneficiary_fn_2'])) {
                     $pdf->SetXY(5, $beneficiary_y_start + $beneficiary_y_increment);
-                    $pdf->Write(0, 'Testing'.$application['beneficiary_ln_2']);
+                    $pdf->Write(0, $application['beneficiary_ln_2']);
                     
                     $pdf->SetXY(50, $beneficiary_y_start + $beneficiary_y_increment);
                     $pdf->Write(0, $application['beneficiary_fn_2']);
@@ -482,7 +482,7 @@ if (!file_exists($template_file)) {
                 // Third beneficiary
                 if (!empty($application['beneficiary_fn_3'])) {
                     $pdf->SetXY(5, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                    $pdf->Write(0, 'Testing'.$application['beneficiary_ln_3']);
+                    $pdf->Write(0, $application['beneficiary_ln_3']);
                     
                     $pdf->SetXY(50, $beneficiary_y_start + ($beneficiary_y_increment * 2));
                     $pdf->Write(0, $application['beneficiary_fn_3']);
@@ -568,15 +568,15 @@ if (!file_exists($template_file)) {
                 }
 
                 // Fifth beneficiary
-                if (!empty($application['beneficiary_fn_4'])) {
-                    $pdf->SetXY(5, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                if (!empty($application['beneficiary_fn_5'])) {
+                    $pdf->SetXY(5, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                     $pdf->Write(0, $application['beneficiary_ln_5']);
                     
-                    $pdf->SetXY(50, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                    $pdf->SetXY(50, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                     $pdf->Write(0, $application['beneficiary_fn_5']);
                     
                     if (!empty($application['beneficiary_mi_5'])) {
-                        $pdf->SetXY(95, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                        $pdf->SetXY(95, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                         $pdf->Write(0, $application['beneficiary_mi_5'] . '.');
                     }
                     
@@ -584,24 +584,24 @@ if (!file_exists($template_file)) {
                         $birthdate = strtotime($application['beneficiary_birthdate_5']);
                         
                         // month    
-                        $pdf->SetXY(106, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                        $pdf->SetXY(106, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                         $pdf->Write(0, date('m', $birthdate));
 
                         // day
-                        $pdf->SetXY(117, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                        $pdf->SetXY(117, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                         $pdf->Write(0, date('d', $birthdate));
                         
                         // year
-                        $pdf->SetXY(125.5, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                        $pdf->SetXY(125.5, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                         $pdf->Write(0, date('Y', $birthdate));
                     }
                     
                     //beneficiary gender
-                    $pdf->SetXY(140, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                    $pdf->SetXY(140, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                     $pdf->Write(0, $application['beneficiary_gender_5']);
                     
                     //beneficiary relationship
-                    $pdf->SetXY(151, $beneficiary_y_start + ($beneficiary_y_increment * 3));
+                    $pdf->SetXY(151, $beneficiary_y_start + ($beneficiary_y_increment * 4));
                     $pdf->Write(0, $application['beneficiary_relationship_5']); 
 
                     // beneficiary dependent    
