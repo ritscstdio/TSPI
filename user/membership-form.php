@@ -263,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Convert plans and classification arrays to JSON
         $plansJson = isset($_POST['plans']) ? json_encode(array_unique($_POST['plans'])) : null;
-        $classificationValue = isset($_POST['classification']) ? $_POST['classification'] : null;
+        $classificationJson = isset($_POST['classification']) ? json_encode([$_POST['classification']]) : null;
         $otherValidIdsJson = isset($_POST['other_valid_id']) ? json_encode($_POST['other_valid_id']) : null;
         
         // Get values for mother's maiden name that weren't initialized before
@@ -277,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cid_no,                                              // cid_no
             $center_no,                                           // center_no
             $plansJson,                                           // plans
-            $classificationValue,                                 // classification
+            $classificationJson,                                  // classification
             $first_name,                                          // first_name
             $middle_name,                                         // middle_name
             $last_name,                                           // last_name
@@ -682,13 +682,13 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="last_name">Last Name</label>
-                                <input type="text" id="last_name" name="last_name" required placeholder="Enter Last Name">
+                                <input type="text" id="last_name" name="last_name" required placeholder="Enter Last Name" autocomplete="family-name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="first_name">First Name</label>
-                                <input type="text" id="first_name" name="first_name" required placeholder="Enter First Name">
+                                <input type="text" id="first_name" name="first_name" required placeholder="Enter First Name" autocomplete="given-name">
                             </div>
                         </div>
                     </div>
@@ -697,13 +697,13 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="middle_name">Middle Name</label>
-                                <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name">
+                                <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name" required autocomplete="additional-name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="gender">Gender</label>
-                                <select id="gender" name="gender" required>
+                                <select id="gender" name="gender" required autocomplete="sex">
                                     <option value="" disabled selected>Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -728,7 +728,7 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="birthday">Birthday (mm/dd/yyyy)</label>
-                                <input type="text" id="birthday" name="birthday" required placeholder="MM/DD/YYYY">
+                                <input type="text" id="birthday" name="birthday" required placeholder="MM/DD/YYYY" autocomplete="bday">
                             </div>
                         </div>
                     </div>
@@ -737,7 +737,7 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="birth_place">Birth Place</label>
-                                <input type="text" id="birth_place" name="birth_place" required placeholder="Enter Place of Birth">
+                                <input type="text" id="birth_place" name="birth_place" required placeholder="Enter Place of Birth" autocomplete="off">
                             </div>
                         </div>
                     </div>
@@ -748,14 +748,14 @@ body.modal-open {
                                 <label for="cell_phone">Phone no./ SIM</label>
                                 <div class="phone-input-group with-flag">
                                     <span class="phone-prefix"><span class="country-flag">🇵🇭</span>+63</span>
-                                    <input type="text" id="cell_phone" name="cell_phone" required pattern="[0-9]{10}" maxlength="10" title="10-digit mobile number (e.g., 917xxxxxxx)">
+                                    <input type="text" id="cell_phone" name="cell_phone" required pattern="[0-9]{10}" maxlength="10" title="10-digit mobile number (e.g., 917xxxxxxx)" autocomplete="tel-national">
                                 </div>
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="contact_no">Telephone no./ Landline</label>
-                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="7" title="7-digit landline number" placeholder="Enter Landline Number">
+                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="7" title="7-digit landline number" placeholder="Enter Landline Number" autocomplete="tel-local">
                             </div>
                         </div>
                     </div>
@@ -764,14 +764,14 @@ body.modal-open {
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="nationality">Nationality</label>
-                                <input type="text" id="nationality" name="nationality" required placeholder="Enter Nationality">
+                                <input type="text" id="nationality" name="nationality" required placeholder="Enter Nationality" autocomplete="country-name">
                             </div>
                         </div>
                        
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="id_number">TIN/SSS/GSIS Number</label>
-                                <input type="text" id="id_number" name="id_number" required placeholder="Enter Valid ID Number">
+                                <input type="text" id="id_number" name="id_number" required placeholder="Enter Valid ID Number" autocomplete="off">
                                 <button type="button" id="add_other_valid_id_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Do you have other Valid IDs?</button>
                             </div>
                             <div id="other_valid_ids_container" style="margin-top:10px; margin-bottom: 24px;">
@@ -787,13 +787,13 @@ body.modal-open {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_last_name">Mother's Maiden Last Name</label>
-                                <input type="text" id="mothers_maiden_last_name" name="mothers_maiden_last_name" required placeholder="Enter Mother's Maiden Last Name">
+                                <input type="text" id="mothers_maiden_last_name" name="mothers_maiden_last_name" required placeholder="Enter Mother's Maiden Last Name" autocomplete="family-name">
                             </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_first_name">Mother's Maiden First Name</label>
-                                <input type="text" id="mothers_maiden_first_name" name="mothers_maiden_first_name" required placeholder="Enter Mother's Maiden First Name">
+                                <input type="text" id="mothers_maiden_first_name" name="mothers_maiden_first_name" required placeholder="Enter Mother's Maiden First Name" autocomplete="given-name">
                             </div>
                         </div>
                     </div>
@@ -801,7 +801,7 @@ body.modal-open {
                         <div class="form-col-2">
                             <div class="form-group">
                                 <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name</label>
-                                <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name">
+                                <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name" required autocomplete="additional-name">
                             </div>
                         </div>
                         <div class="form-col-2">
@@ -816,19 +816,19 @@ body.modal-open {
                     <h2>Present Address</h2>
                      <div class="form-group">
                         <label for="present_address">Unit / Address</label>
-        <input type="text" id="present_address" name="present_address" placeholder="Unit No., Street, Brgy., City" required>
+        <input type="text" id="present_address" name="present_address" placeholder="Unit No., Street, Brgy., City" required autocomplete="address-line1">
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
                 <label for="present_brgy_code">Brgy. Code</label>
-                <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required>
+                <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="present_zip_code">Zip Code</label>
-                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code">
+                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code">
                             </div>
                         </div>
                     </div>
@@ -841,19 +841,19 @@ body.modal-open {
                     <h2>Permanent Address</h2>
                     <div class="form-group">
                         <label for="permanent_address">Unit / Address</label>
-                        <input type="text" id="permanent_address" name="permanent_address" placeholder="Unit No., Street, Brgy., City" required>
+                        <input type="text" id="permanent_address" name="permanent_address" placeholder="Unit No., Street, Brgy., City" required autocomplete="address-line1">
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="permanent_brgy_code">Brgy. Code</label>
-                                <input type="text" id="permanent_brgy_code" name="permanent_brgy_code" placeholder="Enter Brgy. Code" required>
+                                <input type="text" id="permanent_brgy_code" name="permanent_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="permanent_zip_code">Zip Code</label>
-                                <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code">
+                                <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code">
                             </div>
                         </div>
                         </div>
@@ -912,7 +912,7 @@ body.modal-open {
                     </div>
                     <div class="form-group">
                         <label for="business_address_unit">Unit / Address</label>
-                        <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Street, Brgy., City" required>
+                        <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Street, Brgy., City" required autocomplete="street-address">
                         <!-- Hidden fields removed -->
                     </div>
                     <!-- Address fields removed -->
@@ -923,13 +923,13 @@ body.modal-open {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_last_name">Spouse's Last Name</label>
-                                    <input type="text" id="spouse_last_name" name="spouse_last_name" placeholder="Enter Spouse's Last Name">
+                                    <input type="text" id="spouse_last_name" name="spouse_last_name" placeholder="Enter Spouse's Last Name" autocomplete="family-name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_first_name">Spouse's First Name</label>
-                                    <input type="text" id="spouse_first_name" name="spouse_first_name" placeholder="Enter Spouse's First Name">
+                                    <input type="text" id="spouse_first_name" name="spouse_first_name" placeholder="Enter Spouse's First Name" autocomplete="given-name">
                                 </div>
                             </div>
                         </div>
@@ -937,13 +937,13 @@ body.modal-open {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_middle_name">Spouse's Middle Name</label>
-                                    <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name">
+                                    <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name" autocomplete="additional-name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_birthday">Birthday (mm/dd/yyyy)</label>
-                                    <input type="text" id="spouse_birthday" name="spouse_birthday" placeholder="MM/DD/YYYY">
+                                    <input type="text" id="spouse_birthday" name="spouse_birthday" placeholder="MM/DD/YYYY" autocomplete="bday">
                                     <!-- Age is now calculated but not displayed as a field -->
                                     <input type="hidden" id="spouse_age" name="spouse_age">
                                 </div>
@@ -953,13 +953,13 @@ body.modal-open {
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_occupation">Occupation</label>
-                                    <input type="text" id="spouse_occupation" name="spouse_occupation" placeholder="Enter Spouse's Occupation">
+                                    <input type="text" id="spouse_occupation" name="spouse_occupation" placeholder="Enter Spouse's Occupation" autocomplete="organization-title">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
                                     <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID</label>
-                                    <input type="text" id="spouse_id_number" name="spouse_id_number" placeholder="Enter Spouse's ID Number">
+                                    <input type="text" id="spouse_id_number" name="spouse_id_number" placeholder="Enter Spouse's ID Number" autocomplete="off">
                                 </div>
                             </div>
                         </div>
