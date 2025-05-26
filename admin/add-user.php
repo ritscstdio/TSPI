@@ -5,7 +5,13 @@ require_once '../includes/config.php';
 require_admin_login();
 
 // Define available roles
-$available_roles = ['admin' => 'Admin', 'editor' => 'Editor', 'comment_moderator' => 'Comment Moderator'];
+$available_roles = [
+    'admin' => 'Admin', 
+    'editor' => 'Editor', 
+    'comment_moderator' => 'Comment Moderator',
+    'insurance_officer' => 'Insurance Officer',
+    'loan_officer' => 'Loan Officer'
+];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';

@@ -47,15 +47,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <a href="comments.php"><i class="fas fa-comments"></i> <span>Comments</span></a>
             </li>
             
+            <?php if ($current_admin && in_array($current_admin['role'], ['admin', 'insurance_officer', 'loan_officer'])): ?>
+                <li class="nav-header"><span>Membership</span></li>
+                <li class="<?php echo in_array($current_page, ['applications.php', 'view_application.php']) ? 'active' : ''; ?>">
+                    <a href="applications.php"><i class="fas fa-file-alt"></i> <span>Membership Applications</span></a>
+                </li>
+            <?php endif; ?>
+            
             <?php if ($current_admin && $current_admin['role'] === 'admin'): ?>
                 <li class="nav-header"><span>Administration</span></li>
                 
                 <li class="<?php echo in_array($current_page, ['users.php', 'add-user.php', 'edit-user.php']) ? 'active' : ''; ?>">
                     <a href="users.php"><i class="fas fa-users"></i> <span>Users</span></a>
-                </li>
-                
-                <li class="<?php echo in_array($current_page, ['applications.php', 'view_application.php']) ? 'active' : ''; ?>">
-                    <a href="applications.php"><i class="fas fa-file-alt"></i> <span>Membership Applications</span></a>
                 </li>
                 
                 <li class="<?php echo $current_page === 'settings.php' ? 'active' : ''; ?>">

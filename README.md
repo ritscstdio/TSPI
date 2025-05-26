@@ -239,4 +239,39 @@ These instructions will guide you to get a copy of the project up and running on
    - To manage the Content (previously Articles), use `admin/content.php`, `admin/add-content.php`, and `admin/edit-content.php`.
    - Category management now groups categories by front-end navbar sections; slug editing and delete/add are disabled in admin.
 
+## Database Setup for Approval Workflow
+
+The membership application approval system requires additional database setup:
+
+1. Run the following SQL files in your database:
+   - `admin/sql/alter_members_information.sql` - Adds approval columns to the members_information table
+   - `admin/sql/create_branches_table.sql` - Creates the branches table and adds sample branches
+
+These SQL scripts will:
+1. Add Insurance Officer (IO) and Loan Officer (LO) approval fields to the membership table
+2. Create a branches table for branch assignment during the approval process
+3. Set up a trigger to automatically update the application status when both IO and LO approve
+
+## Administrator Roles
+
+The system includes the following administrator roles:
+
+- **Admin**: Full access to all features
+- **Editor**: Can manage content and media
+- **Comment Moderator**: Can manage and moderate comments
+- **Insurance Officer**: Can approve membership applications as IO
+- **Loan Officer**: Can approve membership applications as LO
+
+To add users with these roles, use the Admin panel's "Add User" functionality.
+
+## Approval Workflow
+
+The membership application approval process follows these steps:
+
+1. User submits a membership application through the membership form
+2. Application is initially set to 'pending' status with both IO and LO approval set to 'pending'
+3. Insurance Officer reviews the application and can approve or reject
+4. Loan Officer reviews the application and can approve or reject
+5. Only when both IO and LO have approved the application will the overall status change to 'approved'
+
 This README will be updated as the project evolves.

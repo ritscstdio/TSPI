@@ -27,6 +27,14 @@ if (isset($_POST['generate_pdf'])) {
     header("Location: generate_application_pdf.php?id=" . $application['id']);
     exit;
 }
+
+// Get current user role
+$current_user = get_admin_user();
+$user_role = $current_user['role'] ?? '';
+
+// Check if this user can approve this application
+$can_approve_as_io = ($user_role === 'insurance_officer' && $application['io_approved'] === 'pending');
+$can_approve_as_lo = ($user_role === 'loan_officer' && $application['lo_approved'] === 'pending');
 ?>
 
 <!DOCTYPE html>
@@ -55,8 +63,50 @@ if (isset($_POST['generate_pdf'])) {
                     <h1>View Membership Application</h1>
                 </div>
                 
-                <div class="application-status status-<?php echo strtolower($application['status']); ?>">
-                    Status: <?php echo ucfirst($application['status']); ?>
+                <div class="application-section">
+                    <h2>Approval Status</h2>
+                    <div class="approval-status">
+                        <div class="status-item">
+                            <span class="status-label">Application Status:</span>
+                            <span class="status-badge status-<?php echo strtolower($application['status']); ?>">
+                                <?php echo ucfirst($application['status']); ?>
+                            </span>
+                        </div>
+                        
+                        <div class="status-item">
+                            <span class="status-label">Insurance Officer:</span>
+                            <span class="status-badge status-<?php echo strtolower($application['io_approved']); ?>">
+                                <?php echo ucfirst($application['io_approved']); ?>
+                            </span>
+                            <?php if ($application['io_approved'] !== 'pending'): ?>
+                                <span class="status-info">
+                                    by <?php echo htmlspecialchars($application['io_name'] ?: 'Unknown'); ?>
+                                    on <?php echo $application['io_approval_date'] ? date('M j, Y', strtotime($application['io_approval_date'])) : 'N/A'; ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="status-item">
+                            <span class="status-label">Loan Officer:</span>
+                            <span class="status-badge status-<?php echo strtolower($application['lo_approved']); ?>">
+                                <?php echo ucfirst($application['lo_approved']); ?>
+                            </span>
+                            <?php if ($application['lo_approved'] !== 'pending'): ?>
+                                <span class="status-info">
+                                    by <?php echo htmlspecialchars($application['lo_name'] ?: 'Unknown'); ?>
+                                    on <?php echo $application['lo_approval_date'] ? date('M j, Y', strtotime($application['lo_approval_date'])) : 'N/A'; ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <?php if ($can_approve_as_io || $can_approve_as_lo): ?>
+                    <div class="approval-actions">
+                        <a href="approve_application.php?id=<?php echo $application['id']; ?>" class="btn btn-primary">
+                            <i class="fas fa-check-circle"></i> Sign as <?php echo $user_role === 'insurance_officer' ? 'Insurance Officer' : 'Loan Officer'; ?>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="admin-card">
@@ -680,6 +730,46 @@ if (isset($_POST['generate_pdf'])) {
     .signature-block {
         flex: 1;
         min-width: 200px;
+    }
+    
+    .approval-status {
+        margin: 10px 0;
+    }
+    .status-item {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    .status-label {
+        font-weight: bold;
+        width: 150px;
+    }
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-right: 10px;
+    }
+    .status-pending { 
+        background-color: #ffe58f; 
+        color: #856404;
+    }
+    .status-approved { 
+        background-color: #b7eb8f; 
+        color: #52c41a;
+    }
+    .status-rejected { 
+        background-color: #ffccc7; 
+        color: #f5222d; 
+    }
+    .status-info {
+        font-size: 14px;
+        color: #555;
+    }
+    .approval-actions {
+        margin-top: 20px;
     }
     </style>
     

@@ -523,7 +523,7 @@ include '../includes/header.php';
                     
 
                             <div class="form-group">
-                        <label>Member Classification</label>
+                        <label>Member Classification *</label>
                         <div class="checkbox-group">
                           
                             <div class="checkbox-item">
@@ -547,7 +547,7 @@ include '../includes/header.php';
                         <div class="checkbox-group">
                             <div class="checkbox-item">
                                 <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" checked onclick="return false;" title="Basic Life Insurance Plan - Provides essential coverage">
-                                <label for="plan_blip">Basic Life (BLIP) <span class="tooltip-icon" title="Basic Life Insurance Plan - Provides essential coverage">ⓘ</span></label>
+                                <label for="plan_blip">Basic Life (BLIP) * <span class="tooltip-icon" title="Basic Life Insurance Plan - Provides essential coverage">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP" title="Life Plus Insurance Plan - Additional coverage on top of basic">
@@ -563,13 +563,13 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="last_name">Last Name</label>
+                                <label for="last_name">Last Name *</label>
                                 <input type="text" id="last_name" name="last_name" required placeholder="Enter Last Name" autocomplete="family-name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="first_name">First Name</label>
+                                <label for="first_name">First Name *</label>
                                 <input type="text" id="first_name" name="first_name" required placeholder="Enter First Name" autocomplete="given-name">
                             </div>
                         </div>
@@ -578,13 +578,13 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="middle_name">Middle Name</label>
+                                <label for="middle_name">Middle Name *</label>
                                 <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name" required autocomplete="additional-name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="gender">Gender</label>
+                                <label for="gender">Gender *</label>
                                 <select id="gender" name="gender" required autocomplete="sex">
                                     <option value="" selected>Select Gender</option>
                                     <option value="Male">MALE</option>
@@ -597,7 +597,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="civil_status">Civil Status</label>
+                                <label for="civil_status">Civil Status *</label>
                                 <select id="civil_status" name="civil_status" required>
                                     <option value="" selected>Select Civil Status</option>
                                     <option value="Single">SINGLE</option>
@@ -609,7 +609,7 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="birthday">Birthday (mm/dd/yyyy)</label>
+                                <label for="birthday">Birthday (mm/dd/yyyy) *</label>
                                 <input type="text" id="birthday" name="birthday" required placeholder="MM/DD/YYYY" autocomplete="bday">
                             </div>
                         </div>
@@ -618,7 +618,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="birth_place">Birth Place</label>
+                                <label for="birth_place">Birth Place *</label>
                                 <input type="text" id="birth_place" name="birth_place" required placeholder="Enter Place of Birth" autocomplete="off">
                             </div>
                         </div>
@@ -627,7 +627,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="cell_phone">Phone no./ SIM</label>
+                                <label for="cell_phone">Phone no./ SIM *</label>
                                 <div class="phone-input-group with-flag">
                                     <span class="phone-prefix"><span class="country-flag">🇵🇭</span>+63</span>
                                     <input type="text" id="cell_phone" name="cell_phone" required pattern="[0-9]{10}" maxlength="10" title="10-digit mobile number (e.g., 917xxxxxxx)" autocomplete="tel-national">
@@ -636,7 +636,7 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="contact_no">Telephone no./ Landline</label>
+                                <label for="contact_no">Telephone no./ Landline *</label>
                                 <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="8" title="8-digit landline number" placeholder="Enter Landline Number" autocomplete="tel-local">
                             </div>
                         </div>
@@ -645,14 +645,14 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="nationality">Nationality</label>
+                                <label for="nationality">Nationality *</label>
                                 <input type="text" id="nationality" name="nationality" required placeholder="Enter Nationality" autocomplete="country-name">
                             </div>
                         </div>
                        
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="id_number">TIN/SSS/GSIS Number</label>
+                                <label for="id_number">TIN/SSS/GSIS Number *</label>
                                 <input type="text" id="id_number" name="id_number" required placeholder="Enter Valid ID Number" autocomplete="off">
                                 <button type="button" id="add_other_valid_id_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Do you have other Valid IDs?</button>
                             </div>
@@ -668,13 +668,13 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="mothers_maiden_last_name">Mother's Maiden Last Name</label>
+                                <label for="mothers_maiden_last_name">Mother's Maiden Last Name *</label>
                                 <input type="text" id="mothers_maiden_last_name" name="mothers_maiden_last_name" required placeholder="Enter Mother's Maiden Last Name" autocomplete="family-name">
                             </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="mothers_maiden_first_name">Mother's Maiden First Name</label>
+                                <label for="mothers_maiden_first_name">Mother's Maiden First Name *</label>
                                 <input type="text" id="mothers_maiden_first_name" name="mothers_maiden_first_name" required placeholder="Enter Mother's Maiden First Name" autocomplete="given-name">
                             </div>
                         </div>
@@ -682,7 +682,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name</label>
+                                <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name *</label>
                                 <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name" required autocomplete="additional-name">
                             </div>
                         </div>
@@ -697,19 +697,19 @@ include '../includes/header.php';
                 <div class="form-page-content" id="form-page-2">
                     <h2>Present Address</h2>
                      <div class="form-group">
-                        <label for="present_address">Unit / Address</label>
+                        <label for="present_address">Unit / Address *</label>
         <input type="text" id="present_address" name="present_address" placeholder="Unit No., Street, Brgy., City" required autocomplete="address-line1">
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                <label for="present_brgy_code">Brgy. Code</label>
+                <label for="present_brgy_code">Brgy. Code *</label>
                 <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="present_zip_code">Zip Code</label>
+                                <label for="present_zip_code">Zip Code *</label>
                                 <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code">
                             </div>
                         </div>
@@ -722,19 +722,19 @@ include '../includes/header.php';
                     <!-- Permanent Address -->
                     <h2>Permanent Address</h2>
                     <div class="form-group">
-                        <label for="permanent_address">Unit / Address</label>
+                        <label for="permanent_address">Unit / Address *</label>
                         <input type="text" id="permanent_address" name="permanent_address" placeholder="Unit No., Street, Brgy., City" required autocomplete="address-line1">
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="permanent_brgy_code">Brgy. Code</label>
+                                <label for="permanent_brgy_code">Brgy. Code *</label>
                                 <input type="text" id="permanent_brgy_code" name="permanent_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="permanent_zip_code">Zip Code</label>
+                                <label for="permanent_zip_code">Zip Code *</label>
                                 <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code">
                             </div>
                         </div>
@@ -744,7 +744,7 @@ include '../includes/header.php';
 
                     <!-- Home Ownership -->
                     <div class="form-group">
-                        <label>Home Ownership</label>
+                        <label>Home Ownership *</label>
                         <div class="radio-group">
                             <div class="radio-item">
                                 <input type="radio" id="home_owned" name="home_ownership" value="Owned" required>
@@ -763,7 +763,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="length_of_stay">Length of Stay /yr</label>
+                                <label for="length_of_stay">Length of Stay / yrs *</label>
                                 <input type="number" id="length_of_stay" name="length_of_stay" required min="0">
                             </div>
                         </div>
@@ -777,7 +777,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="primary_business">Primary Business</label>
+                                <label for="primary_business">Primary Business *</label>
                                 <input type="text" id="primary_business" name="primary_business" required placeholder="Enter Primary Business">
                                 <button type="button" id="add_other_income_source_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Got other source of income?</button>
                             </div>
@@ -787,13 +787,13 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="years_in_business">Years in Business</label>
+                                <label for="years_in_business">Years in Business *</label>
                                 <input type="number" id="years_in_business" name="years_in_business" min="0" required>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="business_address_unit">Unit / Address</label>
+                        <label for="business_address_unit">Unit / Address *</label>
                         <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Street, Brgy., City" required autocomplete="street-address">
                         <!-- Hidden fields removed -->
                     </div>
@@ -804,13 +804,13 @@ include '../includes/header.php';
                          <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_last_name">Spouse's Last Name</label>
+                                    <label for="spouse_last_name">Spouse's Last Name *</label>
                                     <input type="text" id="spouse_last_name" name="spouse_last_name" placeholder="Enter Spouse's Last Name" autocomplete="family-name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_first_name">Spouse's First Name</label>
+                                    <label for="spouse_first_name">Spouse's First Name *</label>
                                     <input type="text" id="spouse_first_name" name="spouse_first_name" placeholder="Enter Spouse's First Name" autocomplete="given-name">
                                 </div>
                             </div>
@@ -818,13 +818,13 @@ include '../includes/header.php';
                         <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_middle_name">Spouse's Middle Name</label>
+                                    <label for="spouse_middle_name">Spouse's Middle Name *</label>
                                     <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name" autocomplete="additional-name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_birthday">Birthday (mm/dd/yyyy)</label>
+                                    <label for="spouse_birthday">Birthday (mm/dd/yyyy) *</label>
                                     <input type="text" id="spouse_birthday" name="spouse_birthday" placeholder="MM/DD/YYYY" autocomplete="bday">
                                     <!-- Age is now calculated but not displayed as a field -->
                                     <input type="hidden" id="spouse_age" name="spouse_age">
@@ -834,13 +834,13 @@ include '../includes/header.php';
                         <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_occupation">Occupation</label>
+                                    <label for="spouse_occupation">Occupation *</label>
                                     <input type="text" id="spouse_occupation" name="spouse_occupation" placeholder="Enter Spouse's Occupation" autocomplete="organization-title">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID</label>
+                                    <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID *</label>
                                     <input type="text" id="spouse_id_number" name="spouse_id_number" placeholder="Enter Spouse's ID Number" autocomplete="off">
                                 </div>
                             </div>
@@ -858,12 +858,12 @@ include '../includes/header.php';
                     <table class="beneficiaries-table">
                         <thead>
                             <tr>
-                                <th>Last Name</th>
-                                <th>First Name</th>
+                                <th>Last Name *</th>
+                                <th>First Name *</th>
                                 <th>M.I.</th>
-                                <th>Date of Birth</th>
-                                <th>Gender</th>
-                                <th>Relationship</th>
+                                <th>Date of Birth *</th>
+                                <th>Gender *</th>
+                                <th>Relationship *</th>
                                 <th>Dependent</th>
                             </tr>
                         </thead>
@@ -895,19 +895,19 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_name">Name of Trustee</label>
+                                <label for="trustee_name">Name of Trustee *</label>
                                 <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_dob">Date of Birth</label>
+                                <label for="trustee_dob">Date of Birth *</label>
                                 <input type="text" id="trustee_dob" name="trustee_dob" placeholder="MM/DD/YYYY">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="trustee_relationship">Relationship to Applicant</label>
+                                <label for="trustee_relationship">Relationship to Applicant *</label>
                                 <input type="text" id="trustee_relationship" name="trustee_relationship" placeholder="Enter Relationship to Beneficiary">
                             </div>
                         </div>
@@ -920,7 +920,7 @@ include '../includes/header.php';
                     <div class="form-row signature-section-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="member_signature">Member's Signature</label>
+                                <label for="member_signature">Member's Signature *</label>
                                 <div class="signature-container">
                                     <canvas id="member_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="member_signature" name="member_signature">
@@ -932,7 +932,7 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-2">
                             <div id="beneficiary-signature-section" class="form-group">
-                                <label for="beneficiary_signature">Beneficiary's Signature</label>
+                                <label for="beneficiary_signature">Beneficiary's Signature *</label>
                                 <div class="signature-container">
                                     <canvas id="beneficiary_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
@@ -947,7 +947,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="member_name">Name of Member (Borrower or Kapamilya)</label>
+                                <label for="member_name">Name of Member (Borrower or Kapamilya) *</label>
                                 <input type="text" id="member_name" name="member_name" placeholder="Enter Full Name as Signature" required>
                             </div>
                         </div>
@@ -958,7 +958,7 @@ include '../includes/header.php';
                     <div id="beneficiary-name-field" class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="sig_beneficiary_name">Name of Beneficiary</label>
+                                <label for="sig_beneficiary_name">Name of Beneficiary *</label>
                                 <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name">
                             </div>
                         </div>

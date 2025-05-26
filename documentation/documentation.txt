@@ -491,70 +491,54 @@ The website uses a dedicated authentication system for administrators separate f
 - Role-based access control determines what features each admin can access
 - Secure password hashing is used for admin credentials
 
-## Membership Application Management
+## Membership Application Approval Process
 
-The website includes a system for managing membership applications, including PDF generation capabilities for approved applications.
+### Roles and Permissions
 
-### Features:
+1. **Insurance Officer (IO)**
+   - Can view membership applications
+   - Can sign/approve applications as Insurance Officer
+   - Can assign branch to applications
+   - Can add/remove plans (BLIP, LPIP, LMIP)
+   - Can change member classification (TKP, TPP, Kapamilya)
 
-1. **Application Listing** (`admin/applications.php`):
-   - Shows all membership applications with status indicators
-   - Provides action buttons to approve, reject, or view applications
+2. **Loan Officer (LO)**
+   - Can view membership applications
+   - Can sign/approve applications as Loan Officer
+   - Can assign branch to applications
+   - Can add/remove plans (BLIP, LPIP, LMIP)
+   - Can change member classification (TKP, TPP, Kapamilya)
 
-2. **Application Detail View** (`admin/view_application.php`):
-   - Comprehensive view of all application details
-   - Includes personal information, addresses, business details, beneficiaries, etc.
-   - Displays uploaded signatures when available
+### Approval Workflow
 
-3. **PDF Generation**:
-   - Generates professional PDFs of approved applications
-   - Uses TCPDF library for PDF creation
-   - Includes all application details formatted for print/archiving
-   - Allow downloading the PDF for record keeping
+The membership application approval process follows these steps:
 
-### Technical Requirements:
+1. User submits a membership application through the membership form
+2. Application is initially set to 'pending' status with both IO and LO approval set to 'pending'
+3. Insurance Officer reviews the application and can approve or reject
+4. Loan Officer reviews the application and can approve or reject
+5. Only when both IO and LO have approved the application will the overall status change to 'approved'
+6. If either IO or LO rejects the application, it remains in 'pending' status but with their individual approval marked as 'rejected'
 
-1. **TCPDF Library**:
-   - Required for PDF generation
-   - Installed via Composer: `composer require tecnickcom/tcpdf`
-   - Requires either GD or Imagick PHP extensions for handling images
+### Database Structure
 
-2. **Installation**:
-   - Run `install_dependencies.bat` (Windows) or `install_dependencies.sh` (Linux/Mac)
-   - Ensure PHP has GD extension enabled in php.ini (`extension=gd`)
-   - Use `tcpdf_test.php` to verify proper installation
+The membership applications are stored in the `members_information` table with the following approval-related fields:
 
-### Troubleshooting:
+- `status`: Overall application status ('pending', 'approved', 'rejected')
+- `io_approved`: Insurance Officer approval status ('pending', 'approved', 'rejected')
+- `io_name`: Name of the Insurance Officer who reviewed the application
+- `io_signature`: Path to the Insurance Officer's signature image
+- `io_approval_date`: Timestamp of when the Insurance Officer made their decision
+- `io_notes`: Notes provided by the Insurance Officer
+- `lo_approved`: Loan Officer approval status ('pending', 'approved', 'rejected')
+- `lo_name`: Name of the Loan Officer who reviewed the application
+- `lo_signature`: Path to the Loan Officer's signature image
+- `lo_approval_date`: Timestamp of when the Loan Officer made their decision
+- `lo_notes`: Notes provided by the Loan Officer
 
-- If seeing "TCPDF ERROR: TCPDF requires the Imagick or GD extension", enable GD in php.ini
-- If PDF generation fails, check that Composer dependencies are installed
-- For image issues in PDFs, ensure uploaded images are in supported formats (JPG, PNG)
-
-## PDF Generation with TCPDF and FPDI
-
-The system uses TCPDF along with FPDI to generate PDF documents from existing templates. This allows for:
-
-1. **PDF Form Generation**: Generate PDF forms from application data
-2. **Template-based PDFs**: Populate existing PDF templates with database information
-3. **Custom Document Generation**: Create custom PDFs with precise control over content placement
-
-### Dependencies:
-- TCPDF: Main PDF generation library
-- FPDI: Plugin for importing and working with existing PDF templates
-- GD Extension: Required for handling PNG images with alpha channel
-
-### Example Use Cases:
-1. **Membership Certificates**: Fill in member data on certificate templates
-2. **Application Forms**: Generate completed application forms for record-keeping
-3. **Reports**: Create detailed reports with company branding and formatting
-
-### Implementation Notes:
-- The system can place text at exact coordinates on a PDF template
-- The FPDI library allows importing existing PDF documents as templates 
-- Database records can be directly mapped to specific locations on PDF forms
-- The system handles various data types (text, numbers, dates) with proper formatting
-
-For implementations, see the example in `tcpdf_template_example.php` which demonstrates the three primary methods for working with PDFs:
-1. Using existing PDF files as templates (Method 1)
-2. Precise text positioning on blank PDFs (Method 2)
-3. Creating PDF documents with form fields (Method 3)
+Branch information is stored in the `branches` table, which includes:
+- `branch_name`: Name of the branch
+- `branch_code`: Unique code for the branch
+- `center_no`: Center number associated with the branch
+- `address`: Physical address of the branch
+- `contact_number`: Contact information for the branch
