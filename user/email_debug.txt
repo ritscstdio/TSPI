@@ -954,3 +954,111 @@ DEBUG[2]: SERVER -> CLIENT: 221 See you later
 
 DEBUG[3]: Connection: closed
 RESULT: Email sent successfully
+------------------------------
+Sending email at 2025-05-27 06:49:07
+To: ravila.k12042960@umak.edu.ph
+Subject: Verify your email address
+DEBUG[3]: Connection: opening to smtp.sendgrid.net:587, timeout=300, options=array()
+DEBUG[3]: Connection: opened
+DEBUG[2]: SERVER -> CLIENT: 220 SG ESMTP service ready at geopod-ismtpd-4
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: STARTTLS
+
+DEBUG[2]: SERVER -> CLIENT: 220 Begin TLS negotiation now
+
+DEBUG[1]: CLIENT -> SERVER: EHLO localhost
+
+DEBUG[2]: SERVER -> CLIENT: 250-smtp.sendgrid.net
+250-8BITMIME
+250-PIPELINING
+250-SIZE 31457280
+250-SMTPUTF8
+250-STARTTLS
+250-AUTH PLAIN LOGIN
+250 AUTH=PLAIN LOGIN
+
+DEBUG[1]: CLIENT -> SERVER: AUTH LOGIN
+
+DEBUG[2]: SERVER -> CLIENT: 334 VXNlcm5hbWU6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 334 UGFzc3dvcmQ6
+
+DEBUG[1]: CLIENT -> SERVER: [credentials hidden]
+DEBUG[2]: SERVER -> CLIENT: 235 Authentication successful
+
+DEBUG[1]: CLIENT -> SERVER: MAIL FROM:<no-reply@tspi.site>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Sender address accepted
+
+DEBUG[1]: CLIENT -> SERVER: RCPT TO:<ravila.k12042960@umak.edu.ph>
+
+DEBUG[2]: SERVER -> CLIENT: 250 Recipient address accepted
+
+DEBUG[1]: CLIENT -> SERVER: DATA
+
+DEBUG[2]: SERVER -> CLIENT: 354 Continue
+
+DEBUG[1]: CLIENT -> SERVER: Date: Tue, 27 May 2025 06:49:07 +0200
+
+DEBUG[1]: CLIENT -> SERVER: To: ravila.k12042960@umak.edu.ph
+
+DEBUG[1]: CLIENT -> SERVER: From: Ketano <no-reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Reply-To: Ketano <reply@tspi.site>
+
+DEBUG[1]: CLIENT -> SERVER: Subject: Verify your email address
+
+DEBUG[1]: CLIENT -> SERVER: Message-ID: <ZfeM6UNAxmnz1kdyauOACpivgGTCuTJqr1nO5Q@localhost>
+
+DEBUG[1]: CLIENT -> SERVER: X-Mailer: PHPMailer 6.10.0 (https://github.com/PHPMailer/PHPMailer)
+
+DEBUG[1]: CLIENT -> SERVER: MIME-Version: 1.0
+
+DEBUG[1]: CLIENT -> SERVER: Content-Type: text/plain; charset=iso-8859-1
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Hello Luiz1,
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Thank you for signing up. Please verify your email address by clicking the link below:
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: http://localhost/TSPI/user/verify.php?code=e456568dee2f5a8c8213cf67379e503a
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: This link will expire in 24 hours.
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: Regards,
+
+DEBUG[1]: CLIENT -> SERVER: TSPI Team
+
+DEBUG[1]: CLIENT -> SERVER: 
+
+DEBUG[1]: CLIENT -> SERVER: .
+
+DEBUG[2]: SERVER -> CLIENT: 250 Ok: queued as xhtDqZkYTt6KVLeNZiiisg
+
+DEBUG[1]: CLIENT -> SERVER: QUIT
+
+DEBUG[2]: SERVER -> CLIENT: 221 See you later
+
+DEBUG[3]: Connection: closed
+RESULT: Email sent successfully

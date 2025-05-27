@@ -5,7 +5,13 @@ require_once '../includes/config.php';
 require_admin_login();
 
 // Available roles
-$available_roles = ['admin' => 'Admin', 'editor' => 'Editor', 'comment_moderator' => 'Comment Moderator'];
+$available_roles = [
+    'admin' => 'Admin', 
+    'moderator' => 'Moderator',
+    'insurance_officer' => 'Insurance Officer',
+    'loan_officer' => 'Loan Officer',
+    'secretary' => 'Secretary'
+];
 
 // Get user ID
 $user_id = isset($_GET['id']) ? (int)$_GET['id'] : null;

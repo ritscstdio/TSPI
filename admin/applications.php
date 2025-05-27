@@ -48,7 +48,7 @@ $user_role = $current_user['role'] ?? '';
             flex-direction: column;
             gap: 4px;
         }
-        .badge-io, .badge-lo {
+        .badge-io, .badge-lo, .badge-secretary {
             font-size: 11px;
             padding: 2px 4px;
             border-radius: 3px;
@@ -60,6 +60,10 @@ $user_role = $current_user['role'] ?? '';
         .badge-lo {
             background-color: #f9f0ff;
             color: #722ed1;
+        }
+        .badge-secretary {
+            background-color: #f6ffed;
+            color: #52c41a;
         }
     </style>
 </head>
@@ -125,7 +129,14 @@ $user_role = $current_user['role'] ?? '';
                                                     <?php if ($app['lo_approved'] === 'approved'): ?>
                                                         by <?php echo htmlspecialchars($app['lo_name']); ?>
                                                     <?php endif; ?>
+                                                <?php if ($app['io_approved'] === 'approved' && $app['lo_approved'] === 'approved'): ?>
+                                                <span class="badge-secretary status-<?php echo strtolower($app['secretary_approved'] ?: 'pending'); ?>">
+                                                    Secretary: <?php echo ucfirst($app['secretary_approved'] ?: 'Pending'); ?>
+                                                    <?php if ($app['secretary_approved'] === 'approved'): ?>
+                                                        by <?php echo htmlspecialchars($app['secretary_name']); ?>
+                                                    <?php endif; ?>
                                                 </span>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                         <td class="actions">
@@ -133,6 +144,19 @@ $user_role = $current_user['role'] ?? '';
                                             <?php if (($user_role === 'insurance_officer' && $app['io_approved'] === 'pending') || 
                                                       ($user_role === 'loan_officer' && $app['lo_approved'] === 'pending')): ?>
                                                 <a href="approve_application.php?id=<?php echo $app['id']; ?>" class="btn-icon" title="Approve"><i class="fas fa-check-circle"></i></a>
+                                            <?php endif; ?>
+                                            
+                                            <?php if ($user_role === 'secretary' && 
+                                                      $app['io_approved'] === 'approved' && 
+                                                      $app['lo_approved'] === 'approved' && 
+                                                      $app['secretary_approved'] !== 'approved'): ?>
+                                                <a href="secretary_approve_application.php?id=<?php echo $app['id']; ?>" class="btn-icon" title="Final Approval"><i class="fas fa-stamp"></i></a>
+                                            <?php endif; ?>
+                                            
+                                            <?php if ($app['status'] === 'approved' && $app['io_approved'] === 'approved' && 
+                                                     $app['lo_approved'] === 'approved' && $app['secretary_approved'] === 'approved'): ?>
+                                                <a href="generate_certificate.php?id=<?php echo $app['id']; ?>&mode=preview" class="btn-icon" title="View Certificate"><i class="fas fa-certificate"></i></a>
+                                                <a href="generate_final_report.php?id=<?php echo $app['id']; ?>&mode=preview" class="btn-icon" title="View Report"><i class="fas fa-file-contract"></i></a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

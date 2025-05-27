@@ -7,10 +7,10 @@ require_admin_login();
 // Define available roles
 $available_roles = [
     'admin' => 'Admin', 
-    'editor' => 'Editor', 
-    'comment_moderator' => 'Comment Moderator',
+    'moderator' => 'Moderator',
     'insurance_officer' => 'Insurance Officer',
-    'loan_officer' => 'Loan Officer'
+    'loan_officer' => 'Loan Officer',
+    'secretary' => 'Secretary'
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

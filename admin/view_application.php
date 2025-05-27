@@ -35,6 +35,13 @@ $user_role = $current_user['role'] ?? '';
 // Check if this user can approve this application
 $can_approve_as_io = ($user_role === 'insurance_officer' && $application['io_approved'] === 'pending');
 $can_approve_as_lo = ($user_role === 'loan_officer' && $application['lo_approved'] === 'pending');
+$can_final_approve = ($user_role === 'secretary' && 
+                    $application['io_approved'] === 'approved' && 
+                    $application['lo_approved'] === 'approved' && 
+                    $application['secretary_approved'] !== 'approved');
+
+// Admin and Moderator cannot approve/deny applications
+$can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
 ?>
 
 <!DOCTYPE html>
@@ -98,15 +105,43 @@ $can_approve_as_lo = ($user_role === 'loan_officer' && $application['lo_approved
                                 </span>
                             <?php endif; ?>
                         </div>
+                        
+                        <!-- New: Secretary Approval Status -->
+                        <?php if ($application['secretary_approved'] || $application['io_approved'] === 'approved' && $application['lo_approved'] === 'approved'): ?>
+                        <div class="status-item">
+                            <span class="status-label">Secretary:</span>
+                            <span class="status-badge status-<?php echo strtolower($application['secretary_approved'] ?: 'pending'); ?>">
+                                <?php echo ucfirst($application['secretary_approved'] ?: 'Pending'); ?>
+                            </span>
+                            <?php if ($application['secretary_approved'] && $application['secretary_approved'] !== 'pending'): ?>
+                                <span class="status-info">
+                                    by <?php echo htmlspecialchars($application['secretary_name'] ?: 'Unknown'); ?>
+                                    on <?php echo $application['secretary_approval_date'] ? date('M j, Y', strtotime($application['secretary_approval_date'])) : 'N/A'; ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     
-                    <?php if ($can_approve_as_io || $can_approve_as_lo): ?>
                     <div class="approval-actions">
+                        <?php if ($can_approve_as_io): ?>
                         <a href="approve_application.php?id=<?php echo $application['id']; ?>" class="btn btn-primary">
-                            <i class="fas fa-check-circle"></i> Sign as <?php echo $user_role === 'insurance_officer' ? 'Insurance Officer' : 'Loan Officer'; ?>
+                            <i class="fas fa-check-circle"></i> Sign as Insurance Officer
                         </a>
+                        <?php endif; ?>
+                        
+                        <?php if ($can_approve_as_lo): ?>
+                        <a href="approve_application.php?id=<?php echo $application['id']; ?>" class="btn btn-primary">
+                            <i class="fas fa-check-circle"></i> Sign as Loan Officer
+                        </a>
+                        <?php endif; ?>
+                        
+                        <?php if ($can_final_approve): ?>
+                        <a href="secretary_approve_application.php?id=<?php echo $application['id']; ?>" class="btn btn-success">
+                            <i class="fas fa-stamp"></i> Final Approval
+                        </a>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
                 </div>
                 
                 <div class="admin-card">
@@ -514,6 +549,18 @@ $can_approve_as_lo = ($user_role === 'loan_officer' && $application['lo_approved
                                 <p><strong>Name:</strong> <?php echo htmlspecialchars($application['sig_beneficiary_name']); ?></p>
                             </div>
                             <?php endif; ?>
+                            
+                            <!-- Display Secretary signature if available -->
+                            <?php if (!empty($application['secretary_signature'])): ?>
+                            <div class="signature-block">
+                                <h3>Secretary's Signature</h3>
+                                <div class="signature-image">
+                                    <img src="<?php echo SITE_URL . '/' . $application['secretary_signature']; ?>" alt="Secretary Signature">
+                                </div>
+                                <p><strong>Name:</strong> <?php echo htmlspecialchars($application['secretary_name']); ?></p>
+                                <p><strong>Date:</strong> <?php echo date('F j, Y', strtotime($application['secretary_approval_date'])); ?></p>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -529,15 +576,44 @@ $can_approve_as_lo = ($user_role === 'loan_officer' && $application['lo_approved
                         <i class="fas fa-file-pdf"></i> Download PDF
                     </a>
                     
+                    <!-- Add links to new document types if IO and LO have both approved -->
+                    <?php if ($application['io_approved'] === 'approved' && $application['lo_approved'] === 'approved'): ?>
+                    <a href="generate_final_report.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-info">
+                        <i class="fas fa-file-contract"></i> Preview Final Report
+                    </a>
+                    
+                    <a href="generate_certificate.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-success">
+                        <i class="fas fa-certificate"></i> Preview Certificate
+                    </a>
+                    <?php endif; ?>
+                    
                     <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
                         <i class="fas fa-bug"></i> Debug PDF Grid
                     </a>
-                    
-                    <?php if ($application['status'] === 'pending'): ?>
-                        <a href="verify_application.php?id=<?php echo $application['id']; ?>&action=approved" class="btn-success">Approve</a>
-                        <a href="verify_application.php?id=<?php echo $application['id']; ?>&action=rejected" class="btn-danger">Reject</a>
-                    <?php endif; ?>
                 </div>
+                
+                <!-- Debug information for approval conditions -->
+                <?php if ($user_role === 'secretary'): ?>
+                <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px;">
+                    <h4>Debug Information (only visible to Secretary)</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>User Role: <?php echo $user_role; ?></li>
+                        <li>IO Approved: <?php echo $application['io_approved']; ?></li>
+                        <li>LO Approved: <?php echo $application['lo_approved']; ?></li>
+                        <li>Secretary Approved: <?php echo $application['secretary_approved']; ?></li>
+                        <li>Can Final Approve: <?php echo $can_final_approve ? 'Yes' : 'No'; ?></li>
+                        <li>Final Approve Condition: 
+                            ($user_role === 'secretary' && 
+                            $application['io_approved'] === 'approved' && 
+                            $application['lo_approved'] === 'approved' && 
+                            $application['secretary_approved'] !== 'approved')
+                        </li>
+                    </ul>
+                    <p style="margin-top: 10px;">
+                        <strong>Note:</strong> For the "Final Approval" button to appear, all conditions must be met.
+                    </p>
+                </div>
+                <?php endif; ?>
             </div>
         </main>
     </div>

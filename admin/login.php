@@ -5,7 +5,15 @@ require_once '../includes/config.php';
 
 // Check if already logged in as admin
 if (is_admin_logged_in()) {
-    redirect('/admin/index.php');
+    $admin = get_admin_user();
+    $admin_role = $admin['role'] ?? '';
+    
+    // Redirect based on user role
+    if (in_array($admin_role, ['insurance_officer', 'loan_officer'])) {
+        redirect('/admin/applications.php');
+    } else {
+        redirect('/admin/index.php');
+    }
 }
 
 // Handle login form submission
@@ -26,7 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_role'] = $admin['role'];
             $_SESSION['message'] = "Welcome back, {$admin['name']}!";
-            redirect('/admin/index.php');
+            
+            // Redirect based on user role
+            if (in_array($admin['role'], ['insurance_officer', 'loan_officer'])) {
+                redirect('/admin/applications.php');
+            } else {
+                redirect('/admin/index.php');
+            }
         } else {
             // Login failed
             $_SESSION['message'] = "Invalid username or password";

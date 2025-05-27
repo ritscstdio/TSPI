@@ -2,6 +2,7 @@
 $page_title = "Approve Application";
 $body_class = "admin-approve-application-page";
 require_once '../includes/config.php';
+require_once '../includes/functions_logging.php';
 require_admin_login();
 
 // Only allow Insurance Officer or Loan Officer roles
@@ -20,6 +21,9 @@ if (!$application_id) {
     $_SESSION['message'] = "Invalid application ID.";
     redirect('/admin/applications.php');
 }
+
+// Log the page access
+log_message("User {$current_user['username']} ({$user_role}) accessed approval page for application ID: {$application_id}", 'info', 'access');
 
 // Fetch application data
 $stmt = $pdo->prepare("SELECT * FROM members_information WHERE id = ?");
@@ -117,9 +121,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notes_field = 'lo_notes';
         }
         
+        // Log the approval action with details
+        log_approval_activity($application_id, $user_role, $action, [
+            'officer_name' => $officer_name,
+            'status_field' => $status_field,
+            'has_signature' => !empty($signaturePath),
+            'branch' => $branch,
+            'plans' => $plans,
+            'classification' => $classification
+        ]);
+        
         // JSON encode plans and classification
         $plansJson = json_encode($plans);
         $classificationJson = json_encode([$classification]);
+        
+        // Make sure the action value is explicitly correct - should be "approved" not "approve"
+        $statusValue = ($action === "approve") ? "approved" : "rejected";
         
         // Update the application
         $sql = "UPDATE members_information SET 
@@ -134,8 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = ?";
                 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            $action, 
+        $result = $stmt->execute([
+            $statusValue, 
             $officer_name, 
             $signaturePath, 
             $notes,
@@ -144,6 +161,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $classificationJson,
             $application_id
         ]);
+        
+        // Debug information
+        $debug_info = "Update " . ($result ? "succeeded" : "failed") . ". ";
+        $debug_info .= "Role: $user_role, Status field: $status_field, Action: $statusValue, ";
+        $debug_info .= "App ID: $application_id";
+        
+        // Write to log file for debugging
+        log_message($debug_info, 'debug', 'approval_debug');
+        
+        // Verify the update worked by querying the database again
+        $verify_stmt = $pdo->prepare("SELECT $status_field FROM members_information WHERE id = ?");
+        $verify_stmt->execute([$application_id]);
+        $verify_result = $verify_stmt->fetchColumn();
+        
+        log_message("Verification check - Field $status_field is now set to: $verify_result", 'debug', 'approval_debug');
         
         $_SESSION['message'] = "Application " . ($action === 'approve' ? 'approved' : 'rejected') . " successfully.";
         redirect('/admin/applications.php');
@@ -440,6 +472,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.getElementById('signature-data').value = '';
             });
             
+            // Auto-select the approve option by default to ensure action value is set
+            const approveOption = document.querySelector('.approval-option[data-value="approve"]');
+            if (approveOption) {
+                approveOption.classList.add('selected');
+                document.getElementById('action-input').value = 'approve';
+                document.getElementById('approval-details').style.display = 'block';
+                document.getElementById('signature-section').style.display = 'block';
+                document.getElementById('rejection-section').style.display = 'none';
+            }
+            
             // Handle form submission to save signature data
             document.getElementById('approval-form').addEventListener('submit', function(e) {
                 if (document.getElementById('action-input').value === 'approve') {
@@ -504,6 +546,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     e.preventDefault();
                     alert('Please select either Approve or Reject.');
                     return false;
+                }
+                
+                // Double-check that the action value is set correctly
+                console.log("Form submission action value:", action);
+                
+                // For debugging - log current form state
+                if (action === 'approve') {
+                    console.log("Approving application", {
+                        officerName: document.getElementById('officer_name').value,
+                        branch: document.getElementById('branch').value
+                    });
                 }
                 
                 if (action === 'approve') {
