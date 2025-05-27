@@ -587,8 +587,8 @@ include '../includes/header.php';
                                 <label for="gender">Gender *</label>
                                 <select id="gender" name="gender" required autocomplete="sex">
                                     <option value="" selected>Select Gender</option>
-                                    <option value="Male">MALE</option>
-                                    <option value="Female">FEMALE</option>
+                                    <option value="MALE">MALE</option>
+                                    <option value="FEMALE">FEMALE</option>
                                 </select>
                             </div>
                         </div>
@@ -600,10 +600,10 @@ include '../includes/header.php';
                                 <label for="civil_status">Civil Status *</label>
                                 <select id="civil_status" name="civil_status" required>
                                     <option value="" selected>Select Civil Status</option>
-                                    <option value="Single">SINGLE</option>
-                                    <option value="Married">MARRIED</option>
-                                    <option value="Widowed">WIDOWED</option>
-                                    <option value="Separated">SEPARATED</option>
+                                    <option value="SINGLE">SINGLE</option>
+                                    <option value="MARRIED">MARRIED</option>
+                                    <option value="WIDOWED">WIDOWED</option>
+                                    <option value="SEPARATED">SEPARATED</option>
                                 </select>
                             </div>
                         </div>

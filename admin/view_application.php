@@ -72,7 +72,7 @@ if (count($plans) > 1): // If multiple plans exist
     $certificate_dropdown_html = '
     <div class="certificate-dropdown">
         <a href="#" class="btn-success dropdown-toggle">
-            <i class="fas fa-certificate"></i> Preview Certificate <i class="fas fa-caret-down"></i>
+            <i class="fas fa-certificate"></i> View Certificate <i class="fas fa-caret-down"></i>
         </a>
         <div class="dropdown-content dropdown-content-up">';
     foreach ($plans as $plan) {
@@ -87,7 +87,7 @@ if (count($plans) > 1): // If multiple plans exist
 else: // Single plan or no plans
     $certificate_dropdown_html = '
     <a href="generate_certificate.php?id='.$application['id'].'&mode=preview" class="btn-success">
-        <i class="fas fa-certificate"></i> Preview Certificate
+        <i class="fas fa-certificate"></i> View Certificate
     </a>';
 endif;
 
@@ -609,13 +609,13 @@ endif;
                     <a href="applications.php" class="btn-secondary">Back to List</a>
                     
                     <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-primary">
-                        <i class="fas fa-eye"></i> Preview PDF
+                        <i class="fas fa-eye"></i> View PDF
                     </a>
                     
                     <!-- Add links to new document types if IO and LO have both approved -->
                     <?php if ($application['io_approved'] === 'approved' && $application['lo_approved'] === 'approved'): ?>
                     <a href="generate_final_report.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-info">
-                        <i class="fas fa-file-contract"></i> Preview Final Report
+                        <i class="fas fa-file-contract"></i> View Final Report
                     </a>
                     
                     <?php echo $certificate_dropdown_html; ?>
@@ -921,11 +921,46 @@ endif;
         background-color: #f8f9fa;
     }
     
-    .certificate-dropdown:hover .dropdown-content {
+    /* Fix dropdown hover issue */
+    .certificate-dropdown .dropdown-content:before {
+        content: '';
+        display: block;
+        position: absolute;
+        height: 20px;
+        width: 100%;
+        bottom: -10px;
+        left: 0;
+    }
+    
+    /* Change from hover to click toggle */
+    .certificate-dropdown.show .dropdown-content {
         display: block;
     }
     </style>
     
     <?php include 'includes/footer.php'; ?>
+    
+    <script>
+    // Add click handler for certificate dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdownToggle = document.querySelector('.dropdown-toggle');
+        const certificateDropdown = document.querySelector('.certificate-dropdown');
+        
+        if (dropdownToggle && certificateDropdown) {
+            dropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                certificateDropdown.classList.toggle('show');
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function closeDropdown(event) {
+                    if (!certificateDropdown.contains(event.target)) {
+                        certificateDropdown.classList.remove('show');
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                });
+            });
+        }
+    });
+    </script>
 </body>
 </html> 

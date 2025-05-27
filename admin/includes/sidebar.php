@@ -61,6 +61,9 @@ $user_role = $current_admin ? $current_admin['role'] : '';
                 <li class="<?php echo in_array($current_page, ['applications.php', 'view_application.php']) ? 'active' : ''; ?>">
                     <a href="applications.php"><i class="fas fa-file-alt"></i> <span>Membership Applications</span></a>
                 </li>
+                <li class="<?php echo $current_page === 'approved_records.php' ? 'active' : ''; ?>">
+                    <a href="approved_records.php"><i class="fas fa-check-circle"></i> <span>Approved Records</span></a>
+                </li>
             <?php endif; ?>
             
             <?php if ($user_role === 'admin'): ?>

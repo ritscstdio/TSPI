@@ -16,6 +16,11 @@ if (!$user) {
     redirect('/index.php');
 }
 
+// Check if user has a membership application
+$membership_query = $pdo->prepare("SELECT * FROM members_information WHERE email = ?");
+$membership_query->execute([$user['email']]);
+$membership = $membership_query->fetch();
+
 // store original email for comparison
 $original_email = $user['email'];
 
@@ -98,6 +103,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($email !== $original_email) {
                 $vcode     = bin2hex(random_bytes(16));
                 $expires   = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                
+                // First delete any existing verification record for this user
+                $stmt = $pdo->prepare("DELETE FROM email_verifications WHERE user_id = ?");
+                $stmt->execute([$user['id']]);
+                
+                // Then insert the new verification record
                 $stmt = $pdo->prepare("
                     INSERT INTO email_verifications
                       (user_id, verification_code, expires_at, new_email)
@@ -109,18 +120,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $verify_url = SITE_URL . "/user/verify.php?code=$vcode";
                 $to      = $email;
                 $subject = "Verify your new email address";
-                $body    = "Hello $name,\n\nClick to verify your new email:\n$verify_url\n\nRegards,\nTSPI Team";
+                $body    = "Hello $name,\n\nClick to verify your new email:\n$verify_url\n\nThis link will expire in 24 hours.\n\nRegards,\nTSPI Team";
                 $hdrs    = "From: " . ADMIN_EMAIL;
                 
                 // Send email via configured mailer
                 require_once __DIR__ . '/email_config.php';
                 if (function_exists('dev_send_email')) {
-                    dev_send_email($to, $subject, $body, $hdrs);
+                    $mail_sent = dev_send_email($to, $subject, $body, $hdrs);
                 } else {
-                    send_email($to, $subject, $body, $hdrs);
+                    $mail_sent = send_email($to, $subject, $body, $hdrs);
                 }
-
-                $info_success_message = "Profile updated. Please check your new email to verify the change.";
+                
+                if ($mail_sent) {
+                    $info_success_message = "Profile updated. Please check your new email to verify the change.";
+                } else {
+                    $errors[] = "Profile updated but there was an error sending the verification email. Please contact support.";
+                    // Roll back the email change since we couldn't send the verification
+                    $stmt = $pdo->prepare("DELETE FROM email_verifications WHERE user_id = ?");
+                    $stmt->execute([$user['id']]);
+                }
             } else {
                 $info_success_message = "Profile updated successfully.";
             }
@@ -209,6 +227,75 @@ include '../includes/header.php';
                     <p class="username">@<?php echo sanitize($user['username']); ?></p>
                     <p class="email"><?php echo sanitize($user['email']); ?></p>
                     <p class="member-since">Member since: <?php echo date('F j, Y', strtotime($user['created_at'])); ?></p>
+                    
+                    <?php if (!$membership): ?>
+                        <div class="membership-badge non-member">Non-member</div>
+                        <p class="membership-info">You haven't applied for TSPI membership yet.</p>
+                        <a href="<?php echo SITE_URL; ?>/user/membership-form.php" class="btn btn-sm btn-primary">Apply Now</a>
+                    <?php elseif ($membership['status'] === 'pending'): ?>
+                        <div class="membership-badge pending">Approval Pending</div>
+                        <p class="membership-info">Your application is being processed.</p>
+                        <p class="membership-detail">
+                            <strong>Application Date:</strong> <?php echo date('F j, Y', strtotime($membership['created_at'])); ?>
+                        </p>
+                    <?php elseif ($membership['status'] === 'approved'): ?>
+                        <div class="membership-badge approved">Approved</div>
+                        <h3 class="membership-details-heading">Membership Details</h3>
+                        <div class="membership-details">
+                            <p class="membership-detail">
+                                <strong>Name:</strong> <?php echo sanitize($membership['first_name'] . ' ' . $membership['middle_name'] . ' ' . $membership['last_name']); ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>Classification:</strong><?php 
+                                $classification = json_decode($membership['classification'], true);
+                                echo is_array($classification) ? sanitize(implode(', ', $classification)) : 'None';
+                                ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>CID No.:</strong><?php echo sanitize($membership['cid_no']); ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>Branch:</strong><?php echo sanitize($membership['branch']); ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>Center No.:</strong><?php echo !empty($membership['center_no']) ? sanitize($membership['center_no']) : 'N/A'; ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>Present Address:</strong><?php echo sanitize($membership['present_address']); ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>Permanent Address:</strong><?php echo sanitize($membership['permanent_address']); ?>
+                            </p>
+                            
+                            <p class="membership-detail">
+                                <strong>Primary Business:</strong><?php echo sanitize($membership['primary_business']); ?>
+                            </p>
+                            
+                            <?php if (!empty($membership['business_address'])): ?>
+                            <p class="membership-detail">
+                                <strong>Business Address:</strong><?php echo sanitize($membership['business_address']); ?>
+                            </p>
+                            <?php endif; ?>
+                            
+                            <p class="membership-detail">
+                                <strong>Approved Date:</strong><?php echo !empty($membership['secretary_approval_date']) 
+                                    ? date('F j, Y', strtotime($membership['secretary_approval_date'])) 
+                                    : 'N/A'; ?>
+                            </p>
+                        </div>
+                    <?php elseif ($membership['status'] === 'rejected'): ?>
+                        <div class="membership-badge rejected">Application Rejected</div>
+                        <p class="membership-info">Your application was not approved.</p>
+                        <p class="membership-detail">
+                            <strong>Date:</strong> <?php echo date('F j, Y', strtotime($membership['updated_at'])); ?>
+                        </p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -230,10 +317,10 @@ include '../includes/header.php';
                     <label for="profile_picture">Profile Picture</label>
                     <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
                     <?php if ($user['profile_picture']): ?>
-                      <div>
-                        <label>
+                      <div class="checkbox-container">
+                        <label class="checkbox-label">
                           <input type="checkbox" name="remove_picture" value="1">
-                          Remove current picture
+                          <span class="checkbox-text">Remove current picture</span>
                         </label>
                       </div>
                     <?php endif; ?>
@@ -378,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <style>
 .profile-container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 2rem auto;
     padding-left: 1rem;
     padding-right: 1rem;
@@ -395,13 +482,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .profile-content {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: minmax(550px, 1fr) 2fr;
     gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-card {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto 1.5rem;
+    }
 }
 
 @media (max-width: 768px) {
     .profile-content {
         grid-template-columns: 1fr;
+    }
+    
+    .profile-card, 
+    .profile-edit-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-avatar {
+        margin-bottom: 1rem;
+    }
+    
+    .profile-details {
+        padding: 0 0.5rem;
+    }
+    
+    .membership-details {
+        padding: 10px;
+    }
+    
+    .form-group input,
+    .btn {
+        font-size: 16px; /* Prevent zoom on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 0.5rem;
+        margin: 5rem auto 1rem;
+    }
+    
+    .profile-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    body {
+        margin-top: 2rem;
+    }
+    
+    .profile-card {
+        margin-top: 2rem;
+    }
+    
+    .membership-detail {
+        word-break: break-word;
     }
 }
 
@@ -411,6 +555,12 @@ document.addEventListener('DOMContentLoaded', function() {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
+}
+
+.profile-card {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .profile-info {
@@ -468,6 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .profile-details {
     text-align: center;
+    width: 100%;
 }
 
 .profile-details h2 {
@@ -489,6 +640,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .profile-details .member-since {
     color: #777;
     font-size: 0.85rem;
+    margin-bottom: 1rem;
 }
 
 .profile-edit-card h2 {
@@ -644,6 +796,143 @@ document.addEventListener('DOMContentLoaded', function() {
 .message ul {
     margin: 0;
     padding-left: 1.5rem;
+}
+
+/* Checkbox styling */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 8px;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    outline: none;
+    transition: all 0.2s;
+    position: relative;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Remove the checkmark, keep only the color change */
+.checkbox-label input[type="checkbox"]:checked::after {
+    content: none;
+}
+
+.checkbox-text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Membership status styling */
+.membership-status-container {
+    margin-top: 1.5rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+    text-align: left;
+    width: 100%;
+}
+
+.membership-status-container h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.membership-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.membership-badge.non-member {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.membership-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.membership-badge.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.membership-badge.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.membership-info {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.membership-details {
+    background-color: transparent;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: none;
+    text-align: left;
+}
+
+.membership-detail {
+    margin: 12px 0;
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.5;
+}
+
+.membership-detail strong {
+    color: #333;
+    margin-right: 0;
+    min-width: 150px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.membership-details-heading {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #333;
+    text-align: left;
+}
+
+.btn-sm {
+    display: inline-block;
+    width: auto;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    margin-top: 5px;
 }
 </style>
 

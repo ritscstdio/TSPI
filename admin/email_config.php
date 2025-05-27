@@ -100,6 +100,81 @@ function generate_application_email_text($application, $status) {
 function send_application_email($to, $subject, $text_message, $html_message, $attachments = []) {
     global $email_config;
     
+    // Check if PHPMailer is available
+    if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+        require_once __DIR__ . '/../vendor/autoload.php';
+        
+        if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+            try {
+                $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+                
+                // Server settings
+                if (!empty($email_config['smtp_host'])) {
+                    $mail->isSMTP();
+                    $mail->Host = $email_config['smtp_host'];
+                    $mail->Port = $email_config['smtp_port'];
+                    
+                    if (!empty($email_config['smtp_username']) && !empty($email_config['smtp_password'])) {
+                        $mail->SMTPAuth = true;
+                        $mail->Username = $email_config['smtp_username'];
+                        $mail->Password = $email_config['smtp_password'];
+                    }
+                    
+                    if (!empty($email_config['smtp_secure'])) {
+                        $mail->SMTPSecure = $email_config['smtp_secure'];
+                    }
+                }
+                
+                // Recipients
+                $mail->setFrom($email_config['from_email'], $email_config['from_name']);
+                $mail->addAddress($to);
+                $mail->addReplyTo($email_config['reply_to']);
+                
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = $subject;
+                $mail->Body = $html_message;
+                $mail->AltBody = $text_message;
+                
+                // Attachments
+                foreach ($attachments as $file) {
+                    if (file_exists($file) && is_readable($file)) {
+                        $mail->addAttachment($file);
+                    }
+                }
+                
+                // Send the email
+                return $mail->send();
+            } catch (Exception $e) {
+                // Log the error
+                error_log("PHPMailer Error: " . $e->getMessage());
+                
+                // Fall back to standard mail
+                return fallback_mail_send($to, $subject, $text_message, $html_message, $attachments);
+            }
+        } else {
+            // PHPMailer class not found, fall back to standard mail
+            return fallback_mail_send($to, $subject, $text_message, $html_message, $attachments);
+        }
+    } else {
+        // Vendor autoload not found, fall back to standard mail
+        return fallback_mail_send($to, $subject, $text_message, $html_message, $attachments);
+    }
+}
+
+/**
+ * Fallback function for sending emails using PHP's mail() function
+ * 
+ * @param string $to Recipient email
+ * @param string $subject Email subject
+ * @param string $text_message Plain text message
+ * @param string $html_message HTML message
+ * @param array $attachments Array of attachment file paths
+ * @return boolean True if email sent successfully, false otherwise
+ */
+function fallback_mail_send($to, $subject, $text_message, $html_message, $attachments = []) {
+    global $email_config;
+    
     // Create email headers
     $headers = "From: {$email_config['from_name']} <{$email_config['from_email']}>\r\n";
     $headers .= "Reply-To: {$email_config['reply_to']}\r\n";

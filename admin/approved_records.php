@@ -1,11 +1,11 @@
 <?php
-$page_title = "Membership Applications";
-$body_class = "admin-applications-page";
+$page_title = "Approved Records";
+$body_class = "admin-approved-records-page";
 require_once '../includes/config.php';
 require_admin_login();
 
-// Fetch all applications
-$stmt = $pdo->query("SELECT * FROM members_information WHERE status = 'pending' ORDER BY created_at DESC");
+// Fetch only approved applications
+$stmt = $pdo->query("SELECT * FROM members_information WHERE status = 'approved' OR secretary_approved = 'approved' ORDER BY created_at DESC");
 $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get current user role
@@ -102,7 +102,7 @@ $user_role = $current_user['role'] ?? '';
             
             <div class="content-container dashboard-container">
                 <div class="page-header">
-                    <h1>Pending Membership Applications</h1>
+                    <h1>Approved Membership Records</h1>
                 </div>
                 
                 <?php if ($message = get_flash_message()): ?>
@@ -126,7 +126,7 @@ $user_role = $current_user['role'] ?? '';
                             <tbody>
                                 <?php if (empty($applications)): ?>
                                     <tr>
-                                        <td colspan="7">No applications found.</td>
+                                        <td colspan="7">No approved records found.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($applications as $app): ?>
