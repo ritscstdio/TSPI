@@ -54,18 +54,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title; ?> - TSPI CMS</title>
+    <title><?php echo $page_title; ?> - TSPI Management System</title>
     <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <style>
+        /* Background video styling */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .video-background video {
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        .video-background:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(20,45,120,0.7));
+            z-index: 1;
+        }
+        
+        /* Fade in animation for the login form */
+        .admin-login-container {
+            animation: fadeIn 1s ease-in-out;
+            position: relative;
+            z-index: 2;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body class="<?php echo $body_class; ?>">
+    <!-- Background video -->
+    <div class="video-background">
+        <video autoplay muted loop id="background-video">
+            <source src="../src/assets/Special Number.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    
     <div class="admin-login-container">
         <div class="login-form-wrap">
             <div class="login-logo">
-                <img src="../assets/logo.jpg" alt="TSPI Logo">
+          
             </div>
-            <h1>TSPI CMS Admin</h1>
+            <h1>TSPI Management System</h1>
             
             <?php if ($message = get_flash_message()): ?>
                 <div class="message"><?php echo $message; ?></div>
@@ -92,5 +149,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
+    
+    <script>
+        // Fade in the video after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const video = document.getElementById('background-video');
+                if (video) {
+                    video.style.opacity = '0.6';
+                }
+            }, 300);
+        });
+    </script>
 </body>
 </html>

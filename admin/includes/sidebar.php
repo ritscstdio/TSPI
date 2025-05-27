@@ -58,7 +58,7 @@ $user_role = $current_admin ? $current_admin['role'] : '';
             
             <?php if (in_array($user_role, ['admin', 'moderator', 'insurance_officer', 'loan_officer', 'secretary'])): ?>
                 <li class="nav-header"><span>Form Management</span></li>
-                <li class="<?php echo in_array($current_page, ['applications.php', 'view_application.php']) ? 'active' : ''; ?>">
+                <li class="<?php echo ($current_page === 'applications.php') ? 'active' : ''; ?>">
                     <a href="applications.php"><i class="fas fa-file-alt"></i> <span>Membership Applications</span></a>
                 </li>
                 <li class="<?php echo $current_page === 'approved_records.php' ? 'active' : ''; ?>">

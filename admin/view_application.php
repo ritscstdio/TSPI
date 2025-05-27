@@ -605,6 +605,48 @@ endif;
                     </div>
                 </div>
                 
+                <!-- Valid ID Previews Section -->
+                <?php if (!empty($application['valid_id_path']) || !empty($application['spouse_valid_id_path'])): ?>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2>Valid ID Previews</h2>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="signature-container">
+                            <?php if (!empty($application['valid_id_path'])): ?>
+                            <div class="signature-block id-preview-block">
+                                <h3>Member's Valid ID</h3>
+                                <div class="id-image-preview">
+                                    <a href="<?php echo SITE_URL . '/' . $application['valid_id_path']; ?>" target="_blank" class="id-preview-link">
+                                        <img src="<?php echo SITE_URL . '/' . $application['valid_id_path']; ?>" alt="Member Valid ID">
+                                        <div class="preview-overlay">
+                                            <span class="view-full-size">View Full Size</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <p><strong>ID Type:</strong> <?php echo htmlspecialchars($application['id_number'] ? 'TIN/SSS/GSIS' : 'Other ID'); ?></p>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($application['spouse_valid_id_path'])): ?>
+                            <div class="signature-block id-preview-block">
+                                <h3>Spouse's Valid ID</h3>
+                                <div class="id-image-preview">
+                                    <a href="<?php echo SITE_URL . '/' . $application['spouse_valid_id_path']; ?>" target="_blank" class="id-preview-link">
+                                        <img src="<?php echo SITE_URL . '/' . $application['spouse_valid_id_path']; ?>" alt="Spouse Valid ID">
+                                        <div class="preview-overlay">
+                                            <span class="view-full-size">View Full Size</span>
+                                        </div>
+                                    </a>
+                                </div>
+                                <p><strong>ID Type:</strong> <?php echo htmlspecialchars($application['spouse_id_number'] ? 'TIN/SSS/GSIS' : 'Other ID'); ?></p>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
                 <div class="action-buttons-bottom modern-buttons">
                     <a href="applications.php" class="btn-secondary">Back to List</a>
                     
@@ -935,6 +977,65 @@ endif;
     /* Change from hover to click toggle */
     .certificate-dropdown.show .dropdown-content {
         display: block;
+    }
+    
+    /* ID Preview Styles */
+    .id-preview-block {
+        margin-bottom: 15px;
+    }
+    
+    .id-image-preview {
+        position: relative;
+        max-width: 300px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .id-image-preview:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transform: translateY(-3px);
+    }
+    
+    .id-image-preview img {
+        width: 100%;
+        display: block;
+        transition: all 0.3s ease;
+    }
+    
+    .id-preview-link {
+        display: block;
+        position: relative;
+    }
+    
+    .preview-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .id-preview-link:hover .preview-overlay {
+        opacity: 1;
+    }
+    
+    .view-full-size {
+        color: white;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
     }
     </style>
     

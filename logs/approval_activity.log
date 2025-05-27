@@ -17,3 +17,11 @@
 2025-05-27 16:55:08 [INFO] Application ID: 27 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
 2025-05-27 17:01:33 [INFO] Application ID: 27 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
 2025-05-27 17:21:52 [INFO] Application ID: 27 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-27 22:35:15 [INFO] Application ID: 28 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
+2025-05-27 22:35:40 [INFO] Application ID: 28 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":""}
+2025-05-27 22:36:15 [INFO] Application ID: 28 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-28 01:12:45 [INFO] Application ID: 34 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TAGUIG","center_no":"094"}
+2025-05-28 01:13:47 [INFO] Application ID: 34 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TAGUIG","center_no":""}
+2025-05-28 01:29:26 [INFO] Application ID: 34 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TAGUIG","center_no":"094"}
+2025-05-28 01:29:42 [INFO] Application ID: 34 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TAGUIG","center_no":""}
+2025-05-28 01:38:54 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}

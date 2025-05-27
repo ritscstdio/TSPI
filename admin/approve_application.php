@@ -140,6 +140,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Make sure the action value is explicitly correct - should be "approved" not "approve"
         $statusValue = ($action === "approve") ? "approved" : "rejected";
         
+        // Check if we need to preserve the existing center_no
+        if (($user_role === 'insurance_officer' && $application['lo_approved'] === 'approved') || 
+            ($user_role === 'loan_officer' && $application['io_approved'] === 'approved')) {
+            // The other officer has already approved, so we need to preserve the center_no
+            if (empty($center_no)) {
+                // Use existing center_no if none provided
+                $center_no = $application['center_no'];
+                log_message("Preserving center_no: " . $center_no, 'debug', 'approval_debug');
+            }
+        }
+        
         // Update the application - don't modify plans or classification
         $sql = "UPDATE members_information SET 
                 $status_field = ?, 
@@ -160,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $center_no,
             $application_id
         ];
-
+        
         // Debug information
         error_log("SQL: $sql");
         error_log("Center No: " . ($center_no ?: "empty"));
@@ -657,6 +668,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 width: 100%;
             }
         }
+        
+        /* ID Preview Styles */
+        .id-previews-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .id-preview-card {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .id-preview-card h4 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+        
+        .id-image-preview {
+            position: relative;
+            margin-bottom: 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .id-image-preview:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+        }
+        
+        .id-image-preview img {
+            width: 100%;
+            display: block;
+        }
+        
+        .id-preview-link {
+            display: block;
+            position: relative;
+        }
+        
+        .preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .id-preview-link:hover .preview-overlay {
+            opacity: 1;
+        }
+        
+        .view-full-size {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="<?php echo $body_class; ?>">
@@ -666,12 +753,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <main class="admin-main">
             <?php include 'includes/header.php'; ?>
             
-            <div class="content-container">
-                <div class="page-header">
-                    <h1><?php echo $user_role === 'insurance_officer' ? 'Insurance Officer' : 'Loan Officer'; ?> Application Approval</h1>
-                    <a href="applications.php" class="btn"><i class="fas fa-arrow-left"></i> Back to Applications</a>
-                </div>
-                
+            <div class="content-container dashboard-container">
                 <?php if (!empty($errors)): ?>
                     <div class="message error">
                         <ul>
@@ -681,6 +763,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </ul>
                     </div>
                 <?php endif; ?>
+                
+                <div class="page-header">
+                    <h1><?php echo $user_role === 'insurance_officer' ? 'Insurance Officer' : 'Loan Officer'; ?> Application Approval</h1>
+                    <a href="applications.php" class="btn"><i class="fas fa-arrow-left"></i> Back to Applications</a>
+                </div>
                 
                 <div class="approval-form">
                     <div class="form-section">
@@ -819,7 +906,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <?php endif; ?>
                             
-                            <?php if (!empty($application['member_signature']) || !empty($application['beneficiary_signature'])): ?>
                             <div class="details-section-title">Signatures</div>
                             <div class="signatures-container">
                                 <?php if (!empty($application['member_signature'])): ?>
@@ -835,6 +921,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <h4>Beneficiary's Signature</h4>
                                     <img src="../<?php echo $application['beneficiary_signature']; ?>" alt="Beneficiary Signature">
                                     <p><?php echo htmlspecialchars($application['sig_beneficiary_name']); ?></p>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <!-- Valid ID Preview Section -->
+                            <?php if (!empty($application['valid_id_path']) || !empty($application['spouse_valid_id_path'])): ?>
+                            <div class="details-section-title">Valid ID Previews</div>
+                            <div class="id-previews-container">
+                                <?php if (!empty($application['valid_id_path'])): ?>
+                                <div class="id-preview-card">
+                                    <h4>Member's Valid ID</h4>
+                                    <div class="id-image-preview">
+                                        <a href="<?php echo SITE_URL . '/' . $application['valid_id_path']; ?>" target="_blank" class="id-preview-link">
+                                            <img src="<?php echo SITE_URL . '/' . $application['valid_id_path']; ?>" alt="Member Valid ID">
+                                            <div class="preview-overlay">
+                                                <span class="view-full-size">View Full Size</span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($application['spouse_valid_id_path'])): ?>
+                                <div class="id-preview-card">
+                                    <h4>Spouse's Valid ID</h4>
+                                    <div class="id-image-preview">
+                                        <a href="<?php echo SITE_URL . '/' . $application['spouse_valid_id_path']; ?>" target="_blank" class="id-preview-link">
+                                            <img src="<?php echo SITE_URL . '/' . $application['spouse_valid_id_path']; ?>" alt="Spouse Valid ID">
+                                            <div class="preview-overlay">
+                                                <span class="view-full-size">View Full Size</span>
+                                            </div>
+                                        </a>
+                                    </div>
                                 </div>
                                 <?php endif; ?>
                             </div>

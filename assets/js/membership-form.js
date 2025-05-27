@@ -4,8 +4,27 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Show loader when page starts loading
+    const pageLoader = document.querySelector('.page-loader');
+    
+    // Hide the loader once the page is fully loaded
+    window.addEventListener('load', function() {
+        if (pageLoader) {
+            // Add a slight delay to ensure all assets are loaded
+            setTimeout(function() {
+                pageLoader.classList.add('fade-out');
+                
+                // Remove from DOM after animation completes
+                setTimeout(function() {
+                    pageLoader.style.display = 'none';
+                }, 500);
+            }, 500);
+        }
+    });
+    
     initializeMembershipForm();
     initializeAgreementModal();
+    initializeTooltips(); // Initialize tooltips
     
     // Additional check for disclaimer checkbox and submit button
     const submitButton = document.getElementById('submit_application_btn');
@@ -14,6 +33,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (submitButton && disclaimerCheckbox) {
         // Ensure button is properly disabled on page load
         submitButton.disabled = !disclaimerCheckbox.checked;
+    }
+    
+    // Initialize ID preview functionality
+    initializeIdPreview();
+    
+    // Wrap beneficiaries table with scrollable container
+    const beneficiariesTable = document.querySelector('.beneficiaries-table');
+    if (beneficiariesTable) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'beneficiaries-table-wrapper';
+        
+        // Insert wrapper before table in the DOM
+        beneficiariesTable.parentNode.insertBefore(wrapper, beneficiariesTable);
+        
+        // Move table into wrapper
+        wrapper.appendChild(beneficiariesTable);
     }
 });
 
@@ -72,11 +107,57 @@ function initializeAgreementModal() {
     const successMessage = document.querySelector('.message.success');
     const isSuccessPage = successMessage !== null;
     
+    // Helper function to show modal with animation
+    const showAgreementModalWithAnimation = () => {
+        if (!agreementModal || !pageOverlay) return;
+        
+        // First display the elements but keep them invisible
+        agreementModal.classList.add('active');
+        agreementModal.style.opacity = '0';
+        pageOverlay.classList.add('active');
+        pageOverlay.style.opacity = '0';
+        document.body.classList.add('modal-open'); // Disable scrolling
+        
+        // Then trigger animation after a delay of 1 second
+        setTimeout(() => {
+            // Fade in the overlay first
+            pageOverlay.style.opacity = '1';
+            pageOverlay.style.backdropFilter = 'blur(5px)';
+            
+            // Then fade in the modal with a slight delay
+            setTimeout(() => {
+                agreementModal.style.opacity = '1';
+                const modalContent = agreementModal.querySelector('.agreement-modal-content');
+                if (modalContent) {
+                    modalContent.style.transform = 'scale(1)';
+                    modalContent.style.opacity = '1';
+                }
+            }, 200);
+        }, 1000);
+    };
+    
+    // Helper function to hide modal with animation
+    const hideAgreementModalWithAnimation = () => {
+        if (!agreementModal || !pageOverlay) return;
+        
+        // First animate the content
+        const modalContent = agreementModal.querySelector('.agreement-modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+        }
+        
+        // Then hide the modal after animation completes
+        setTimeout(() => {
+            agreementModal.classList.remove('active');
+            pageOverlay.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }, 300);
+    };
+    
     // Show agreement modal immediately if not success page
     if (!isSuccessPage && agreementModal && pageOverlay) {
-        agreementModal.classList.add('active');
-        pageOverlay.classList.add('active');
-        document.body.classList.add('modal-open'); // Disable scrolling
+        showAgreementModalWithAnimation();
     }
     
     // Initialize beneficiary count with default value
@@ -100,17 +181,27 @@ function initializeAgreementModal() {
     // Handle agree action
     if (agreeBtn) {
         agreeBtn.addEventListener('click', function() {
-            handleAgreementConfirmed();
+            hideAgreementModalWithAnimation();
+            setTimeout(() => {
+                handleAgreementConfirmed();
+                showCustomAlert('Agreement accepted. Reload the page if you want to add more beneficiaries.', 'success');
+            }, 300);
         });
     }
     
     // Handle disagree action
     if (disagreeBtn) {
         disagreeBtn.addEventListener('click', function() {
-            alert('You must agree to the terms to continue using this application. The page will now redirect.');
+            hideAgreementModalWithAnimation();
+            showCustomAlert('You must agree to the terms to continue using this application. The page will now redirect.', 'warning');
+            
             // Get the SITE_URL from a hidden input or use a default
             const siteUrl = document.querySelector('input[name="site_url"]')?.value || '/';
-            window.location.href = siteUrl + '/homepage.php';
+            
+            // Delay redirect to allow alert to be seen
+            setTimeout(() => {
+                window.location.href = siteUrl + '/homepage.php';
+            }, 3000);
         });
     }
 }
@@ -262,6 +353,35 @@ function initFormValidation() {
 }
 
 /**
+ * Validate if user is of legal age (18 or older)
+ */
+function validateAge(birthdateStr) {
+    if (!birthdateStr) return false;
+    
+    // Parse the birthdate in MM/DD/YYYY format
+    const parts = birthdateStr.split('/');
+    if (parts.length !== 3) return false;
+    
+    const birthDate = new Date(
+        parseInt(parts[2]),  // Year
+        parseInt(parts[0]) - 1,  // Month (0-based)
+        parseInt(parts[1])   // Day
+    );
+    
+    // Calculate age
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    return age >= 18;
+}
+
+/**
  * Validate the current form page
  */
 function validateCurrentPageFields() {
@@ -286,14 +406,91 @@ function validateCurrentPageFields() {
     let invalidElements = [];
     if (!activePage) return true;
     
+    // Check if we're on page 1 with the birthdate field
+    if (activePage.id === 'form-page-1') {
+        const birthdateField = document.getElementById('birthday');
+        if (birthdateField && birthdateField.value) {
+            // Check if user is of legal age
+            if (!validateAge(birthdateField.value)) {
+                showCustomAlert('You cannot apply for a membership if you are underaged.', 'error');
+                isValid = false;
+                invalidElements.push(birthdateField);
+                birthdateField.classList.add('attempted');
+                birthdateField.style.borderColor = 'red';
+                
+                // Redirect to homepage after 5 seconds
+                setTimeout(() => {
+                    const siteUrl = document.querySelector('input[name="site_url"]')?.value || '/';
+                    window.location.href = siteUrl + '/homepage.php';
+                }, 5000);
+                
+                return false;
+            }
+        }
+    }
+    
+    // Check if we're on page 2 and has spouse birthday field
+    if (activePage.id === 'form-page-2') {
+        const spouseBirthdayField = document.getElementById('spouse_birthday');
+        const civilStatusSelect = document.getElementById('civil_status');
+        const isMarried = civilStatusSelect && civilStatusSelect.value === 'MARRIED';
+        
+        if (isMarried && spouseBirthdayField && spouseBirthdayField.value) {
+            // Check if spouse is of legal age
+            if (!validateAge(spouseBirthdayField.value)) {
+                showCustomAlert('Your spouse cannot be underaged. You cannot continue with this application.', 'error');
+                isValid = false;
+                invalidElements.push(spouseBirthdayField);
+                spouseBirthdayField.classList.add('attempted');
+                spouseBirthdayField.style.borderColor = 'red';
+                
+                // Redirect to homepage after 5 seconds
+                setTimeout(() => {
+                    const siteUrl = document.querySelector('input[name="site_url"]')?.value || '/';
+                    window.location.href = siteUrl + '/homepage.php';
+                }, 5000);
+                
+                return false;
+            }
+        }
+    }
+    
+    // Check file inputs for image types only
+    const fileInputs = activePage.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(fileInput => {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileType = file.type;
+            
+            // Check if it's not an image file (jpg or png)
+            if (!fileType.match(/^image\/(jpeg|png)$/)) {
+                showCustomAlert('Only image files (JPG, PNG) are allowed for uploads.', 'error');
+                isValid = false;
+                invalidElements.push(fileInput);
+                
+                // Clear the file input
+                fileInput.value = '';
+            }
+        }
+    });
+    
     // Check if we're on page 2 and the user is married
     const civilStatusSelect = document.getElementById('civil_status');
-    const isMarried = civilStatusSelect && civilStatusSelect.value === 'Married';
+    const isMarried = civilStatusSelect && civilStatusSelect.value === 'MARRIED';
     const isPage2 = activePage.id === 'form-page-2';
     
     if (isPage2 && isMarried) {
         // Make spouse fields required
-        const spouseFields = ['spouse_last_name', 'spouse_first_name', 'spouse_birthday'];
+        const spouseFields = [
+            'spouse_last_name', 
+            'spouse_first_name',
+            'spouse_middle_name',
+            'spouse_birthday', 
+            'spouse_occupation', 
+            'spouse_id_number',
+            'spouse_valid_id_upload'
+        ];
+        
         spouseFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             if (field) {
@@ -343,7 +540,7 @@ function validateCurrentPageFields() {
         // Check for at least one phone number
         const cellPhone = document.getElementById('cell_phone');
         const contactNo = document.getElementById('contact_no');
-        if (cellPhone && contactNo && !cellPhone.value.trim() && !contactNo.value.trim()) {
+        if (cellPhone && !cellPhone.value.trim()) {
             isValid = false;
             invalidElements.push(cellPhone);
         }
@@ -358,7 +555,7 @@ function validateCurrentPageFields() {
         // Check if signature exists by checking the input value, which is set on endStroke
         if (!memberSignatureInput || !memberSignatureInput.value) {
             isValid = false;
-            alert('Please provide your signature in the Member Signature field');
+            showCustomAlert('Please provide your signature in the Member Signature field', 'error');
             document.getElementById('member_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
             return false;
         }
@@ -375,7 +572,7 @@ function validateCurrentPageFields() {
             beneficiarySignatureSection.style.display !== 'none') {
             if (!beneficiarySignatureInput || !beneficiarySignatureInput.value) {
                 isValid = false;
-                alert('Please provide a signature in the Beneficiary Signature field');
+                showCustomAlert('Please provide a signature in the Beneficiary Signature field', 'error');
                 document.getElementById('beneficiary_signature_canvas').scrollIntoView({behavior:'smooth', block:'center'});
                 return false;
             }
@@ -433,7 +630,7 @@ function validateCurrentPageFields() {
     }
     
     if (!isValid) {
-        alert('Please fill out all required fields.');
+        showCustomAlert('Please fill out all required fields.', 'error');
         if (invalidElements.length) {
             invalidElements[0].scrollIntoView({behavior:'smooth', block:'center'});
             invalidElements[0].focus();
@@ -541,7 +738,14 @@ function initFormNavigation() {
         if (pageNum >= 0 && pageNum < totalPages) {
             currentPage = pageNum;
             updatePageDisplay();
-            window.scrollTo(0, 0);
+            
+            // Always scroll to top when changing pages - improved for mobile
+            setTimeout(() => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }, 100);
         }
     };
     
@@ -551,7 +755,14 @@ function initFormNavigation() {
                 if (currentPage < totalPages - 1) {
                     currentPage++;
                     updatePageDisplay();
-                    window.scrollTo(0, 0);
+                    
+                    // Smooth scroll to top with a slight delay
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
                 }
             }
         });
@@ -562,7 +773,14 @@ function initFormNavigation() {
             if (currentPage > 0) {
                 currentPage--;
                 updatePageDisplay();
-                window.scrollTo(0, 0);
+                
+                // Smooth scroll to top with a slight delay
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }, 100);
             }
         });
     }
@@ -993,8 +1211,11 @@ function initDynamicFields() {
     const spouseInfoSection = document.getElementById('spouse_information_section');
 
     if (civilStatusSelect && spouseInfoSection) {
+        // Define the toggle function
         const toggleSpouseSection = (isMarried) => {
+            console.log('Toggle spouse section - married:', isMarried); // Add debugging
             spouseInfoSection.style.display = isMarried ? 'block' : 'none';
+            
             // Update spouse fields required status based on marriage status
             if (!isMarried) {
                 spouseInfoSection.querySelectorAll('input, select').forEach(input => {
@@ -1007,8 +1228,17 @@ function initDynamicFields() {
                     }
                 });
             } else {
-                // Make important spouse fields required
-                const requiredFields = ['spouse_last_name', 'spouse_first_name', 'spouse_birthday'];
+                // Make spouse fields required
+                const requiredFields = [
+                    'spouse_last_name', 
+                    'spouse_first_name',
+                    'spouse_middle_name',
+                    'spouse_birthday', 
+                    'spouse_occupation', 
+                    'spouse_id_number',
+                    'spouse_valid_id_upload'
+                ];
+                
                 requiredFields.forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     if (field) {
@@ -1018,12 +1248,23 @@ function initDynamicFields() {
             }
         };
 
+        // Add change event listener
         civilStatusSelect.addEventListener('change', function() {
-            toggleSpouseSection(this.value === 'Married');
+            console.log('Civil status changed to:', this.value); // Add debugging
+            toggleSpouseSection(this.value === 'MARRIED');
         });
 
-        // Initial check on page load
-        toggleSpouseSection(civilStatusSelect.value === 'Married');
+        // Ensure we run this after the DOM is fully loaded
+        setTimeout(() => {
+            console.log('Initial civil status check:', civilStatusSelect.value); // Add debugging
+            toggleSpouseSection(civilStatusSelect.value === 'MARRIED');
+        }, 100);
+        
+        // Also run the check during initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded civil status check:', civilStatusSelect.value); // Add debugging
+            toggleSpouseSection(civilStatusSelect.value === 'MARRIED');
+        });
     }
     
     // Auto-calculate spouse age from spouse birthday
@@ -1183,6 +1424,34 @@ function showReviewModal() {
     
     reviewContent.innerHTML = '';
     
+    // Calculate scrollbar width
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    // Add padding to body to prevent content shift when scrollbar disappears
+    if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = scrollbarWidth + 'px';
+    }
+    
+    // Show modal with fade-in effect
+    modal.style.display = 'block';
+    modal.style.opacity = '0';
+    document.body.classList.add('modal-open'); // Prevent scrolling
+    
+    // Add slight delay before animation
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.classList.add('active');
+        
+        // Animate modal content
+        setTimeout(() => {
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }
+        }, 100);
+    }, 50);
+    
     // Personal Information section
     const personalSection = document.createElement('div');
     personalSection.className = 'review-section';
@@ -1240,6 +1509,12 @@ function showReviewModal() {
     addReviewRow(personalSection, 'Mother\'s Maiden First Name', document.getElementById('mothers_maiden_first_name')?.value);
     addReviewRow(personalSection, 'Mother\'s Maiden Middle Name', document.getElementById('mothers_maiden_middle_name')?.value);
     
+    // Add Valid ID Upload info
+    const validIdUpload = document.getElementById('valid_id_upload');
+    if (validIdUpload && validIdUpload.files.length > 0) {
+        addReviewRow(personalSection, 'Valid ID Upload', validIdUpload.files[0].name);
+    }
+    
     reviewContent.appendChild(personalSection);
     
     // Add Address section
@@ -1282,7 +1557,7 @@ function showReviewModal() {
     reviewContent.appendChild(businessSection);
     
     // Add Spouse section if married
-    if (civilStatusSelect && civilStatusSelect.value === 'Married') {
+    if (civilStatusSelect && civilStatusSelect.value === 'MARRIED') {
         const spouseSection = document.createElement('div');
         spouseSection.className = 'review-section';
         spouseSection.innerHTML = '<h3>Spouse Information</h3>';
@@ -1294,6 +1569,12 @@ function showReviewModal() {
         addReviewRow(spouseSection, 'Spouse\'s Age', document.getElementById('spouse_age')?.value);
         addReviewRow(spouseSection, 'Spouse\'s Occupation', document.getElementById('spouse_occupation')?.value);
         addReviewRow(spouseSection, 'Spouse\'s ID Number', document.getElementById('spouse_id_number')?.value);
+        
+        // Spouse Valid ID Upload
+        const spouseValidIdUpload = document.getElementById('spouse_valid_id_upload');
+        if (spouseValidIdUpload && spouseValidIdUpload.files.length > 0) {
+            addReviewRow(spouseSection, 'Spouse\'s Valid ID Upload', spouseValidIdUpload.files[0].name);
+        }
         
         reviewContent.appendChild(spouseSection);
     }
@@ -1399,13 +1680,98 @@ function showReviewModal() {
     
     reviewContent.appendChild(signatureSection);
     
+    // Add ID Documents section
+    const idPreviewSection = document.createElement('div');
+    idPreviewSection.className = 'review-section';
+    idPreviewSection.innerHTML = '<h3>ID Documents</h3>';
+    
+    // Create container for side-by-side display
+    const idPreviewContainer = document.createElement('div');
+    idPreviewContainer.className = 'review-id-preview-container';
+    idPreviewContainer.style.display = 'flex';
+    idPreviewContainer.style.flexWrap = 'wrap';
+    idPreviewContainer.style.gap = '20px';
+    idPreviewContainer.style.marginTop = '15px';
+    idPreviewSection.appendChild(idPreviewContainer);
+    
+    // Valid ID Preview
+    if (validIdUpload && validIdUpload.files.length > 0) {
+        const validIdPreviewBox = document.createElement('div');
+        validIdPreviewBox.className = 'review-id-preview';
+        validIdPreviewBox.style.flex = '1 1 calc(50% - 20px)';
+        validIdPreviewBox.style.minWidth = '250px';
+        validIdPreviewBox.style.backgroundColor = 'white';
+        validIdPreviewBox.style.borderRadius = '8px';
+        validIdPreviewBox.style.padding = '15px';
+        validIdPreviewBox.style.marginBottom = '15px';
+        validIdPreviewBox.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
+        
+        validIdPreviewBox.innerHTML = `
+            <h4 style="color: #1B3FAB; margin-bottom: 10px; font-size: 16px;">Valid ID</h4>
+            <p>Filename: ${validIdUpload.files[0].name}</p>
+        `;
+        
+        // Add image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '200px';
+            img.style.border = '1px solid #ddd';
+            img.style.borderRadius = '4px';
+            img.style.marginTop = '10px';
+            validIdPreviewBox.appendChild(img);
+        };
+        reader.readAsDataURL(validIdUpload.files[0]);
+        
+        idPreviewContainer.appendChild(validIdPreviewBox);
+    }
+    
+    // Spouse Valid ID Preview (only if married)
+    if (civilStatusSelect && civilStatusSelect.value === 'MARRIED') {
+        const spouseValidIdUpload = document.getElementById('spouse_valid_id_upload');
+        if (spouseValidIdUpload && spouseValidIdUpload.files.length > 0) {
+            const spouseIdPreviewBox = document.createElement('div');
+            spouseIdPreviewBox.className = 'review-id-preview';
+            spouseIdPreviewBox.style.flex = '1 1 calc(50% - 20px)';
+            spouseIdPreviewBox.style.minWidth = '250px';
+            spouseIdPreviewBox.style.backgroundColor = 'white';
+            spouseIdPreviewBox.style.borderRadius = '8px';
+            spouseIdPreviewBox.style.padding = '15px';
+            spouseIdPreviewBox.style.marginBottom = '15px';
+            spouseIdPreviewBox.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
+            
+            spouseIdPreviewBox.innerHTML = `
+                <h4 style="color: #1B3FAB; margin-bottom: 10px; font-size: 16px;">Spouse's Valid ID</h4>
+                <p>Filename: ${spouseValidIdUpload.files[0].name}</p>
+            `;
+            
+            // Add image preview
+            const spouseReader = new FileReader();
+            spouseReader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '200px';
+                img.style.border = '1px solid #ddd';
+                img.style.borderRadius = '4px';
+                img.style.marginTop = '10px';
+                spouseIdPreviewBox.appendChild(img);
+            };
+            spouseReader.readAsDataURL(spouseValidIdUpload.files[0]);
+            
+            idPreviewContainer.appendChild(spouseIdPreviewBox);
+        }
+    }
+    
+    // Only add the section if there's at least one ID
+    if (idPreviewContainer.children.length > 0) {
+        reviewContent.appendChild(idPreviewSection);
+    }
+    
     // Set up modal button events
     setupReviewModalEvents();
-    
-    // Show the modal
-    modal.style.display = 'block';
-    // Prevent page scrolling while modal is open
-    document.body.classList.add('modal-open');
 }
 
 /**
@@ -1419,11 +1785,28 @@ function setupReviewModalEvents() {
     
     if (!modal) return;
     
+    // Helper function to close modal with animation
+    const closeModalWithAnimation = () => {
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+        }
+        
+        // Remove active class
+        modal.classList.remove('active');
+        
+        // Wait for animation to complete before hiding
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }, 300);
+    };
+    
     // Close the modal when clicking the × button
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
+            closeModalWithAnimation();
         });
     }
     
@@ -1434,8 +1817,7 @@ function setupReviewModalEvents() {
             const genderValue = document.getElementById('gender')?.value;
             const civilStatusValue = document.getElementById('civil_status')?.value;
             
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
+            closeModalWithAnimation();
             
             // If we need to go back to page 1, restore the dropdown values
             setTimeout(() => {
@@ -1497,10 +1879,9 @@ function setupReviewModalEvents() {
             
             // Check for empty or default selected values
             if (genderSelect && genderSelect.selectedIndex === 0) {
-                alert('Please select your gender.');
+                showCustomAlert('Please select your gender.', 'error');
                 // Close modal and go back to page 1 to fix the issue
-                modal.style.display = 'none';
-                document.body.classList.remove('modal-open');
+                closeModalWithAnimation();
                 
                 if (window.setCurrentPage) {
                     window.setCurrentPage(0);
@@ -1527,10 +1908,9 @@ function setupReviewModalEvents() {
             }
             
             if (civilStatusSelect && civilStatusSelect.selectedIndex === 0) {
-                alert('Please select your civil status.');
+                showCustomAlert('Please select your civil status.', 'error');
                 // Close modal and go back to page 1 to fix the issue
-                modal.style.display = 'none';
-                document.body.classList.remove('modal-open');
+                closeModalWithAnimation();
                 
                 if (window.setCurrentPage) {
                     window.setCurrentPage(0);
@@ -1567,12 +1947,16 @@ function setupReviewModalEvents() {
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = 'Submitting...';
                 
+                // Show success message and close modal
+                showCustomAlert('Processing your application...', 'info');
+                closeModalWithAnimation();
+                
                 setTimeout(function() {
                     form.submit();
                 }, 100); // Small delay to ensure UI updates
             } catch (error) {
                 console.error('Error during form submission:', error);
-                alert('There was an error submitting the form. Please try again.');
+                showCustomAlert('There was an error submitting the form. Please try again.', 'error');
                 if (confirmBtn) {
                     confirmBtn.disabled = false;
                     confirmBtn.textContent = 'Confirm Submission';
@@ -1584,8 +1968,7 @@ function setupReviewModalEvents() {
     // Close modal when clicking outside of it
     window.addEventListener('click', function(event) {
         if (event.target == modal) {
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
+            closeModalWithAnimation();
         }
     });
 }
@@ -1740,4 +2123,210 @@ function calculateAgeFromDateString(dateString) {
     }
     
     return age >= 0 ? age : null; // Return null for negative ages
+}
+
+/**
+ * Initialize ID preview functionality
+ */
+function initializeIdPreview() {
+    // For main ID upload
+    const validIdUpload = document.getElementById('valid_id_upload');
+    const validIdPreview = document.getElementById('valid_id_preview');
+    const validIdPreviewContainer = document.getElementById('valid_id_preview_container');
+    
+    if (validIdUpload && validIdPreview && validIdPreviewContainer) {
+        validIdUpload.addEventListener('change', function() {
+            // Check if file is selected
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                
+                // Validate file type (only jpg/png)
+                if (!file.type.match(/^image\/(jpeg|png)$/)) {
+                    showCustomAlert('Only image files (JPG, PNG) are allowed for uploads.', 'error');
+                    this.value = ''; // Clear the input
+                    return;
+                }
+                
+                previewImage(this, validIdPreview, validIdPreviewContainer);
+            }
+        });
+    }
+    
+    // For spouse ID upload
+    const spouseValidIdUpload = document.getElementById('spouse_valid_id_upload');
+    const spouseValidIdPreview = document.getElementById('spouse_valid_id_preview');
+    const spouseValidIdPreviewContainer = document.getElementById('spouse_valid_id_preview_container');
+    
+    if (spouseValidIdUpload && spouseValidIdPreview && spouseValidIdPreviewContainer) {
+        spouseValidIdUpload.addEventListener('change', function() {
+            // Check if file is selected
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                
+                // Validate file type (only jpg/png)
+                if (!file.type.match(/^image\/(jpeg|png)$/)) {
+                    showCustomAlert('Only image files (JPG, PNG) are allowed for uploads.', 'error');
+                    this.value = ''; // Clear the input
+                    return;
+                }
+                
+                previewImage(this, spouseValidIdPreview, spouseValidIdPreviewContainer);
+            }
+        });
+    }
+}
+
+/**
+ * Preview an image file
+ */
+function previewImage(input, imgElement, containerElement) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Clear previous content
+        containerElement.innerHTML = '';
+        
+        // Only preview if it's an image
+        if (file.type.match('image.*')) {
+            // Re-add the image element
+            const img = document.createElement('img');
+            img.id = imgElement.id;
+            img.alt = imgElement.alt;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '200px';
+            img.style.border = '1px solid #ddd';
+            img.style.borderRadius = '4px';
+            containerElement.appendChild(img);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                containerElement.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            // For PDFs and other non-image files, show a text indicator
+            const docPreview = document.createElement('div');
+            docPreview.innerHTML = `
+                <div style="border: 1px dashed #ccc; padding: 15px; text-align: center;">
+                    <div style="font-size: 24px; color: #666;">📄</div>
+                    <div style="margin-top: 5px; font-size: 13px; color: #666;">${file.name}</div>
+                </div>
+            `;
+            containerElement.appendChild(docPreview);
+            containerElement.style.display = 'block';
+        }
+    } else {
+        containerElement.style.display = 'none';
+    }
+}
+
+/**
+ * Format phone number to remove leading zero
+ */
+function formatPhoneNumber(input) {
+    // Remove any non-digit characters
+    let value = input.value.replace(/\D/g, '');
+    
+    // Remove leading zero if present
+    if (value.startsWith('0')) {
+        value = value.substring(1);
+    }
+    
+    // Ensure we don't exceed maxlength
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+    }
+    
+    // Update the input value
+    input.value = value;
+}
+
+/**
+ * Custom styled alert with fade out animation
+ */
+function showCustomAlert(message, type = 'error') {
+    // Remove any existing alerts
+    const existingAlerts = document.querySelectorAll('.ui-alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create alert element
+    const alertEl = document.createElement('div');
+    alertEl.className = `ui-alert ${type}`;
+    
+    // Set title based on type
+    let title = 'Warning';
+    
+    if (type === 'error') {
+        title = 'Error';
+    } else if (type === 'success') {
+        title = 'Success';
+    } else if (type === 'info') {
+        title = 'Information';
+    }
+    
+    // Create alert content
+    alertEl.innerHTML = `
+        <div class="alert-content">
+            <div class="alert-title">${title}</div>
+            <div class="alert-message">${message}</div>
+        </div>
+    `;
+    
+    // Add to document
+    document.body.appendChild(alertEl);
+    
+    // The animation is now handled via CSS
+    return alertEl;
+}
+
+/**
+ * Initialize tooltips to use data-title attribute
+ */
+function initializeTooltips() {
+    const tooltipIcons = document.querySelectorAll('.tooltip-icon');
+    let activeTooltip = null; // Track currently active tooltip
+
+    tooltipIcons.forEach(icon => {
+        // Ensure data-title exists, if not, try to use title and remove it
+        if (!icon.hasAttribute('data-title') && icon.hasAttribute('title')) {
+            icon.setAttribute('data-title', icon.getAttribute('title'));
+            icon.removeAttribute('title');
+        }
+
+        // For mobile devices (click/tap to show/hide)
+        if (window.innerWidth <= 768) {
+            icon.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent click from bubbling to document listener immediately
+
+                if (activeTooltip === this) {
+                    // If clicking the active tooltip, deactivate it
+                    this.classList.remove('active');
+                    activeTooltip = null;
+                } else {
+                    // If another tooltip was active, deactivate it
+                    if (activeTooltip) {
+                        activeTooltip.classList.remove('active');
+                    }
+                    // Activate the clicked tooltip
+                    this.classList.add('active');
+                    activeTooltip = this;
+                }
+            });
+        } else {
+            // For desktop - use hover behavior (CSS will handle this)
+            // No JS needed for hover if using CSS :hover pseudo-class for visibility
+        }
+    });
+
+    // Close any active tooltip when clicking elsewhere on the document (for mobile)
+    if (window.innerWidth <= 768) {
+        document.addEventListener('click', function(e) {
+            if (activeTooltip && !activeTooltip.contains(e.target)) {
+                activeTooltip.classList.remove('active');
+                activeTooltip = null;
+            }
+        });
+    }
 }

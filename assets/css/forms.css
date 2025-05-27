@@ -161,41 +161,6 @@ h1, h2 {
     background-repeat: no-repeat;
 }
 
-/* Re-add Checkbox Tooltip Styles */
-.checkbox-item .tooltip-text {
-    visibility: hidden;
-    width: 180px;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 8px;
-    position: absolute;
-    z-index: 100;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    font-size: 0.85rem;
-}
-
-.checkbox-item:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-}
-
-.checkbox-item .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: #555 transparent transparent transparent;
-}
-
 /* Disclaimer styling */
 .disclaimer-box {
     background-color: #f9f9f9;
@@ -279,6 +244,7 @@ button[type="submit"]:disabled {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 24px;
+    overflow-x: auto;
 }
 
 .beneficiaries-table th {
@@ -316,12 +282,14 @@ button[type="submit"]:disabled {
 
 .beneficiaries-table th:nth-child(5), /* Gender */
 .beneficiaries-table td:nth-child(5) {
-    width: 8%; /* Decreased Gender width */
+    width: 12%; /* Increased from 8% */
+    min-width: 100px;
 }
 
 .beneficiaries-table th:nth-child(6), /* Relationship */
 .beneficiaries-table td:nth-child(6) {
-    width: 12%; /* Adjusted Relationship width (approx 20% reduction from a typical larger share) */
+    width: 20%; /* Increased from 12% */
+    min-width: 150px;
 }
 
 .beneficiaries-table th:last-child, /* Dependent */
@@ -968,16 +936,40 @@ input[readonly]:hover {
     background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
 }
 
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 1000;
+    overflow-y: auto;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+}
+
 .modal-content {
-    background-color: #fefefe;
-    margin: 5% auto; /* Adjusted margin for better centering */
-    padding: 2rem;
-    border: 1px solid #ddd;
-    width: 80vw; /* Decreased width by 10% */
+    background-color: white;
+    margin: 50px auto;
     max-width: 800px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative; /* For potential close button positioning */
+    width: 90%;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    padding: 20px;
+    position: relative;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: scale(1);
+    opacity: 1;
 }
 
 .modal-header {
@@ -1154,107 +1146,131 @@ body.modal-open .pika-single {
     display: none !important;
 }
 
-/* Prevent background scroll when modal open */
+/* Prevent body scroll when modal is open */
 body.modal-open {
     overflow: hidden;
+    /* Height adjustment to prevent content shift */
+    height: 100%;
 }
 
 /* User Agreement Modal Styles */
 .agreement-modal {
     position: fixed;
-    z-index: 9999;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0,0,0,0);
+    z-index: 1000;
     display: none;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease;
 }
 
 .agreement-modal.active {
-    display: block;
+    display: flex;
 }
 
 .agreement-modal-content {
-    background-color: #fefefe;
-    margin: 2% auto;
-    padding: 30px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 900px;
+    background-color: white;
+    width: 90%;
+    max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+}
+
+.agreement-modal.active .agreement-modal-content {
+    transform: scale(1);
+    opacity: 1;
 }
 
 .agreement-modal-content h2 {
+    color: #1B3FAB;
     text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 26px;
+    margin-bottom: 25px;
+    font-size: 28px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
 }
 
 .agreement-section {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     padding-bottom: 20px;
     border-bottom: 1px solid #eee;
 }
 
 .agreement-section h3 {
+    color: #1B3FAB;
     margin-bottom: 15px;
-    color: #006eb7;
     font-size: 20px;
 }
 
-.agreement-section p, .agreement-section ul, .agreement-section ol {
-    margin-bottom: 15px;
+.agreement-section p, 
+.agreement-section ul, 
+.agreement-section ol {
+    color: #555;
     line-height: 1.6;
     font-size: 15px;
 }
 
-.agreement-section ul, .agreement-section ol {
-    padding-left: 20px;
+.agreement-beneficiary-question {
+    background-color: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    margin: 30px 0;
+    border-left: 4px solid #1B3FAB;
 }
 
-.agreement-actions {
-    margin-top: 30px;
-    text-align: center;
-}
-
-.agreement-actions button {
-    margin: 0 10px;
-    padding: 12px 30px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-#agree-button {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
-}
-
-#disagree-button {
-    background-color: #f44336;
-    border-color: #f44336;
-    color: white;
-}
-
-.radio-options {
-    margin-top: 15px;
+.agreement-beneficiary-question h3 {
+    color: #1B3FAB;
+    margin-bottom: 15px;
 }
 
 .radio-options label {
+    display: inline-flex;
+    align-items: center;
     margin-right: 20px;
     cursor: pointer;
+    font-size: 16px;
 }
 
-.agreement-beneficiary-question {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 5px;
-    margin: 20px 0;
+.radio-options input[type="radio"] {
+    margin-right: 8px;
+}
+
+.beneficiary-count-wrapper {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.beneficiary-count-wrapper label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.beneficiary-count-wrapper input {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.agreement-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 35px;
+    gap: 20px;
 }
 
 /* Style for page overlay to prevent interaction */
@@ -1264,13 +1280,18 @@ body.modal-open {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 9000;
-    display: none;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 999;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease, backdrop-filter 0.5s ease;
 }
 
 .page-overlay.active {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease, backdrop-filter 0.5s ease;
 }
 
 /* Review modal styles */
@@ -1299,17 +1320,25 @@ body.modal-open {
 }
 
 .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    transition: all 0.2s;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #666;
     cursor: pointer;
 }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
+.close:hover {
+    background-color: #e0e0e0;
+    transform: rotate(90deg);
 }
 
 .modal-actions {
@@ -1396,4 +1425,191 @@ textarea.attempted:invalid {
 /* Signature buttons styling */
 .signature-buttons {
     margin-top: 10px;
+}
+
+/* Loading Spinner */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+.page-loader.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(27, 63, 171, 0.2);
+    border-radius: 50%;
+    border-top-color: #1B3FAB;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Blur effect for modals */
+.page-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* Fade out effect for toast notifications */
+.ui-alert {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    max-width: 90%;
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    animation: fadeInUp 0.3s ease forwards, fadeOutDown 0.3s ease 4.7s forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes fadeOutDown {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+}
+
+.ui-alert.error {
+    border-left: 4px solid #dc3545;
+}
+
+.ui-alert.success {
+    border-left: 4px solid #28a745;
+}
+
+.ui-alert.warning {
+    border-left: 4px solid #ffc107;
+}
+
+.ui-alert.info {
+    border-left: 4px solid #1B3FAB;
+}
+
+.ui-alert .alert-content {
+    flex: 1;
+}
+
+.ui-alert .alert-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.ui-alert .alert-message {
+    color: #666;
+}
+
+.form-group label:not([data-no-asterisk])::after {
+    content: "";
+}
+
+/* Enhanced Tooltip Styling */
+.tooltip-icon {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #1B3FAB;
+    color: white;
+    font-size: 12px;
+    margin-left: 5px;
+    cursor: help;
+    position: relative;
+    font-style: italic;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-icon:hover {
+    background-color: #142b73;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-icon::after {
+    content: attr(data-title);
+    position: absolute;
+    bottom: 125%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: normal; /* Allow text to wrap */
+    max-width: 220px; /* Max width for the tooltip */
+    text-align: center;
+    z-index: 10010; /* Ensure it's above other elements */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none; /* Tooltip itself should not be interactive */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.tooltip-icon:hover::after,
+.tooltip-icon.active::after, /* For click/tap activation */
+.tooltip-icon.active::before /* Keep .active::before for JS, but it will have no style if ::before is removed */ {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ensure all required asterisks are red, including in tables */
+.required-asterisk, 
+.beneficiaries-table th .required-asterisk, /* Specifically target asterisks within th */
+.beneficiaries-table th.required:after, /* Keep this for direct :after usage if any */
+#trustee-section label .required-asterisk { /* Ensure trustee asterisks are also red */
+    color: #ff3b30 !important;
+}
+
+.beneficiaries-table th.required:after {
+    content: "*";
+    color: #ff3b30 !important;
 } 

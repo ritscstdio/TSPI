@@ -709,6 +709,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .dropdown-menu.show {
             display: block !important;
         }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+        
+        .message.error ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        
+        /* ID Preview Styles */
+        .id-previews-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .id-preview-card {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .id-preview-card h3 {
+            margin: 0 0 15px;
+            font-size: 16px;
+            color: var(--gray-700);
+        }
+        
+        .id-image-preview {
+            position: relative;
+            margin-bottom: 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .id-image-preview:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+        }
+        
+        .id-image-preview img {
+            width: 100%;
+            display: block;
+        }
+        
+        .id-preview-link {
+            display: block;
+            position: relative;
+        }
+        
+        .preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .id-preview-link:hover .preview-overlay {
+            opacity: 1;
+        }
+        
+        .view-full-size {
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="<?php echo $body_class; ?>">
@@ -718,7 +806,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <main class="admin-main">
         <?php include 'includes/header.php'; ?>
-        <div class="content-container">
+        <div class="content-container dashboard-container">
             <?php if (!empty($errors)): ?>
                 <div class="message error">
                     <ul>
@@ -769,6 +857,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
             </div>
+            
+            <!-- Valid ID Previews Card -->
+            <?php if (!empty($application['valid_id_path']) || !empty($application['spouse_valid_id_path'])): ?>
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>Valid ID Previews</h2>
+                </div>
+                <div class="admin-card-body">
+                    <div class="id-previews-container">
+                        <?php if (!empty($application['valid_id_path'])): ?>
+                        <div class="id-preview-card">
+                            <h3>Member's Valid ID</h3>
+                            <div class="id-image-preview">
+                                <a href="<?php echo SITE_URL . '/' . $application['valid_id_path']; ?>" target="_blank" class="id-preview-link">
+                                    <img src="<?php echo SITE_URL . '/' . $application['valid_id_path']; ?>" alt="Member Valid ID">
+                                    <div class="preview-overlay">
+                                        <span class="view-full-size">View Full Size</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($application['spouse_valid_id_path'])): ?>
+                        <div class="id-preview-card">
+                            <h3>Spouse's Valid ID</h3>
+                            <div class="id-image-preview">
+                                <a href="<?php echo SITE_URL . '/' . $application['spouse_valid_id_path']; ?>" target="_blank" class="id-preview-link">
+                                    <img src="<?php echo SITE_URL . '/' . $application['spouse_valid_id_path']; ?>" alt="Spouse Valid ID">
+                                    <div class="preview-overlay">
+                                        <span class="view-full-size">View Full Size</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <div class="admin-card">
                 <div class="admin-card-header">

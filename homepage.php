@@ -8,7 +8,7 @@ include 'includes/header.php';
 <main>
     <!-- Hero Section -->
     <section class="hero" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 350px;">
-        <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">
+        <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease-in-out;">
             <source src="<?php echo SITE_URL; ?>/src/assets/TSPI Intro.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -122,6 +122,24 @@ window.addEventListener('scroll', function() {
         btn.classList.remove('show-scroll-btn');
     }
 });
+
+// Fade in hero video
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const heroVideo = document.querySelector('.hero-bg-video');
+        if (heroVideo) {
+            heroVideo.style.opacity = '1';
+            heroVideo.style.transition = 'opacity 1.8s ease-in-out'; // Smoother, longer fade in
+        }
+    }, 300);
+});
 </script>
+
+<style>
+/* Additional styles to override any underlines */
+.cta-button {
+    text-decoration: none !important; /* Remove underline from CTA buttons */
+}
+</style>
 
 <?php include 'includes/footer.php'; ?> 

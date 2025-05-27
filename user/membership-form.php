@@ -104,7 +104,7 @@ if ($user) {
             $status_message = "Your previous application was rejected. Please contact support for more information.";
         }
         
-        echo '<div class="message info" style="margin-top:180px;"><p>' . $status_message . ' You cannot submit another application at this time.</p></div>';
+        echo '<div class="form-group disclaimer-box message info" style="margin-top:180px;"><p>' . $status_message . ' You cannot submit another application at this time.</p></div>';
         echo '<script>setTimeout(function(){ window.location.href = "' . SITE_URL . '/homepage.php"; }, 8000);</script>';
         include '../includes/footer.php';
         exit;
@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $spouse_name = '';
     $spouse_birthdate = null;
     $spouse_age = null;
-    if (isset($_POST['civil_status']) && $_POST['civil_status'] === 'Married') {
+    if (isset($_POST['civil_status']) && $_POST['civil_status'] === 'MARRIED') {
         $spouse_name = sanitize(
             trim(
                 ($_POST['spouse_first_name'] ?? '') . ' ' .
@@ -242,9 +242,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $beneficiarySignaturePath = 'uploads/signatures/' . $fname2;
         }
     }
+    
+    // Valid ID Uploads
+    $validIdsDir = UPLOADS_DIR . '/valid_ids';
+    if (!is_dir($validIdsDir)) mkdir($validIdsDir, 0755, true);
+    
+    // Member Valid ID
+    $validIdPath = null;
+    if (!empty($_FILES['valid_id_upload']['name'])) {
+        $validIdFile = $_FILES['valid_id_upload'];
+        if ($validIdFile['error'] === UPLOAD_ERR_OK) {
+            // Verify file is a JPEG or PNG by extension
+            $fileExt = strtolower(pathinfo($validIdFile['name'], PATHINFO_EXTENSION));
+            if ($fileExt !== 'jpg' && $fileExt !== 'jpeg' && $fileExt !== 'png') {
+                $errors[] = 'Only JPG and PNG image files are allowed for ID uploads.';
+            } else {
+                $newFilename = 'id_' . $user_id . '_' . time() . '.' . $fileExt;
+                $uploadPath = $validIdsDir . '/' . $newFilename;
+                
+                if (move_uploaded_file($validIdFile['tmp_name'], $uploadPath)) {
+                    $validIdPath = 'uploads/valid_ids/' . $newFilename;
+                }
+            }
+        }
+    }
+    
+    // Spouse Valid ID - only if married
+    $spouseValidIdPath = null;
+    if (isset($_POST['civil_status']) && $_POST['civil_status'] === 'MARRIED' && !empty($_FILES['spouse_valid_id_upload']['name'])) {
+        $spouseValidIdFile = $_FILES['spouse_valid_id_upload'];
+        if ($spouseValidIdFile['error'] === UPLOAD_ERR_OK) {
+            // Verify file is a JPEG or PNG by extension
+            $fileExt = strtolower(pathinfo($spouseValidIdFile['name'], PATHINFO_EXTENSION));
+            if ($fileExt !== 'jpg' && $fileExt !== 'jpeg' && $fileExt !== 'png') {
+                $errors[] = 'Only JPG and PNG image files are allowed for spouse ID uploads.';
+            } else {
+                $newFilename = 'spouse_id_' . $user_id . '_' . time() . '.' . $fileExt;
+                $uploadPath = $validIdsDir . '/' . $newFilename;
+                
+                if (move_uploaded_file($spouseValidIdFile['tmp_name'], $uploadPath)) {
+                    $spouseValidIdPath = 'uploads/valid_ids/' . $newFilename;
+                }
+            }
+        }
+    }
+    
     // Insert into database
     global $pdo;
     try {
+        // First check if valid_id_path and spouse_valid_id_path columns exist
+        $checkColumnsQuery = "SHOW COLUMNS FROM `members_information` LIKE 'valid_id_path'";
+        $checkStmt = $pdo->prepare($checkColumnsQuery);
+        $checkStmt->execute();
+        $validIdColumnExists = $checkStmt->rowCount() > 0;
+        
         // Dynamically build INSERT statement to match parameter count
         $columns = [
             'fk_user_id','branch','cid_no','center_no','plans','classification',
@@ -264,6 +315,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'trustee_name','trustee_birthdate','trustee_relationship',
             'member_name','sig_beneficiary_name','member_signature','beneficiary_signature','disclaimer_agreement','status'
         ];
+        
+        // Only add ID columns if they exist in the database
+        if ($validIdColumnExists) {
+            $columns[] = 'valid_id_path';
+            $columns[] = 'spouse_valid_id_path';
+        }
+        
         $placeholders = implode(', ', array_fill(0, count($columns), '?'));
         $sql = sprintf(
             "INSERT INTO members_information (%s) VALUES (%s)",
@@ -308,10 +366,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mothers_maiden_first_name,                           // mothers_maiden_first_name
             $mothers_maiden_middle_name,                          // mothers_maiden_middle_name
             $present_address,                                     // present_address
-            sanitize($_POST['present_brgy_code'] ?? ''),          // present_brgy_code
+            $present_brgy_code,                                    // present_brgy_code
             $present_zip_code,                                    // present_zip_code
             $permanent_address,                                   // permanent_address
-            sanitize($_POST['permanent_brgy_code'] ?? ''),        // permanent_brgy_code
+            $permanent_brgy_code,                                  // permanent_brgy_code
             $permanent_zip_code,                                  // permanent_zip_code
             $home_ownership,                                      // home_ownership
             $length_of_stay,                                      // length_of_stay
@@ -370,8 +428,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $memberSignaturePath,                                 // member_signature
             $beneficiarySignaturePath,                            // beneficiary_signature
             isset($_POST['disclaimer_agreement']) ? 1 : 0,        // disclaimer_agreement
-            'pending'                                             // status
+            'pending'                                            // status
         ];
+        
+        // Add ID path parameters only if the columns exist
+        if ($validIdColumnExists) {
+            $params[] = $validIdPath;                               // valid_id_path
+            $params[] = $spouseValidIdPath;                         // spouse_valid_id_path
+        }
 
         // Double-check that the email parameter is set correctly before executing the query
         if (empty($params[13])) { // Index 13 corresponds to the email parameter
@@ -395,6 +459,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 include '../includes/header.php';
 ?>
+<!-- Add loading spinner right after body opening -->
+<div class="page-loader">
+    <div class="spinner"></div>
+</div>
+
 <!-- User Agreement Modal -->
 <div id="user-agreement-modal" class="agreement-modal">
     <div class="agreement-modal-content">
@@ -419,7 +488,7 @@ include '../includes/header.php';
             <h3>PROOF OF MEMBER CONSENT AND AGREEMENT TO TSPI MBAI POLICIES</h3>
             <p>As a member, I understand and agree to the following:</p>
             <p><strong>A-</strong> TSPI MBAI has explained to me the importance of having Micro Insurance with contributions/premiums of:</p>
-            <ul>
+            <ul class="agreement-list">
                 <li>P5.00 per week or P240.00 per year for the <strong>BASIC LIFE INSURANCE PLAN (BLIP)</strong>;</li>
                 <li>P1.00 per thousand per week of my borrowed amount for the <strong>CREDIT LIFE INSURANCE PLAN (CLIP)</strong>; or</li>
                 <li>P10 per thousand per year of my borrowed amount for <strong>MORTGAGE REDEMPTION INSURANCE (MRI)</strong>.</li>
@@ -439,12 +508,12 @@ include '../includes/header.php';
             <h3>2. Proof of Agreement to Grace Period for Contribution/Premium Payment</h3>
             <p>I understand the following policies for the 45-day grace period for insurance payments:</p>
             <p><strong>a. BLIP</strong></p>
-            <ul>
+            <ul class="agreement-list">
                 <li>In case I am unable to pay my contribution for BLIP, I have a <strong>45-day grace period</strong> for my insurance coverage to continue.</li>
                 <li>If I fail to pay my contribution for BLIP or renew after the 45-day grace period, my life plus and life max, if any, will become void.</li>
             </ul>
             <p><strong>b. CLIP/MRI</strong></p>
-            <ul>
+            <ul class="agreement-list">
                 <li>In case I am unable to pay my contribution for CLIP/MRI until the loan maturity, I have a <strong>45-day grace period</strong> for my insurance coverage to continue.</li>
                 <li>The end or maturity date of my loan is the end of my CLIP/MRI coverage. I understand that there is no grace period for this.</li>
             </ul>
@@ -511,7 +580,7 @@ include '../includes/header.php';
                 </div>
             <?php endif; ?>
             
-            <form method="post" action="" id="membership-form">
+            <form method="post" action="" id="membership-form" enctype="multipart/form-data">
                 <!-- All Form Content -->
                 <div class="form-page-content active" id="form-page-1">
                     <h2>Personal Information</h2>
@@ -523,21 +592,21 @@ include '../includes/header.php';
                     
 
                             <div class="form-group">
-                        <label>Member Classification *</label>
+                        <label>Member Classification <span class="required-asterisk">*</span></label>
                         <div class="checkbox-group">
                           
                             <div class="checkbox-item">
-                                <input type="radio" id="class_tkp" name="classification" value="TKP" title="TKP borrower classification - For individual borrowers">
-                                <label for="class_tkp">TKP (Borrower) <span class="tooltip-icon" title="TKP borrower classification - For individual borrowers">ⓘ</span></label>
+                                <input type="radio" id="class_tkp" name="classification" value="TKP">
+                                <label for="class_tkp">TKP (Borrower) <span class="tooltip-icon" data-title="TKP borrower classification - For individual borrowers">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="radio" id="class_tpp" name="classification" value="TPP" title="TPP borrower classification - For business or partnership borrowers">
-                                <label for="class_tpp">TPP (Borrower) <span class="tooltip-icon" title="TPP borrower classification - For business or partnership borrowers">ⓘ</span></label>
+                                <input type="radio" id="class_tpp" name="classification" value="TPP">
+                                <label for="class_tpp">TPP (Borrower) <span class="tooltip-icon" data-title="TPP borrower classification - For business or partnership borrowers">ⓘ</span></label>
                         </div>
 
                             <div class="checkbox-item">
-                                <input type="radio" id="class_borrower" name="classification" value="Kapamilya" title="Kapamilya classification - For family members of borrowers">
-                                <label for="class_borrower">Kapamilya <span class="tooltip-icon" title="Kapamilya classification - For family members of borrowers">ⓘ</span></label>
+                                <input type="radio" id="class_borrower" name="classification" value="Kapamilya">
+                                <label for="class_borrower">Kapamilya <span class="tooltip-icon" data-title="Kapamilya classification - For family members of borrowers">ⓘ</span></label>
                             </div>
                         </div>
                     </div>
@@ -546,16 +615,16 @@ include '../includes/header.php';
                         <label>Available Plans</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" checked onclick="return false;" title="Basic Life Insurance Plan - Provides essential coverage">
-                                <label for="plan_blip">Basic Life (BLIP) * <span class="tooltip-icon" title="Basic Life Insurance Plan - Provides essential coverage">ⓘ</span></label>
+                                <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" checked onclick="return false;">
+                                <label for="plan_blip">Basic Life (BLIP)  <span class="required-asterisk">*</span> <span class="tooltip-icon" data-title="Basic Life Insurance Plan - Provides essential coverage">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP" title="Life Plus Insurance Plan - Additional coverage on top of basic">
-                                <label for="plan_lpip">Life Plus (LPIP) <span class="tooltip-icon" title="Life Plus Insurance Plan - Additional coverage on top of basic">ⓘ</span></label>
+                                <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP">
+                                <label for="plan_lpip">Life Plus (LPIP) <span class="tooltip-icon" data-title="Life Plus Insurance Plan - Additional coverage on top of basic">ⓘ</span></label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="plan_lmip" name="plans[]" value="LMIP" title="Life Max Insurance Plan - Comprehensive coverage with maximum benefits">
-                                <label for="plan_lmip">Life Max (LMIP) <span class="tooltip-icon" title="Life Max Insurance Plan - Comprehensive coverage with maximum benefits">ⓘ</span></label>
+                                <input type="checkbox" id="plan_lmip" name="plans[]" value="LMIP">
+                                <label for="plan_lmip">Life Max (LMIP) <span class="tooltip-icon" data-title="Life Max Insurance Plan - Comprehensive coverage with maximum benefits">ⓘ</span></label>
                             </div>
                         </div>
                     </div>
@@ -563,13 +632,13 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="last_name">Last Name *</label>
+                                <label for="last_name">Last Name <span class="required-asterisk">*</span></label>
                                 <input type="text" id="last_name" name="last_name" required placeholder="Enter Last Name" autocomplete="family-name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="first_name">First Name *</label>
+                                <label for="first_name">First Name <span class="required-asterisk">*</span></label>
                                 <input type="text" id="first_name" name="first_name" required placeholder="Enter First Name" autocomplete="given-name">
                             </div>
                         </div>
@@ -578,13 +647,13 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="middle_name">Middle Name *</label>
+                                <label for="middle_name">Middle Name <span class="required-asterisk">*</span></label>
                                 <input type="text" id="middle_name" name="middle_name" placeholder="Enter Middle Name" required autocomplete="additional-name">
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="gender">Gender *</label>
+                                <label for="gender">Gender <span class="required-asterisk">*</span></label>
                                 <select id="gender" name="gender" required autocomplete="sex">
                                     <option value="" selected>Select Gender</option>
                                     <option value="MALE">MALE</option>
@@ -597,7 +666,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="civil_status">Civil Status *</label>
+                                <label for="civil_status">Civil Status <span class="required-asterisk">*</span></label>
                                 <select id="civil_status" name="civil_status" required>
                                     <option value="" selected>Select Civil Status</option>
                                     <option value="SINGLE">SINGLE</option>
@@ -609,7 +678,7 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="birthday">Birthday (mm/dd/yyyy) *</label>
+                                <label for="birthday">Birthday (mm/dd/yyyy) <span class="required-asterisk">*</span></label>
                                 <input type="text" id="birthday" name="birthday" required placeholder="MM/DD/YYYY" autocomplete="bday">
                             </div>
                         </div>
@@ -618,7 +687,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="birth_place">Birth Place *</label>
+                                <label for="birth_place">Birth Place <span class="required-asterisk">*</span></label>
                                 <input type="text" id="birth_place" name="birth_place" required placeholder="Enter Place of Birth" autocomplete="off">
                             </div>
                         </div>
@@ -627,17 +696,17 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="cell_phone">Phone no./ SIM *</label>
+                                <label for="cell_phone">Phone no./ SIM <span class="required-asterisk">*</span></label>
                                 <div class="phone-input-group with-flag">
                                     <span class="phone-prefix"><span class="country-flag">🇵🇭</span>+63</span>
-                                    <input type="text" id="cell_phone" name="cell_phone" required pattern="[0-9]{10}" maxlength="10" title="10-digit mobile number (e.g., 917xxxxxxx)" autocomplete="tel-national">
+                                    <input type="text" id="cell_phone" name="cell_phone" required pattern="[0-9]{10}" maxlength="10" title="10-digit mobile number (e.g., 917xxxxxxx)" autocomplete="tel-national" oninput="formatPhoneNumber(this)">
                                 </div>
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="contact_no">Telephone no./ Landline *</label>
-                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="8" title="8-digit landline number" placeholder="Enter Landline Number" autocomplete="tel-local">
+                                <label for="contact_no">Telephone no./ Landline</label>
+                                <input type="text" id="contact_no" name="contact_no" pattern="[0-9]{7}" maxlength="8" title="7/8-digit landline number (Optional)" placeholder="Enter Landline Number (Optional)" autocomplete="tel-local">
                             </div>
                         </div>
                     </div>
@@ -645,14 +714,29 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="nationality">Nationality *</label>
+                                <label for="nationality">Nationality <span class="required-asterisk">*</span></label>
                                 <input type="text" id="nationality" name="nationality" required placeholder="Enter Nationality" autocomplete="country-name">
+                            </div>
+                            
+                            <!-- Upload Valid ID Section - Moved to left column -->
+                            <div class="form-group upload-valid-id-section">
+                                <label for="valid_id_upload">Upload Valid ID <span class="required-asterisk">*</span></label>
+                                <div class="file-upload-container">
+                                    <input type="file" id="valid_id_upload" name="valid_id_upload" accept="image/jpeg,image/png" required>
+                                    <div class="file-upload-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Upload a clear image of your valid ID (JPG, PNG only)</span>
+                                    </div>
+                                    <div class="preview-container" id="valid_id_preview_container" style="margin-top: 10px; display: none;">
+                                        <img id="valid_id_preview" src="#" alt="ID Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 4px;">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                        
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="id_number">TIN/SSS/GSIS Number *</label>
+                                <label for="id_number">TIN/SSS/GSIS Number <span class="required-asterisk">*</span></label>
                                 <input type="text" id="id_number" name="id_number" required placeholder="Enter Valid ID Number" autocomplete="off">
                                 <button type="button" id="add_other_valid_id_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Do you have other Valid IDs?</button>
                             </div>
@@ -668,13 +752,13 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="mothers_maiden_last_name">Mother's Maiden Last Name *</label>
+                                <label for="mothers_maiden_last_name">Mother's Maiden Last Name <span class="required-asterisk">*</span></label>
                                 <input type="text" id="mothers_maiden_last_name" name="mothers_maiden_last_name" required placeholder="Enter Mother's Maiden Last Name" autocomplete="family-name">
                             </div>
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="mothers_maiden_first_name">Mother's Maiden First Name *</label>
+                                <label for="mothers_maiden_first_name">Mother's Maiden First Name <span class="required-asterisk">*</span></label>
                                 <input type="text" id="mothers_maiden_first_name" name="mothers_maiden_first_name" required placeholder="Enter Mother's Maiden First Name" autocomplete="given-name">
                             </div>
                         </div>
@@ -682,7 +766,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name *</label>
+                                <label for="mothers_maiden_middle_name">Mother's Maiden Middle Name <span class="required-asterisk">*</span></label>
                                 <input type="text" id="mothers_maiden_middle_name" name="mothers_maiden_middle_name" placeholder="Enter Mother's Maiden Middle Name" required autocomplete="additional-name">
                             </div>
                         </div>
@@ -697,20 +781,21 @@ include '../includes/header.php';
                 <div class="form-page-content" id="form-page-2">
                     <h2>Present Address</h2>
                      <div class="form-group">
-                        <label for="present_address">Unit / Address *</label>
+                        <label for="present_address">Unit / Address <span class="required-asterisk">*</span></label>
         <input type="text" id="present_address" name="present_address" placeholder="Unit No., Street, Brgy., City" required autocomplete="address-line1">
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                <label for="present_brgy_code">Brgy. Code *</label>
-                <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off">
+                                <label for="present_brgy_code">Brgy. Code <span class="required-asterisk">*</span> <span class="tooltip-icon" data-title="If you don't know your barangay code, click this and search for your barangay code." style="cursor: help;" onclick="window.open('https://uacs.gov.ph/resources/uacs/location/barangay', '_blank')">ⓘ</span></label>
+                                <input type="text" id="present_brgy_code" name="present_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off" pattern="[0-9]{3}" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <small class="form-hint">3-digit numerical code only</small>
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="present_zip_code">Zip Code *</label>
-                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code">
+                                <label for="present_zip_code">Zip Code <span class="required-asterisk">*</span></label>
+                                <input type="text" id="present_zip_code" name="present_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code" pattern="[0-9]*" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             </div>
                         </div>
                     </div>
@@ -722,20 +807,21 @@ include '../includes/header.php';
                     <!-- Permanent Address -->
                     <h2>Permanent Address</h2>
                     <div class="form-group">
-                        <label for="permanent_address">Unit / Address *</label>
+                        <label for="permanent_address">Unit / Address <span class="required-asterisk">*</span></label>
                         <input type="text" id="permanent_address" name="permanent_address" placeholder="Unit No., Street, Brgy., City" required autocomplete="address-line1">
                     </div>
                     <div class="form-row">
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="permanent_brgy_code">Brgy. Code *</label>
-                                <input type="text" id="permanent_brgy_code" name="permanent_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off">
+                                <label for="permanent_brgy_code">Brgy. Code <span class="required-asterisk">*</span> <span class="tooltip-icon" data-title="If you don't know your barangay code, click this and search for your barangay code." style="cursor: help;" onclick="window.open('https://uacs.gov.ph/resources/uacs/location/barangay', '_blank')">ⓘ</span></label>
+                                <input type="text" id="permanent_brgy_code" name="permanent_brgy_code" placeholder="Enter Brgy. Code" required autocomplete="off" pattern="[0-9]{3}" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <small class="form-hint">3-digit numerical code only</small>
                             </div>
                         </div>
                         <div class="form-col-3">
                             <div class="form-group">
-                                <label for="permanent_zip_code">Zip Code *</label>
-                                <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code">
+                                <label for="permanent_zip_code">Zip Code <span class="required-asterisk">*</span></label>
+                                <input type="text" id="permanent_zip_code" name="permanent_zip_code" required placeholder="Enter ZIP Code" autocomplete="postal-code" pattern="[0-9]*" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             </div>
                         </div>
                         </div>
@@ -744,7 +830,7 @@ include '../includes/header.php';
 
                     <!-- Home Ownership -->
                     <div class="form-group">
-                        <label>Home Ownership *</label>
+                        <label>Home Ownership <span class="required-asterisk">*</span></label>
                         <div class="radio-group">
                             <div class="radio-item">
                                 <input type="radio" id="home_owned" name="home_ownership" value="Owned" required>
@@ -763,7 +849,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="length_of_stay">Length of Stay / yrs *</label>
+                                <label for="length_of_stay">Length of Stay / yrs <span class="required-asterisk">*</span></label>
                                 <input type="number" id="length_of_stay" name="length_of_stay" required min="0">
                             </div>
                         </div>
@@ -777,7 +863,7 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="primary_business">Primary Business *</label>
+                                <label for="primary_business">Primary Business <span class="required-asterisk">*</span></label>
                                 <input type="text" id="primary_business" name="primary_business" required placeholder="Enter Primary Business">
                                 <button type="button" id="add_other_income_source_btn" class="btn btn-secondary btn-add btn-sm" style="margin-top: 8px;"><span class="btn-icon">+</span> Got other source of income?</button>
                             </div>
@@ -787,13 +873,13 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="years_in_business">Years in Business *</label>
+                                <label for="years_in_business">Years in Business <span class="required-asterisk">*</span></label>
                                 <input type="number" id="years_in_business" name="years_in_business" min="0" required>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="business_address_unit">Unit / Address *</label>
+                        <label for="business_address_unit">Unit / Address <span class="required-asterisk">*</span></label>
                         <input type="text" id="business_address_unit" name="business_address_unit" placeholder="Unit No., Street, Brgy., City" required autocomplete="street-address">
                         <!-- Hidden fields removed -->
                     </div>
@@ -804,13 +890,13 @@ include '../includes/header.php';
                          <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_last_name">Spouse's Last Name *</label>
+                                    <label for="spouse_last_name">Spouse's Last Name <span class="required-asterisk">*</span></label>
                                     <input type="text" id="spouse_last_name" name="spouse_last_name" placeholder="Enter Spouse's Last Name" autocomplete="family-name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_first_name">Spouse's First Name *</label>
+                                    <label for="spouse_first_name">Spouse's First Name <span class="required-asterisk">*</span></label>
                                     <input type="text" id="spouse_first_name" name="spouse_first_name" placeholder="Enter Spouse's First Name" autocomplete="given-name">
                                 </div>
                             </div>
@@ -818,13 +904,13 @@ include '../includes/header.php';
                         <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_middle_name">Spouse's Middle Name *</label>
+                                    <label for="spouse_middle_name">Spouse's Middle Name <span class="required-asterisk">*</span></label>
                                     <input type="text" id="spouse_middle_name" name="spouse_middle_name" placeholder="Enter Spouse's Middle Name" autocomplete="additional-name">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_birthday">Birthday (mm/dd/yyyy) *</label>
+                                    <label for="spouse_birthday">Birthday (mm/dd/yyyy) <span class="required-asterisk">*</span></label>
                                     <input type="text" id="spouse_birthday" name="spouse_birthday" placeholder="MM/DD/YYYY" autocomplete="bday">
                                     <!-- Age is now calculated but not displayed as a field -->
                                     <input type="hidden" id="spouse_age" name="spouse_age">
@@ -834,15 +920,37 @@ include '../includes/header.php';
                         <div class="form-row">
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_occupation">Occupation *</label>
+                                    <label for="spouse_occupation">Occupation <span class="required-asterisk">*</span></label>
                                     <input type="text" id="spouse_occupation" name="spouse_occupation" placeholder="Enter Spouse's Occupation" autocomplete="organization-title">
                                 </div>
                             </div>
                             <div class="form-col-2">
                                 <div class="form-group">
-                                    <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID *</label>
+                                    <label for="spouse_id_number">TIN/SSS/GSIS/Valid ID <span class="required-asterisk">*</span></label>
                                     <input type="text" id="spouse_id_number" name="spouse_id_number" placeholder="Enter Spouse's ID Number" autocomplete="off">
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Spouse Valid ID Section -->
+                        <div class="form-row">
+                            <div class="form-col-2">
+                                <div class="form-group upload-valid-id-section">
+                                    <label for="spouse_valid_id_upload">Upload Spouse's Valid ID <span class="required-asterisk">*</span></label>
+                                    <div class="file-upload-container">
+                                        <input type="file" id="spouse_valid_id_upload" name="spouse_valid_id_upload" accept="image/jpeg,image/png">
+                                        <div class="file-upload-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span>Upload a clear image of spouse's valid ID (JPG, PNG only)</span>
+                                        </div>
+                                        <div class="preview-container" id="spouse_valid_id_preview_container" style="margin-top: 10px; display: none;">
+                                            <img id="spouse_valid_id_preview" src="#" alt="Spouse ID Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ddd; border-radius: 4px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-col-2">
+                                <!-- Empty div to maintain 2-column layout -->
                             </div>
                         </div>
                         
@@ -858,12 +966,12 @@ include '../includes/header.php';
                     <table class="beneficiaries-table">
                         <thead>
                             <tr>
-                                <th>Last Name *</th>
-                                <th>First Name *</th>
+                                <th>Last Name </th>
+                                <th>First Name </th>
                                 <th>M.I.</th>
-                                <th>Date of Birth *</th>
-                                <th>Gender *</th>
-                                <th>Relationship *</th>
+                                <th>Date of Birth </th>
+                                <th>Gender </th>
+                                <th>Relationship </th>
                                 <th>Dependent</th>
                             </tr>
                         </thead>
@@ -896,7 +1004,7 @@ include '../includes/header.php';
                         <div class="form-col-3">
                             <div class="form-group">
                                 <label for="trustee_name">Name of Trustee *</label>
-                                <input type="text" id="trustee_name" name="trustee_name" placeholder="Enter Trustee's Full Name">
+                                <input type="text" id="trustee_name" name="trustee_name" placeholder="First name, Middle initial, Last name">
                             </div>
                         </div>
                         <div class="form-col-3">
@@ -920,7 +1028,7 @@ include '../includes/header.php';
                     <div class="form-row signature-section-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="member_signature">Member's Signature *</label>
+                                <label for="member_signature">Member's Signature <span class="required-asterisk">*</span></label>
                                 <div class="signature-container">
                                     <canvas id="member_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="member_signature" name="member_signature">
@@ -932,7 +1040,7 @@ include '../includes/header.php';
                         </div>
                         <div class="form-col-2">
                             <div id="beneficiary-signature-section" class="form-group">
-                                <label for="beneficiary_signature">Beneficiary's Signature *</label>
+                                <label for="beneficiary_signature">Beneficiary's Signature <span class="required-asterisk">*</span></label>
                                 <div class="signature-container">
                                     <canvas id="beneficiary_signature_canvas" width="400" height="200"></canvas>
                                     <input type="hidden" id="beneficiary_signature" name="beneficiary_signature">
@@ -947,8 +1055,8 @@ include '../includes/header.php';
                     <div class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="member_name">Name of Member (Borrower or Kapamilya) *</label>
-                                <input type="text" id="member_name" name="member_name" placeholder="Enter Full Name as Signature" required>
+                                <label for="member_name">Name of Member (Borrower or Kapamilya) <span class="required-asterisk">*</span></label>
+                                <input type="text" id="member_name" name="member_name" placeholder="First name, Middle initial, Last name" required>
                             </div>
                         </div>
                         <div class="form-col-2"></div>
@@ -958,8 +1066,8 @@ include '../includes/header.php';
                     <div id="beneficiary-name-field" class="form-row">
                         <div class="form-col-2">
                             <div class="form-group">
-                                <label for="sig_beneficiary_name">Name of Beneficiary *</label>
-                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="Enter Beneficiary Name">
+                                <label for="sig_beneficiary_name">Name of Beneficiary <span class="required-asterisk">*</span></label>
+                                <input type="text" id="sig_beneficiary_name" name="sig_beneficiary_name" placeholder="First name, Middle initial, Last name">
                             </div>
                         </div>
                         <div class="form-col-2"></div>
@@ -1005,6 +1113,220 @@ include '../includes/header.php';
 
 </main>
 
+<!-- Custom styles for file upload sections -->
+<style>
+    .upload-valid-id-section {
+        margin-top: 16px;
+        margin-bottom: 24px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f9f9f9;
+    }
+
+    .upload-valid-id-section label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .file-upload-container {
+        position: relative;
+    }
+
+    .file-upload-container input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px dashed #aaa;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+    .file-upload-container input[type="file"]:hover {
+        border-color: #0056b3;
+    }
+
+    .file-upload-info {
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #666;
+        display: flex;
+        align-items: center;
+    }
+
+    .file-upload-info i {
+        margin-right: 5px;
+        color: #0056b3;
+    }
+
+    .form-hint {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .upload-valid-id-section {
+            padding: 12px;
+        }
+    }
+
+    /* Add styles for the agreement lists - UPDATED */
+    .agreement-list {
+        padding-left: 30px;
+        margin: 10px 0 15px 0;
+    }
+    
+    .agreement-list li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+        position: relative;
+        padding-left: 5px;
+        list-style-type: none; /* Remove default bullets */
+    }
+    
+    .agreement-list li:before {
+        content: ""; /* Remove the bullet character */
+        position: absolute;
+        left: -15px;
+    }
+    
+    /* Style ordered lists in the agreement */
+    .agreement-section ol {
+        padding-left: 30px;
+        margin: 10px 0 15px 0;
+    }
+    
+    .agreement-section ol li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+    
+    /* Update message styling for application status */
+    .message.success {
+        background-color: #1B3FAB;
+        color: white;
+        border-radius: 5px;
+        padding: 15px 20px;
+        margin: 20px 0;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .message.info {
+        background-color: #1B3FAB;
+        color: white;
+        border-radius: 5px;
+        padding: 15px 20px;
+        margin: 20px 0;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Improved centered modal styling - always centered */
+    .agreement-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .agreement-modal.show {
+        display: flex;
+        opacity: 1;
+    }
+
+    .agreement-modal-content {
+        background-color: white;
+        border-radius: 8px;
+        max-width: 700px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        position: relative;
+    }
+
+    /* Improve tooltips for mobile - fix the flash issue */
+    @media (max-width: 768px) {
+        .tooltip-icon {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .tooltip-icon:after {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+            white-space: normal;
+            max-width: 200px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            content: attr(data-title);
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .tooltip-icon.active:after {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+
+    /* Make beneficiary table responsive with horizontal scroll */
+    .beneficiaries-table {
+        width: 100%;
+        overflow-x: auto;
+        display: block;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 768px) {
+        .beneficiaries-table {
+            margin-bottom: 15px;
+        }
+        
+        .beneficiaries-table thead th,
+        .beneficiaries-table tbody td {
+            min-width: 110px;
+        }
+    }
+
+    /* Ensure all required asterisks are red, including in tables */
+    .required-asterisk, 
+    .beneficiaries-table th:after,
+    #trustee-section label:after {
+        color: #ff3b30 !important;
+    }
+
+    .beneficiaries-table th.required:after {
+        content: " *";
+        color: #ff3b30;
+    }
+</style>
+
 <!-- Add membership form JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -1014,5 +1336,237 @@ include '../includes/header.php';
 <!-- Hidden field for SITE_URL -->
 <input type="hidden" name="site_url" value="<?php echo SITE_URL; ?>">
 
-<?php include '../includes/footer.php'; ?> 
+<!-- Add JavaScript to improve mobile experience -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Simplified modal handling
+    const modal = document.getElementById('user-agreement-modal');
+    const overlay = document.getElementById('page-overlay');
+    const successMessage = document.querySelector('.message.success'); // Check for success message
+    
+    // Show modal with simple transition only if no success message
+    if (!successMessage) {
+        setTimeout(() => {
+            if (modal) {
+                modal.classList.add('show');
+                // Only show overlay if modal is shown
+                if (overlay) overlay.style.display = 'block'; 
+            }
+        }, 500);
+    }
+    
+    // Improved tooltip behavior
+    const tooltipIcons = document.querySelectorAll('.tooltip-icon');
+    let activeTooltip = null; // Track currently active tooltip
+    
+    tooltipIcons.forEach(icon => {
+        // For mobile devices
+        if (window.innerWidth <= 768) {
+            icon.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
 
+                // If the clicked icon is already the active one, do nothing (it stays visible).
+                if (activeTooltip === icon) {
+                    return;
+                }
+
+                // If another tooltip was active, deactivate it.
+                if (activeTooltip) {
+                    activeTooltip.classList.remove('active');
+                }
+
+                // Activate the clicked tooltip.
+                icon.classList.add('active');
+                activeTooltip = icon;
+            });
+        } else {
+            // For desktop - use hover behavior
+            icon.addEventListener('mouseenter', function() {
+                this.classList.add('active');
+            });
+            
+            icon.addEventListener('mouseleave', function() {
+                this.classList.remove('active');
+            });
+        }
+    });
+    
+    // Close any active tooltip when clicking elsewhere on the document
+    document.addEventListener('click', function(e) {
+        if (activeTooltip && !e.target.closest('.tooltip-icon')) {
+            activeTooltip.classList.remove('active');
+            activeTooltip = null;
+        }
+    });
+    
+    // Make both Next and Previous buttons scroll to top on mobile
+    const nextButton = document.getElementById('next_page_btn');
+    const prevButton = document.getElementById('prev_page_btn');
+    
+    function scrollToTopOnMobile() {
+        // Check if we're on mobile
+        if (window.innerWidth <= 768) {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', scrollToTopOnMobile);
+    }
+    
+    if (prevButton) {
+        prevButton.addEventListener('click', scrollToTopOnMobile);
+    }
+    
+    // Add required asterisks to table headers and trustee section
+    const requiredTableHeaders = ['Last Name', 'First Name', 'M.I.', 'Date of Birth', 'Gender', 'Relationship']; // Removed asterisks from here
+    document.querySelectorAll('.beneficiaries-table th').forEach(th => {
+        // Check if the text content (trimmed) is one of the required headers
+        if (requiredTableHeaders.includes(th.textContent.trim())) {
+            th.classList.add('required'); // Add class for styling
+            // Add the asterisk span if not already present
+            if (!th.querySelector('.required-asterisk')) {
+                const asteriskSpan = document.createElement('span');
+                asteriskSpan.className = 'required-asterisk';
+                asteriskSpan.textContent = ' *';
+                th.appendChild(asteriskSpan);
+            }
+        }
+    });
+    
+    // Add required asterisks to trustee section
+    document.querySelectorAll('#trustee-section label').forEach(label => {
+        if (label.textContent.includes('*')) {
+            const asterisk = document.createElement('span');
+            asterisk.classList.add('required-asterisk');
+            asterisk.textContent = ' *';
+            label.innerHTML = label.textContent.replace('*', '');
+            label.appendChild(asterisk);
+        }
+    });
+    
+    // Properly handle modal closing for both agree and disagree buttons
+    const agreeButton = document.getElementById('agree-button');
+    const disagreeButton = document.getElementById('disagree-button');
+    
+    // Function to properly close the modal and overlay
+    function closeModalAndOverlay() {
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+        
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }
+    
+    if (agreeButton) {
+        agreeButton.addEventListener('click', function() {
+            // Close modal and overlay
+            closeModalAndOverlay();
+            
+            // Then handle the agreement logic
+            handleAgreementConfirmed();
+            showCustomAlert('Agreement accepted. Reload the page if you want to add more beneficiaries.', 'success');
+        });
+    }
+    
+    if (disagreeButton) {
+        disagreeButton.addEventListener('click', function() {
+            // Close modal and overlay
+            closeModalAndOverlay();
+            
+            // Then handle the disagreement logic
+            showCustomAlert('You must agree to the terms to continue using this application. The page will now redirect.', 'warning');
+            
+            // Get the SITE_URL from a hidden input or use a default
+            const siteUrl = document.querySelector('input[name="site_url"]')?.value || '/';
+            
+            // Delay redirect to allow alert to be seen
+            setTimeout(() => {
+                window.location.href = siteUrl + '/homepage.php';
+            }, 3000);
+        });
+    }
+});
+</script>
+
+<style>
+/* Enhanced tooltip styling for mobile */
+@media (max-width: 768px) {
+    .tooltip-icon {
+        position: relative;
+        cursor: pointer;
+        display: inline-block; /* Ensures proper layout */
+        z-index: 100; /* Ensure it's above other elements for clicks */
+        /* Disable transitions on the icon itself for mobile to prevent animation */
+        transition: none !important;
+        /* Ensure base appearance is maintained, overriding any brief hover-like states from taps */
+        background-color: #1B3FAB; /* Base blue from forms.css */
+        transform: scale(1);       /* Base scale */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Base shadow */
+    }
+
+    /* Ensure .active class does not change the icon's own appearance, only pseudo-elements */
+    .tooltip-icon.active {
+        background-color: #1B3FAB !important; /* Force base blue */
+        transform: scale(1) !important;       /* Force base scale */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important; /* Force base shadow */
+    }
+    
+    .tooltip-icon:after { /* The text bubble */
+        position: absolute;
+        background-color: #333;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 13px;
+        z-index: 1000; /* Above the icon */
+        white-space: normal;
+        max-width: 220px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        content: attr(data-title);
+        bottom: 130%; /* Position above the icon */
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        visibility: hidden;
+        /* Transition for the text bubble itself */
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        pointer-events: none; /* The bubble itself should not be interactive */
+    }
+    
+    .tooltip-icon.active:after {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* The arrow for the tooltip */
+    .tooltip-icon:before {
+        content: '';
+        position: absolute;
+        bottom: 100%; /* Position at the top edge of the icon, pointing upwards */
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #333; /* Arrow color */
+        opacity: 0;
+        visibility: hidden;
+        /* Transition for the arrow */
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        pointer-events: none;
+        z-index: 1000; /* Match :after z-index */
+    }
+    
+    .tooltip-icon.active:before {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+</style>
+
+<?php include '../includes/footer.php'; ?> 
