@@ -46,12 +46,14 @@ $user_role = $current_user['role'] ?? '';
         .approval-badges {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
         .badge-io, .badge-lo, .badge-secretary {
             font-size: 11px;
-            padding: 2px 4px;
+            padding: 3px 5px;
             border-radius: 3px;
+            display: block;
+            white-space: nowrap;
         }
         .badge-io {
             background-color: #e6f7ff;
@@ -129,6 +131,7 @@ $user_role = $current_user['role'] ?? '';
                                                     <?php if ($app['lo_approved'] === 'approved'): ?>
                                                         by <?php echo htmlspecialchars($app['lo_name']); ?>
                                                     <?php endif; ?>
+                                                </span>
                                                 <span class="badge-secretary status-<?php echo strtolower($app['secretary_approved'] ?: 'pending'); ?>">
                                                     Secretary: <?php echo ucfirst($app['secretary_approved'] ?: 'Pending'); ?>
                                                     <?php if ($app['secretary_approved'] === 'approved'): ?>

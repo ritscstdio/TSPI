@@ -190,3 +190,8 @@
 2025-05-27 17:00:40 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
 2025-05-27 17:01:23 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
 2025-05-27 17:01:33 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
+2025-05-27 17:21:17 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
+2025-05-27 17:21:52 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
+2025-05-27 17:21:54 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
+2025-05-27 17:34:13 [WARNING] Access denied: User admin attempted to access secretary approval without proper role
+2025-05-27 17:34:37 [INFO] Secretary MariaS_23 accessed final approval for application ID: 27
