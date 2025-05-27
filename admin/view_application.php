@@ -42,6 +42,28 @@ $can_final_approve = ($user_role === 'secretary' &&
 
 // Admin and Moderator cannot approve/deny applications
 $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
+
+// Check if any beneficiaries exist
+$hasBeneficiaries = false;
+for ($i = 1; $i <= 4; $i++) {
+    if (!empty($application["beneficiary_fn_{$i}"]) || !empty($application["beneficiary_ln_{$i}"])) {
+        $hasBeneficiaries = true;
+        break;
+    }
+}
+
+// Create a helper function to display N/A for empty values
+function display_value($value, $is_date = false) {
+    if (empty($value) || $value === '') {
+        return 'N/A';
+    }
+    
+    if ($is_date) {
+        return date('F j, Y', strtotime($value));
+    }
+    
+    return htmlspecialchars($value);
+}
 ?>
 
 <!DOCTYPE html>
@@ -153,15 +175,15 @@ $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
                             <div class="info-group">
                                 <div class="info-item">
                                     <label>Branch:</label>
-                                    <span><?php echo htmlspecialchars($application['branch']); ?></span>
+                                    <span><?php echo display_value($application['branch']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>CID No:</label>
-                                    <span><?php echo htmlspecialchars($application['cid_no']); ?></span>
+                                    <span><?php echo display_value($application['cid_no']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Center No:</label>
-                                    <span><?php echo htmlspecialchars($application['center_no'] ?: 'N/A'); ?></span>
+                                    <span><?php echo display_value($application['center_no']); ?></span>
                                 </div>
                             </div>
                             
@@ -193,45 +215,45 @@ $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
                             <div class="info-group">
                                 <div class="info-item">
                                     <label>Full Name:</label>
-                                    <span><?php echo htmlspecialchars($application['first_name'] . ' ' . $application['middle_name'] . ' ' . $application['last_name']); ?></span>
+                                    <span><?php echo display_value($application['first_name'] . ' ' . $application['middle_name'] . ' ' . $application['last_name']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Gender:</label>
-                                    <span><?php echo htmlspecialchars($application['gender']); ?></span>
+                                    <span><?php echo display_value($application['gender']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Civil Status:</label>
-                                    <span><?php echo htmlspecialchars($application['civil_status']); ?></span>
+                                    <span><?php echo display_value($application['civil_status']); ?></span>
                                 </div>
                             </div>
                             
                             <div class="info-group">
                                 <div class="info-item">
                                     <label>Birthdate:</label>
-                                    <span><?php echo date('F j, Y', strtotime($application['birthdate'])); ?></span>
+                                    <span><?php echo display_value($application['birthdate'], true); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Age:</label>
-                                    <span><?php echo htmlspecialchars($application['age']); ?></span>
+                                    <span><?php echo display_value($application['age']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Birth Place:</label>
-                                    <span><?php echo htmlspecialchars($application['birth_place']); ?></span>
+                                    <span><?php echo display_value($application['birth_place']); ?></span>
                                 </div>
                             </div>
                             
                             <div class="info-group">
                                 <div class="info-item">
                                     <label>Email:</label>
-                                    <span><?php echo htmlspecialchars($application['email']); ?></span>
+                                    <span><?php echo display_value($application['email']); ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Phone:</label>
-                                    <span>+63<?php echo htmlspecialchars($application['cell_phone']); ?></span>
+                                    <span><?php echo $application['cell_phone'] ? '+63'.htmlspecialchars($application['cell_phone']) : 'N/A'; ?></span>
                                 </div>
                                 <div class="info-item">
                                     <label>Telephone:</label>
-                                    <span><?php echo htmlspecialchars($application['contact_no'] ?: 'N/A'); ?></span>
+                                    <span><?php echo display_value($application['contact_no']); ?></span>
                                 </div>
                             </div>
                             
@@ -449,6 +471,8 @@ $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
                 </div>
                 <?php endif; ?>
                 
+                <!-- Only display the beneficiaries section if beneficiaries exist -->
+                <?php if ($hasBeneficiaries): ?>
                 <div class="admin-card">
                     <div class="admin-card-header">
                         <h2>Beneficiaries</h2>
@@ -494,6 +518,7 @@ $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
                         </table>
                     </div>
                 </div>
+                <?php endif; ?>
                 
                 <?php if (!empty($application['trustee_name'])): ?>
                 <div class="admin-card">
@@ -582,9 +607,27 @@ $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
                         <i class="fas fa-file-contract"></i> Preview Final Report
                     </a>
                     
+                    <?php 
+                    $plans = json_decode($application['plans'], true) ?: [];
+                    if (count($plans) > 1): // If multiple plans exist
+                    ?>
+                    <div class="certificate-dropdown">
+                        <a href="#" class="btn-success dropdown-toggle">
+                            <i class="fas fa-certificate"></i> Preview Certificate <i class="fas fa-caret-down"></i>
+                        </a>
+                        <div class="dropdown-content">
+                            <?php foreach ($plans as $plan): ?>
+                            <a href="generate_certificate.php?id=<?php echo $application['id']; ?>&mode=preview&plan=<?php echo urlencode($plan); ?>">
+                                <?php echo htmlspecialchars($plan); ?> Certificate
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php else: // Single plan or no plans ?>
                     <a href="generate_certificate.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-success">
                         <i class="fas fa-certificate"></i> Preview Certificate
                     </a>
+                    <?php endif; ?>
                     <?php endif; ?>
                     
                     <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
@@ -846,6 +889,43 @@ $can_approve_deny_application = !in_array($user_role, ['admin', 'moderator']);
     }
     .approval-actions {
         margin-top: 20px;
+    }
+    
+    .certificate-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .dropdown-toggle {
+        cursor: pointer;
+    }
+    
+    .certificate-dropdown .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        min-width: 220px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        z-index: 1;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .certificate-dropdown .dropdown-content a {
+        color: #333;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        background-color: #fff;
+        transition: background-color 0.2s;
+    }
+    
+    .certificate-dropdown .dropdown-content a:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .certificate-dropdown:hover .dropdown-content {
+        display: block;
     }
     </style>
     

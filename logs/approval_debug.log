@@ -1,1 +1,8 @@
 2025-05-27 10:45:42 [DEBUG] Verification check - Secretary approval now set to: approved, Status: approved
+2025-05-27 11:37:07 [DEBUG] Update succeeded. Role: loan_officer, Status field: lo_approved, Action: approved, App ID: 23
+2025-05-27 11:37:07 [DEBUG] Verification check - Field lo_approved is now set to: approved
+2025-05-27 11:46:26 [DEBUG] Verification check - Secretary approval now set to: approved, Status: approved
+2025-05-27 12:53:27 [DEBUG] Update succeeded. Role: loan_officer, Status field: lo_approved, Action: approved, App ID: 24
+2025-05-27 12:53:27 [DEBUG] Verification check - Field lo_approved is now set to: approved
+2025-05-27 12:54:01 [DEBUG] Update succeeded. Role: insurance_officer, Status field: io_approved, Action: approved, App ID: 24
+2025-05-27 12:54:01 [DEBUG] Verification check - Field io_approved is now set to: approved

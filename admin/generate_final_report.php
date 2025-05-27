@@ -95,181 +95,147 @@ $pdf->SetAutoPageBreak(TRUE, 15);
 // Add a page
 $pdf->AddPage();
 
-// Set font
-$pdf->SetFont('helvetica', '', 10);
-
-// Application Status Box
-$pdf->SetFillColor(240, 240, 240);
-$pdf->Rect(15, $pdf->GetY(), 180, 30, 'F');
-$pdf->SetFont('helvetica', 'B', 11);
-$pdf->Cell(180, 10, 'APPLICATION STATUS', 0, 1, 'C');
-$pdf->SetFont('helvetica', '', 10);
-
-// Status details
-$pdf->Cell(60, 6, 'Application ID:', 0, 0);
-$pdf->Cell(120, 6, $application['id'], 0, 1);
-
-$pdf->Cell(60, 6, 'Status:', 0, 0);
-$pdf->Cell(120, 6, ucfirst($application['status']), 0, 1);
-
-$pdf->Cell(60, 6, 'Insurance Officer Approval:', 0, 0);
-$pdf->Cell(120, 6, 'APPROVED by ' . $application['io_name'] . ' on ' . date('m/d/Y', strtotime($application['io_approval_date'])), 0, 1);
-
-$pdf->Cell(60, 6, 'Loan Officer Approval:', 0, 0);
-$pdf->Cell(120, 6, 'APPROVED by ' . $application['lo_name'] . ' on ' . date('m/d/Y', strtotime($application['lo_approval_date'])), 0, 1);
-
+// Set font for report title
+$pdf->SetFont('helvetica', 'B', 12);
+$pdf->Cell(180, 10, 'OFFICIAL MEMBERSHIP APPROVAL CONFIRMATION', 0, 1, 'C');
+$pdf->SetDrawColor(0, 0, 0);
+$pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
 $pdf->Ln(10);
 
-// Personal Information Section
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(180, 10, 'PERSONAL INFORMATION', 0, 1, 'L');
-$pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-$pdf->Ln(5);
-$pdf->SetFont('helvetica', '', 10);
-
-// Name information
-$pdf->Cell(60, 6, 'Name:', 0, 0);
-$pdf->Cell(120, 6, $application['first_name'] . ' ' . $application['middle_name'] . ' ' . $application['last_name'], 0, 1);
-
-$pdf->Cell(60, 6, 'CID Number:', 0, 0);
-$pdf->Cell(120, 6, $application['cid_no'], 0, 1);
-
-$pdf->Cell(60, 6, 'Branch:', 0, 0);
-$pdf->Cell(120, 6, $application['branch'], 0, 1);
-
-$pdf->Cell(60, 6, 'Center Number:', 0, 0);
-$pdf->Cell(120, 6, $application['center_no'] ?: 'N/A', 0, 1);
-
-$pdf->Cell(60, 6, 'Gender:', 0, 0);
-$pdf->Cell(120, 6, $application['gender'], 0, 1);
-
-$pdf->Cell(60, 6, 'Civil Status:', 0, 0);
-$pdf->Cell(120, 6, $application['civil_status'], 0, 1);
-
-$pdf->Cell(60, 6, 'Birth Date:', 0, 0);
-$pdf->Cell(120, 6, date('F j, Y', strtotime($application['birthdate'])), 0, 1);
-
-$pdf->Cell(60, 6, 'Age:', 0, 0);
-$pdf->Cell(120, 6, $application['age'] . ' years old', 0, 1);
-
-$pdf->Cell(60, 6, 'Contact Information:', 0, 0);
-$pdf->Cell(120, 6, 'Email: ' . $application['email'] . ' | Phone: +63' . $application['cell_phone'], 0, 1);
-
-$pdf->Ln(5);
-
-// Plans and Classification
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(180, 10, 'PLANS AND CLASSIFICATION', 0, 1, 'L');
-$pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-$pdf->Ln(5);
-$pdf->SetFont('helvetica', '', 10);
-
-// Plans
+// Prepare data for the report
 $plans = json_decode($application['plans'], true) ?: [];
-$pdf->Cell(60, 6, 'Plans:', 0, 0);
-$pdf->Cell(120, 6, implode(', ', $plans), 0, 1);
-
-// Classification
 $classification = json_decode($application['classification'], true) ?: [];
-$pdf->Cell(60, 6, 'Classification:', 0, 0);
-$pdf->Cell(120, 6, implode(', ', $classification), 0, 1);
+$fullName = $application['first_name'] . ' ' . $application['middle_name'] . ' ' . $application['last_name'];
 
-$pdf->Ln(5);
-
-// Beneficiaries Section
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(180, 10, 'BENEFICIARIES', 0, 1, 'L');
-$pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
-$pdf->Ln(5);
+// Start with a verbal confirmation paragraph
 $pdf->SetFont('helvetica', '', 10);
+$pdf->MultiCell(180, 6, 'This document certifies that the TSPI membership application for ' . $fullName . ' with CID Number ' . $application['cid_no'] . ' has been thoroughly reviewed and APPROVED by all required officers. The applicant has been enrolled in the following plan(s): ' . implode(', ', $plans) . ' under the classification of ' . implode(', ', $classification) . '.', 0, 'J', 0);
+$pdf->Ln(5);
 
-// Table header
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->Cell(60, 7, 'Name', 1, 0, 'C');
-$pdf->Cell(30, 7, 'Relationship', 1, 0, 'C');
-$pdf->Cell(30, 7, 'Birthdate', 1, 0, 'C');
-$pdf->Cell(30, 7, 'Gender', 1, 0, 'C');
-$pdf->Cell(30, 7, 'Dependent', 1, 1, 'C');
-$pdf->SetFont('helvetica', '', 9);
+// Application status confirmation
+$pdf->SetFont('helvetica', 'B', 11);
+$pdf->Cell(180, 8, 'APPLICATION STATUS: ' . strtoupper($application['status']), 0, 1, 'L');
+$pdf->SetFont('helvetica', '', 10);
+$pdf->MultiCell(180, 6, 'The application has successfully completed all required approval stages in accordance with TSPI policies and procedures.', 0, 'J', 0);
+$pdf->Ln(5);
 
-// Beneficiaries
+// Beneficiaries section - only if beneficiaries exist
+$hasBeneficiaries = false;
 for ($i = 1; $i <= 5; $i++) {
     if (!empty($application["beneficiary_fn_{$i}"])) {
-        $fullName = $application["beneficiary_fn_{$i}"] . ' ' . 
-                  ($application["beneficiary_mi_{$i}"] ? $application["beneficiary_mi_{$i}"] . '. ' : '') . 
-                  $application["beneficiary_ln_{$i}"];
-        
-        $birthdate = !empty($application["beneficiary_birthdate_{$i}"]) ? 
-                    date('m/d/Y', strtotime($application["beneficiary_birthdate_{$i}"])) : 'N/A';
-        
-        $pdf->Cell(60, 7, $fullName, 1, 0);
-        $pdf->Cell(30, 7, $application["beneficiary_relationship_{$i}"] ?: 'N/A', 1, 0);
-        $pdf->Cell(30, 7, $birthdate, 1, 0);
-        $pdf->Cell(30, 7, $application["beneficiary_gender_{$i}"] ?: 'N/A', 1, 0);
-        $pdf->Cell(30, 7, $application["beneficiary_dependent_{$i}"] ? 'Yes' : 'No', 1, 1);
+        $hasBeneficiaries = true;
+        break;
     }
 }
 
-// Add a new page for signatures
-$pdf->AddPage();
+if ($hasBeneficiaries) {
+    $pdf->SetFont('helvetica', 'B', 11);
+    $pdf->Cell(180, 8, 'DESIGNATED BENEFICIARIES:', 0, 1, 'L');
+    $pdf->SetFont('helvetica', '', 10);
+    
+    $beneficiaryText = '';
+    for ($i = 1; $i <= 5; $i++) {
+        if (!empty($application["beneficiary_fn_{$i}"])) {
+            $fullBeneficiaryName = $application["beneficiary_fn_{$i}"] . ' ' . 
+                                ($application["beneficiary_mi_{$i}"] ? $application["beneficiary_mi_{$i}"] . '. ' : '') . 
+                                $application["beneficiary_ln_{$i}"];
+            $relationship = $application["beneficiary_relationship_{$i}"] ?: 'Unspecified';
+            $beneficiaryText .= '• ' . $fullBeneficiaryName . ' (' . $relationship . ')';
+            $beneficiaryText .= ($application["beneficiary_dependent_{$i}"]) ? ' - Dependent' : '';
+            $beneficiaryText .= "\n";
+        }
+    }
+    
+    $pdf->MultiCell(180, 6, $beneficiaryText, 0, 'L', 0);
+    $pdf->Ln(5);
+}
 
-// Approval Section
-$pdf->SetFont('helvetica', 'B', 14);
-$pdf->Cell(180, 10, 'OFFICIAL APPROVAL', 0, 1, 'C');
-$pdf->Line(15, $pdf->GetY(), 195, $pdf->GetY());
+// Approval confirmation
+$pdf->SetFont('helvetica', 'B', 11);
+$pdf->Cell(180, 8, 'APPROVAL CONFIRMATIONS:', 0, 1, 'L');
+$pdf->SetFont('helvetica', '', 10);
+
+// Insurance Officer Approval
+$pdf->MultiCell(180, 6, 'Insurance Officer Approval: ' . $application['io_name'] . ' has thoroughly reviewed and APPROVED this application on ' . date('F j, Y', strtotime($application['io_approval_date'])) . '.', 0, 'L', 0);
+
+// Loan Officer Approval
+$pdf->MultiCell(180, 6, 'Loan Officer Approval: ' . $application['lo_name'] . ' has thoroughly reviewed and APPROVED this application on ' . date('F j, Y', strtotime($application['lo_approval_date'])) . '.', 0, 'L', 0);
+
+// Secretary Approval
+$secretaryName = $application['secretary_name'] ?: '[Pending]';
+$secretaryDate = ($application['secretary_approval_date']) ? date('F j, Y', strtotime($application['secretary_approval_date'])) : '[Pending]';
+$pdf->MultiCell(180, 6, 'Secretary Approval: ' . $secretaryName . ' has verified and granted FINAL APPROVAL on ' . $secretaryDate . '.', 0, 'L', 0);
+
 $pdf->Ln(10);
 
-// Insurance Officer Signature Section
+// Final confirmation and signatures section
 $pdf->SetFont('helvetica', 'B', 11);
-$pdf->Cell(180, 10, 'Insurance Officer Approval', 0, 1, 'L');
-$pdf->SetFont('helvetica', '', 10);
+$pdf->Cell(180, 8, 'OFFICIAL SIGNATURES:', 0, 1, 'L');
+$pdf->Ln(5);
 
-// IO Signature Box
-$pdf->Cell(60, 6, 'Name:', 0, 0);
-$pdf->Cell(120, 6, $application['io_name'], 0, 1);
-$pdf->Cell(60, 6, 'Approval Date:', 0, 0);
-$pdf->Cell(120, 6, date('F j, Y', strtotime($application['io_approval_date'])), 0, 1);
+// Create signature grid (3 columns)
+$x = $pdf->GetX();
+$y = $pdf->GetY();
+$signatureWidth = 55;
+$signatureHeight = 30;
+$gap = 7.5;
 
-// Signature placeholder
-$pdf->Cell(60, 6, 'Signature:', 0, 1);
-$pdf->Rect(15, $pdf->GetY(), 80, 20);
-$pdf->Ln(25);
+// Insurance Officer Signature
+if (!empty($application['io_signature'])) {
+    // Use actual signature if available
+    $signaturePath = '../' . $application['io_signature'];
+    if (file_exists($signaturePath)) {
+        $pdf->Image($signaturePath, $x, $y, $signatureWidth, '', '', '', '', false, 300);
+    }
+}
+$pdf->Line($x, $y + $signatureHeight - 5, $x + $signatureWidth, $y + $signatureHeight - 5);
+$pdf->SetXY($x, $y + $signatureHeight);
+$pdf->SetFont('helvetica', '', 8);
+$pdf->Cell($signatureWidth, 5, $application['io_name'], 0, 0, 'C');
+$pdf->SetXY($x, $y + $signatureHeight + 5);
+$pdf->Cell($signatureWidth, 5, 'Insurance Officer', 0, 0, 'C');
 
-// Loan Officer Signature Section
-$pdf->SetFont('helvetica', 'B', 11);
-$pdf->Cell(180, 10, 'Loan Officer Approval', 0, 1, 'L');
-$pdf->SetFont('helvetica', '', 10);
+// Loan Officer Signature
+$x += $signatureWidth + $gap;
+if (!empty($application['lo_signature'])) {
+    // Use actual signature if available
+    $signaturePath = '../' . $application['lo_signature'];
+    if (file_exists($signaturePath)) {
+        $pdf->Image($signaturePath, $x, $y, $signatureWidth, '', '', '', '', false, 300);
+    }
+}
+$pdf->Line($x, $y + $signatureHeight - 5, $x + $signatureWidth, $y + $signatureHeight - 5);
+$pdf->SetXY($x, $y + $signatureHeight);
+$pdf->Cell($signatureWidth, 5, $application['lo_name'], 0, 0, 'C');
+$pdf->SetXY($x, $y + $signatureHeight + 5);
+$pdf->Cell($signatureWidth, 5, 'Loan Officer', 0, 0, 'C');
 
-// LO Signature Box
-$pdf->Cell(60, 6, 'Name:', 0, 0);
-$pdf->Cell(120, 6, $application['lo_name'], 0, 1);
-$pdf->Cell(60, 6, 'Approval Date:', 0, 0);
-$pdf->Cell(120, 6, date('F j, Y', strtotime($application['lo_approval_date'])), 0, 1);
+// Secretary Signature
+$x += $signatureWidth + $gap;
+if (!empty($application['secretary_signature'])) {
+    // Use actual signature if available
+    $signaturePath = '../' . $application['secretary_signature'];
+    if (file_exists($signaturePath)) {
+        $pdf->Image($signaturePath, $x, $y, $signatureWidth, '', '', '', '', false, 300);
+    }
+}
+$pdf->Line($x, $y + $signatureHeight - 5, $x + $signatureWidth, $y + $signatureHeight - 5);
+$pdf->SetXY($x, $y + $signatureHeight);
+$pdf->Cell($signatureWidth, 5, $application['secretary_name'] ?: '[Pending]', 0, 0, 'C');
+$pdf->SetXY($x, $y + $signatureHeight + 5);
+$pdf->Cell($signatureWidth, 5, 'Secretary', 0, 0, 'C');
 
-// Signature placeholder
-$pdf->Cell(60, 6, 'Signature:', 0, 1);
-$pdf->Rect(15, $pdf->GetY(), 80, 20);
-$pdf->Ln(25);
+$pdf->Ln(45);
 
-// Secretary Approval Section
-$pdf->SetFont('helvetica', 'B', 11);
-$pdf->Cell(180, 10, 'Secretary Final Approval', 0, 1, 'L');
-$pdf->SetFont('helvetica', '', 10);
+// Final statement
+$pdf->SetFont('helvetica', 'I', 9);
+$pdf->MultiCell(180, 6, 'This document serves as the official confirmation of membership approval. The member is now entitled to all benefits and privileges associated with their selected plan(s). This report was generated by the TSPI Membership Management System and is considered valid without alterations.', 0, 'L', 0);
 
-// Secretary Signature Box - This will be filled when the actual signature is captured
-$pdf->Cell(60, 6, 'Name:', 0, 0);
-$pdf->Cell(120, 6, '______________________', 0, 1);
-$pdf->Cell(60, 6, 'Approval Date:', 0, 0);
-$pdf->Cell(120, 6, date('F j, Y'), 0, 1);
-
-// Signature placeholder
-$pdf->Cell(60, 6, 'Signature:', 0, 1);
-$pdf->Rect(15, $pdf->GetY(), 80, 20);
-$pdf->Ln(25);
-
-// Final Note
-$pdf->SetFont('helvetica', 'I', 10);
-$pdf->MultiCell(180, 10, 'This document serves as the official record of approval for the membership application. It has been verified and approved by all required officers.', 0, 'C');
+// Add official stamp position
+$pdf->Ln(10);
+$pdf->SetFont('helvetica', '', 8);
+$pdf->Cell(180, 5, 'Official Stamp:', 0, 0, 'R');
+$pdf->Circle(175, $pdf->GetY() + 10, 10, 0, 360, 'D');
 
 // Output the PDF
 $filename = 'TSPI_Final_Approval_' . $application['id'] . '_' . date('Ymd') . '.pdf';

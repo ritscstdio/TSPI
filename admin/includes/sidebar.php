@@ -8,7 +8,7 @@ $user_role = $current_admin ? $current_admin['role'] : '';
     <div class="sidebar-logo">
         <a href="<?php echo in_array($user_role, ['insurance_officer', 'loan_officer']) ? 'applications.php' : 'index.php'; ?>">
             <img src="<?php echo SITE_URL; ?>/src/assets/favicon.png" alt="TSPI CMS Logo">
-            <span>TSPI CMS</span>
+            <span>TSPI Manager</span>
         </a>
         <button class="sidebar-toggle" id="sidebarToggle">
             <i class="fas fa-bars"></i>
@@ -57,7 +57,7 @@ $user_role = $current_admin ? $current_admin['role'] : '';
             <?php endif; ?>
             
             <?php if (in_array($user_role, ['admin', 'moderator', 'insurance_officer', 'loan_officer', 'secretary'])): ?>
-                <li class="nav-header"><span>Membership</span></li>
+                <li class="nav-header"><span>Form Management</span></li>
                 <li class="<?php echo in_array($current_page, ['applications.php', 'view_application.php']) ? 'active' : ''; ?>">
                     <a href="applications.php"><i class="fas fa-file-alt"></i> <span>Membership Applications</span></a>
                 </li>

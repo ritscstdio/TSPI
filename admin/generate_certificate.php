@@ -71,9 +71,45 @@ if (file_exists('../assets/images/certificate_bg.jpg')) {
     $pdf->Rect(15, 15, 267, 180);
 }
 
+// Check if a specific plan is requested
+$plan = $_GET['plan'] ?? null;
+
+// Get all plans if not passed as a parameter
+if (!$plan && !empty($application['plans'])) {
+    $plans = json_decode($application['plans'], true);
+    if (is_array($plans) && !empty($plans)) {
+        $plan = $plans[0]; // Default to first plan
+    }
+}
+
 // Get plans for certificate type
 $plans = json_decode($application['plans'], true) ?: [];
-$certificateType = !empty($plans) ? implode(' & ', $plans) : 'Membership';
+$certificateType = $plan ?: (!empty($plans) ? implode(' & ', $plans) : 'Membership');
+
+// Set the certificate background and content based on the plan
+if ($plan) {
+    // Load different certificate templates based on plan
+    switch (strtolower($plan)) {
+        case 'msbl':
+            $pdf->Image('../assets/images/certificates/msbl_template.png', 0, 0, 297, 210);
+            break;
+        case 'damayan':
+            $pdf->Image('../assets/images/certificates/damayan_template.png', 0, 0, 297, 210);
+            break;
+        case 'insurance':
+            $pdf->Image('../assets/images/certificates/insurance_template.png', 0, 0, 297, 210);
+            break;
+        case 'kabuhayan':
+            $pdf->Image('../assets/images/certificates/kabuhayan_template.png', 0, 0, 297, 210);
+            break;
+        default:
+            // Default certificate template
+            $pdf->Image('../assets/images/certificates/default_template.png', 0, 0, 297, 210);
+    }
+} else {
+    // Use default template if no specific plan is selected
+    $pdf->Image('../assets/images/certificates/default_template.png', 0, 0, 297, 210);
+}
 
 // Set font
 $pdf->SetFont('helvetica', 'B', 30);

@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $secretary_comments = $_POST['secretary_comments'] ?? '';
     $signature_data = $_POST['signature'] ?? '';
     $approval_action = $_POST['approval_action'] ?? '';
-    $send_email = isset($_POST['send_email']);
+    $send_email = true; // Always send email for approved applications
     
     // Validate inputs
     if (empty($secretary_name)) {
@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             log_approval_activity($id, 'secretary', $approval_action, [
                 'secretary_name' => $secretary_name,
                 'has_signature' => !empty($signature_db_path),
-                'send_email' => $send_email ? 'yes' : 'no'
+                'send_email' => 'yes'
             ]);
             
             // Verify the update worked by querying the database again
@@ -143,15 +143,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
             $success = true;
             
-            // Handle email notification if checked and application is approved
-            if ($send_email && $approval_action === 'approved' && !empty($application['email'])) {
-                require_once 'email_config.php';
+            // Handle email notification if application is approved
+            if ($approval_action === 'approved' && !empty($application['email'])) {
+                // Ensure email_config is included
+                require_once '../includes/email_config.php';
                 
                 // Generate temporary PDF files for attachment
                 $temp_dir = '../temp';
                 if (!is_dir($temp_dir)) {
                     mkdir($temp_dir, 0755, true);
                 }
+                
+                // Get plans from application
+                $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
                 
                 // Generate application form PDF
                 $application_pdf = $temp_dir . '/application_' . $id . '.pdf';
@@ -160,33 +164,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ob_end_clean();
                 $pdf->Output($application_pdf, 'F');
                 
-                // Generate certificate PDF
-                $certificate_pdf = $temp_dir . '/certificate_' . $id . '.pdf';
-                ob_start();
-                include 'generate_certificate.php';
-                ob_end_clean();
-                $pdf->Output($certificate_pdf, 'F');
+                // Create an array to store all certificate PDFs
+                $certificate_pdfs = [];
+                
+                // Generate certificate PDF for each plan
+                if (!empty($plans)) {
+                    foreach ($plans as $plan) {
+                        $plan_certificate_pdf = $temp_dir . '/certificate_' . $id . '_' . preg_replace('/[^A-Za-z0-9]/', '_', $plan) . '.pdf';
+                        ob_start();
+                        $_GET['plan'] = $plan; // Set plan for certificate generation
+                        include 'generate_certificate.php';
+                        ob_end_clean();
+                        $pdf->Output($plan_certificate_pdf, 'F');
+                        $certificate_pdfs[] = $plan_certificate_pdf;
+                    }
+                } else {
+                    // Generate default certificate if no plans
+                    $default_certificate_pdf = $temp_dir . '/certificate_' . $id . '.pdf';
+                    ob_start();
+                    include 'generate_certificate.php';
+                    ob_end_clean();
+                    $pdf->Output($default_certificate_pdf, 'F');
+                    $certificate_pdfs[] = $default_certificate_pdf;
+                }
+                
+                // Prepare attachments array starting with application PDF
+                $attachments = [$application_pdf];
+                
+                // Add all certificate PDFs to attachments
+                $attachments = array_merge($attachments, $certificate_pdfs);
+                
+                // Generate email content
+                $html_message = <<<HTML
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        h1 { color: #0070f3; font-size: 24px; margin-bottom: 20px; }
+                        p { margin-bottom: 15px; }
+                        .footer { margin-top: 30px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>TSPI Membership Approved</h1>
+                        <p>Dear {$application['first_name']} {$application['last_name']},</p>
+                        <p>We are pleased to inform you that your TSPI membership application has been approved.</p>
+                        <p>Your membership ID is: <strong>{$application['cid_no']}</strong></p>
+                        <p>Please find attached your official application form and membership certificate(s).</p>
+                        <p>If you have any questions about your membership, please contact your assigned branch.</p>
+                        <div class="footer">
+                            <p>Thank you for choosing TSPI.</p>
+                            <p>&copy; TSPI Membership Services</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                HTML;
+
+                $text_message = "Dear {$application['first_name']} {$application['last_name']},\n\n"
+                    . "We are pleased to inform you that your TSPI membership application has been approved.\n\n"
+                    . "Your membership ID is: {$application['cid_no']}\n\n"
+                    . "Please find attached your official application form and membership certificate(s).\n\n"
+                    . "If you have any questions about your membership, please contact your assigned branch.\n\n"
+                    . "Thank you for choosing TSPI.\n\n"
+                    . "TSPI Membership Services";
                 
                 // Send email with attachments
-                $html_message = generate_application_email_html($application, 'approved');
-                $text_message = generate_application_email_text($application, 'approved');
-                
-                $attachments = [
-                    $application_pdf,
-                    $certificate_pdf
-                ];
-                
-                $mail_sent = send_application_email(
-                    $application['email'],
-                    'TSPI Membership Application Approved',
-                    $text_message,
-                    $html_message,
-                    $attachments
-                );
+                try {
+                    // Define email parameters
+                    $to = $application['email'];
+                    $subject = 'TSPI Membership Application Approved';
+                    
+                    // Create email headers
+                    $headers = "From: TSPI Membership <noreply@tspi.org>\r\n";
+                    $headers .= "Reply-To: support@tspi.org\r\n";
+                    $headers .= "MIME-Version: 1.0\r\n";
+                    $boundary = md5(time());
+                    $headers .= "Content-Type: multipart/mixed; boundary=\"".$boundary."\"\r\n";
+                    
+                    // Create email body
+                    $message = "--".$boundary."\r\n";
+                    $message .= "Content-Type: multipart/alternative; boundary=\"alt-".$boundary."\"\r\n\r\n";
+                    
+                    // Plain text version
+                    $message .= "--alt-".$boundary."\r\n";
+                    $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                    $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+                    $message .= $text_message."\r\n\r\n";
+                    
+                    // HTML version
+                    $message .= "--alt-".$boundary."\r\n";
+                    $message .= "Content-Type: text/html; charset=UTF-8\r\n";
+                    $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+                    $message .= $html_message."\r\n\r\n";
+                    $message .= "--alt-".$boundary."--\r\n\r\n";
+                    
+                    // Attach files
+                    foreach ($attachments as $file) {
+                        if (file_exists($file) && is_readable($file)) {
+                            $attachment = file_get_contents($file);
+                            $attachment = chunk_split(base64_encode($attachment));
+                            $filename = basename($file);
+                            
+                            $message .= "--".$boundary."\r\n";
+                            $message .= "Content-Type: application/pdf; name=\"".$filename."\"\r\n";
+                            $message .= "Content-Transfer-Encoding: base64\r\n";
+                            $message .= "Content-Disposition: attachment; filename=\"".$filename."\"\r\n\r\n";
+                            $message .= $attachment."\r\n\r\n";
+                        }
+                    }
+                    
+                    $message .= "--".$boundary."--";
+                    
+                    // Send the email
+                    $mail_sent = mail($to, $subject, $message, $headers);
+                    
+                    // Log email sending result
+                    if ($mail_sent) {
+                        log_message("Email notification sent successfully to {$application['email']} for application ID: {$id}", 'info', 'email');
+                    } else {
+                        log_message("Failed to send email notification to {$application['email']} for application ID: {$id}", 'error', 'email');
+                    }
+                } catch (Exception $e) {
+                    log_message("Email sending error: " . $e->getMessage(), 'error', 'email');
+                    $mail_sent = false;
+                }
                 
                 // Clean up temporary files
-                unlink($application_pdf);
-                unlink($certificate_pdf);
+                foreach (array_merge([$application_pdf], $certificate_pdfs) as $file) {
+                    if (file_exists($file)) {
+                        @unlink($file);
+                    }
+                }
                 
                 if ($mail_sent) {
                     $_SESSION['message'] = "Application has been approved and an email notification has been sent to the applicant.";
@@ -201,6 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (Exception $e) {
             $pdo->rollBack();
             $errors[] = "An error occurred: " . $e->getMessage();
+            log_message("Error in secretary approval process: " . $e->getMessage(), 'error', 'approval_error');
         }
     }
 }
@@ -218,7 +330,428 @@ include 'includes/header.php';
     <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
-    <link rel="stylesheet" href="css/secretary_approval.css">
+    <style>
+        /* Modern styling */
+        :root {
+            --primary-color: #0070f3;
+            --primary-light: #e3f2fd;
+            --primary-dark: #005bc1;
+            --accent-color: #00c853;
+            --danger-color: #f44336;
+            --warning-color: #ffc107;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --border-radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .admin-main {
+            padding: 1rem;
+        }
+        
+        .content-container {
+            padding: 20px;
+        }
+
+        .approval-form {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .page-header .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            background-color: var(--gray-200);
+            color: var(--gray-800);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid var(--gray-300);
+        }
+        
+        .page-header .btn:hover {
+            background-color: var(--gray-300);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .admin-card {
+            margin-bottom: 2rem;
+            padding: 0;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .admin-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .admin-card-header {
+            padding: 1.25rem 1.5rem;
+            background-color: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .admin-card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--gray-800);
+        }
+        
+        .admin-card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Signature pad styling */
+        .signature-container {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--border-radius);
+            background: white;
+            margin: 1rem 0;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            position: relative;
+            width: 400px;
+            height: 200px;
+            max-width: 100%;
+        }
+        
+        .signature-container:hover {
+            border-color: var(--primary-color);
+        }
+
+        #signature-pad {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .signature-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        /* Forms styling */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+            outline: none;
+        }
+        
+        /* Checkboxes and radio buttons */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        
+        .radio-group input[type="radio"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        /* Application summary */
+        .application-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 0.8rem;
+        }
+
+        .summary-item strong {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .form-hint {
+            margin: 5px 0 10px;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray-500);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray-600);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--gray-900);
+        }
+        
+        .btn-info {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        .btn-info:hover {
+            background-color: #cce5ff;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        /* Form actions */
+        .form-actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        /* Document preview section */
+        .pdf-preview {
+            margin-top: 2rem;
+        }
+        
+        .preview-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .preview-links .dropdown-menu {
+            position: relative;
+            z-index: 20;
+        }
+        
+        .preview-links .dropdown-content {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--border-radius);
+            z-index: 30;
+            border: 1px solid var(--gray-200);
+            display: none;
+        }
+        
+        .preview-links .dropdown-menu:hover .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: var(--gray-800);
+            transition: all 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--gray-100);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .preview-links {
+                flex-direction: column;
+            }
+            
+            .approval-options {
+                flex-direction: column;
+            }
+        }
+
+        .approval-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .approval-option {
+            flex: 1;
+            padding: 1.5rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .approval-option h3 {
+            margin: 10px 0;
+        }
+
+        .approval-option p {
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .approval-option:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .approval-option.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(0, 200, 83, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .approval-option.reject.selected {
+            border-color: var(--danger-color);
+            background-color: rgba(244, 67, 54, 0.05);
+        }
+
+        .signature-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        /* Position dropdown content properly */
+        .dropdown-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu .dropdown-content {
+            left: 0;
+            top: 100%;
+        }
+    </style>
 </head>
 <body class="<?php echo $body_class; ?>">
 
@@ -239,6 +772,7 @@ include 'includes/header.php';
             
             <div class="page-header">
                 <h1>Final Application Approval</h1>
+                <a href="applications.php" class="btn"><i class="fas fa-arrow-left"></i> Back to Applications</a>
             </div>
             
             <div class="admin-card">
@@ -279,41 +813,41 @@ include 'includes/header.php';
             
             <div class="admin-card">
                 <div class="admin-card-header">
+                    <h2>Approval Decision</h2>
+                </div>
+                <div class="admin-card-body">
+                    <div class="approval-options">
+                        <div class="approval-option" data-value="approved">
+                            <i class="fas fa-check-circle fa-2x" style="color: #00c853;"></i>
+                            <h3>Approve</h3>
+                            <p>Endorse this application for final approval</p>
+                        </div>
+                        <div class="approval-option reject" data-value="rejected">
+                            <i class="fas fa-times-circle fa-2x" style="color: #f44336;"></i>
+                            <h3>Reject</h3>
+                            <p>Decline this application</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-card">
+                <div class="admin-card-header">
                     <h2>Secretary Final Approval</h2>
                 </div>
                 <div class="admin-card-body">
                     <form method="post" id="final-approval-form">
-                        <div class="form-group">
-                            <label for="secretary_name">Your Name:</label>
-                            <input type="text" id="secretary_name" name="secretary_name" value="<?php echo $current_user['name'] ?? ''; ?>" required>
-                        </div>
+                        <!-- Secretary's name is now hidden, using the current user's name -->
+                        <input type="hidden" id="secretary_name" name="secretary_name" value="<?php echo $current_user['name'] ?? ''; ?>">
+                        <input type="hidden" id="action-input" name="approval_action" value="">
                         
                         <div class="form-group">
                             <label for="secretary_comments">Comments (optional):</label>
                             <textarea id="secretary_comments" name="secretary_comments" rows="3"></textarea>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Approval Action:</label>
-                            <div class="radio-group">
-                                <label>
-                                    <input type="radio" name="approval_action" value="approved" required> Approve
-                                </label>
-                                <label>
-                                    <input type="radio" name="approval_action" value="rejected"> Reject
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group notification-options">
-                            <label>Notification:</label>
-                            <div class="checkbox-group">
-                                <label>
-                                    <input type="checkbox" name="send_email" checked> 
-                                    Send email notification to applicant (requires approved status)
-                                </label>
-                            </div>
-                        </div>
+                        <!-- Email notification is always sent when approved, so hidden input -->
+                        <input type="hidden" name="send_email" value="1">
                         
                         <div class="form-group">
                             <label for="signature">Your Signature:</label>
@@ -345,9 +879,30 @@ include 'includes/header.php';
                             <i class="fas fa-file-pdf"></i> Preview Application Form
                         </a>
                         
+                        <?php 
+                        // Get the plans from the application
+                        $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
+                        
+                        // If there are plans, show the dropdown
+                        if (!empty($plans)):
+                        ?>
+                        <div class="dropdown-menu">
+                            <a href="#" class="btn btn-info">
+                                <i class="fas fa-certificate"></i> Preview Certificate <i class="fas fa-caret-down"></i>
+                            </a>
+                            <div class="dropdown-content">
+                                <?php foreach ($plans as $plan): ?>
+                                <a href="generate_certificate.php?id=<?php echo $id; ?>&mode=preview&plan=<?php echo urlencode($plan); ?>" target="_blank" class="dropdown-item">
+                                    <?php echo htmlspecialchars($plan); ?> Certificate
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php else: ?>
                         <a href="generate_certificate.php?id=<?php echo $id; ?>&mode=preview" target="_blank" class="btn btn-info">
                             <i class="fas fa-certificate"></i> Preview Certificate
                         </a>
+                        <?php endif; ?>
                         
                         <a href="generate_final_report.php?id=<?php echo $id; ?>&mode=preview" target="_blank" class="btn btn-info">
                             <i class="fas fa-file-contract"></i> Preview Final Report
@@ -372,10 +927,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle window resize
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
+        const container = canvas.parentElement;
+        const savedData = signaturePad.toDataURL();
+        
+        canvas.width = container.offsetWidth * ratio;
+        canvas.height = container.offsetHeight * ratio;
         canvas.getContext("2d").scale(ratio, ratio);
-        signaturePad.clear(); // Clear the canvas
+        
+        // Restore signature after resize if it exists
+        if (savedData && !signaturePad.isEmpty()) {
+            signaturePad.fromDataURL(savedData);
+        } else {
+            signaturePad.clear();
+        }
     }
     
     window.addEventListener("resize", resizeCanvas);
@@ -387,6 +951,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('signature-data').value = '';
     });
     
+    // Save on any change to ensure we catch all signature actions
+    signaturePad.addEventListener('endStroke', function() {
+        document.getElementById('signature-data').value = signaturePad.toDataURL();
+    });
+    
     // Form submission - capture signature
     document.getElementById('final-approval-form').addEventListener('submit', function(e) {
         if (signaturePad.isEmpty()) {
@@ -395,25 +964,40 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Check if an approval option is selected
+        const actionInput = document.getElementById('action-input');
+        if (!actionInput.value) {
+            e.preventDefault();
+            alert('Please select either Approve or Reject before proceeding.');
+            return;
+        }
+        
         // Save signature data to the hidden input
         document.getElementById('signature-data').value = signaturePad.toDataURL();
     });
     
-    // Toggle notification options based on approval action
-    const approvalInputs = document.querySelectorAll('input[name="approval_action"]');
-    const emailCheckbox = document.querySelector('input[name="send_email"]');
+    // Handle approval option selection
+    const approvalOptions = document.querySelectorAll('.approval-option');
+    const actionInput = document.getElementById('action-input');
     
-    approvalInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            if (this.value === 'rejected') {
-                emailCheckbox.disabled = false;
-                document.querySelector('.notification-options').style.opacity = '0.5';
-            } else {
-                emailCheckbox.disabled = false;
-                document.querySelector('.notification-options').style.opacity = '1';
-            }
+    approvalOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove selected class from all options
+            approvalOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            
+            // Set the action value
+            actionInput.value = this.getAttribute('data-value');
         });
     });
+    
+    // Auto-select the approve option by default
+    const defaultOption = document.querySelector('.approval-option[data-value="approved"]');
+    if (defaultOption) {
+        defaultOption.click();
+    }
 });
 </script>
 

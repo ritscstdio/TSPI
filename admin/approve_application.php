@@ -42,9 +42,23 @@ if (($user_role === 'insurance_officer' && $application['io_approved'] !== 'pend
     redirect('/admin/applications.php');
 }
 
-// Fetch all branches for the dropdown
-$branches_stmt = $pdo->query("SELECT * FROM branches ORDER BY branch ASC");
-$branches = $branches_stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all branches grouped by region for the dropdown
+$branches_stmt = $pdo->query("SELECT DISTINCT region FROM branches ORDER BY region ASC");
+$regions = $branches_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Check if branch has already been assigned by another officer
+$branchAssigned = false;
+$otherOfficer = '';
+
+if (!empty($application['branch'])) {
+    if ($user_role === 'insurance_officer' && $application['lo_approved'] === 'approved') {
+        $branchAssigned = true;
+        $otherOfficer = 'Loan Officer';
+    } elseif ($user_role === 'loan_officer' && $application['io_approved'] === 'approved') {
+        $branchAssigned = true;
+        $otherOfficer = 'Insurance Officer';
+    }
+}
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -52,8 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $branch = $_POST['branch'] ?? '';
     $notes = $_POST['notes'] ?? '';
     $signature = $_POST['signature'] ?? '';
-    $plans = isset($_POST['plans']) ? $_POST['plans'] : [];
-    $classification = $_POST['classification'] ?? '';
     $officer_name = $_POST['officer_name'] ?? '';
     $disclaimer_checked = isset($_POST['disclaimer_agreement']) ? 1 : 0;
     
@@ -78,14 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (!$disclaimer_checked) {
             $errors[] = "You must confirm the approval disclaimer.";
-        }
-        
-        if (empty($plans)) {
-            $errors[] = "At least one plan must be selected.";
-        }
-        
-        if (empty($classification)) {
-            $errors[] = "Classification is required.";
         }
     }
     
@@ -121,46 +125,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notes_field = 'lo_notes';
         }
         
+        // Get center_no from input if provided
+        $center_no = $_POST['center_no'] ?? '';
+        
         // Log the approval action with details
         log_approval_activity($application_id, $user_role, $action, [
             'officer_name' => $officer_name,
             'status_field' => $status_field,
             'has_signature' => !empty($signaturePath),
             'branch' => $branch,
-            'plans' => $plans,
-            'classification' => $classification
+            'center_no' => $center_no
         ]);
-        
-        // JSON encode plans and classification
-        $plansJson = json_encode($plans);
-        $classificationJson = json_encode([$classification]);
         
         // Make sure the action value is explicitly correct - should be "approved" not "approve"
         $statusValue = ($action === "approve") ? "approved" : "rejected";
         
-        // Update the application
+        // Update the application - don't modify plans or classification
         $sql = "UPDATE members_information SET 
                 $status_field = ?, 
                 $name_field = ?, 
                 $signature_field = ?, 
                 $date_field = NOW(), 
                 $notes_field = ?,
-                branch = ?,
-                plans = ?,
-                classification = ?
-                WHERE id = ?";
-                
+                branch = ?";
+
+        // Only update center_no if it's empty or not previously set
+        if (empty($application['center_no'])) {
+            $sql .= ", center_no = ?";
+            $params = [
+                $statusValue, 
+                $officer_name, 
+                $signaturePath, 
+                $notes,
+                $branch,
+                $center_no,
+                $application_id
+            ];
+        } else {
+            $sql .= " WHERE id = ?";
+            $params = [
+                $statusValue, 
+                $officer_name, 
+                $signaturePath, 
+                $notes,
+                $branch,
+                $application_id
+            ];
+        }
+
         $stmt = $pdo->prepare($sql);
-        $result = $stmt->execute([
-            $statusValue, 
-            $officer_name, 
-            $signaturePath, 
-            $notes,
-            $branch,
-            $plansJson,
-            $classificationJson,
-            $application_id
-        ]);
+        $result = $stmt->execute($params);
         
         // Debug information
         $debug_info = "Update " . ($result ? "succeeded" : "failed") . ". ";
@@ -194,83 +208,461 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
+        /* Modern styling */
+        :root {
+            --primary-color: #0070f3;
+            --primary-light: #e3f2fd;
+            --primary-dark: #005bc1;
+            --accent-color: #00c853;
+            --danger-color: #f44336;
+            --warning-color: #ffc107;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --border-radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .admin-main {
+            padding: 1rem;
+        }
+        
+        .content-container {
+            padding: 20px;
+        }
+
         .approval-form {
-            max-width: 800px;
+            max-width: 100%;
             margin: 0 auto;
         }
+
+        .page-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .page-header .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            background-color: var(--gray-200);
+            color: var(--gray-800);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid var(--gray-300);
+        }
+        
+        .page-header .btn:hover {
+            background-color: var(--gray-300);
+            box-shadow: var(--shadow-sm);
+        }
+
         .form-section {
             margin-bottom: 2rem;
             padding: 1.5rem;
-            background: #f9f9f9;
-            border-radius: 5px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
         }
+        
+        .form-section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-section h2 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            color: var(--gray-800);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        
+        /* Signature pad styling */
         .signature-pad-container {
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--border-radius);
             background: white;
             margin: 1rem 0;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            position: relative;
+            width: 400px;
+            height: 200px;
+            max-width: 100%;
         }
+        
+        .signature-pad-container:hover {
+            border-color: var(--primary-color);
+        }
+
         #signature-pad {
             width: 100%;
-            height: 200px;
+            height: 100%;
+            touch-action: none;
         }
+
         .signature-buttons {
             margin-top: 10px;
+            display: flex;
+            justify-content: flex-start;
         }
+        
+        /* Make textarea non-resizable */
+        .form-group textarea {
+            resize: none;
+            min-height: 80px;
+        }
+        
+        /* Approval options */
         .approval-options {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
+        
+        @media (max-width: 768px) {
+            .approval-options {
+                flex-direction: column;
+            }
+        }
+
         .approval-option {
             flex: 1;
-            padding: 1rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            padding: 1.5rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--border-radius);
             cursor: pointer;
             text-align: center;
             transition: all 0.3s;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
+        
+        .approval-option h3 {
+            margin: 10px 0;
+        }
+        
+        .approval-option p {
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .approval-option:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
         .approval-option.selected {
-            border-color: #4CAF50;
-            background-color: rgba(76, 175, 80, 0.1);
+            border-color: var(--accent-color);
+            background-color: rgba(0, 200, 83, 0.05);
+            transform: translateY(-2px);
         }
+
         .approval-option.reject.selected {
-            border-color: #F44336;
-            background-color: rgba(244, 67, 54, 0.1);
+            border-color: var(--danger-color);
+            background-color: rgba(244, 67, 54, 0.05);
         }
+        
+        /* Forms styling */
         .form-row {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
+        
         .form-col {
             flex: 1;
+            min-width: 250px;
         }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+            outline: none;
+        }
+        
+        /* Checkboxes and radio buttons */
         .checkbox-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
             margin: 10px 0;
         }
+        
         .checkbox-item {
             display: flex;
             align-items: center;
             margin-right: 20px;
         }
-        .checkbox-item input {
-            margin-right: 5px;
+        
+        .checkbox-item input[type="checkbox"],
+        .checkbox-item input[type="radio"] {
+            margin-right: 8px;
+            width: auto;
         }
+        
+        /* Disclaimer box */
         .disclaimer-box {
             margin-top: 1.5rem;
-            padding: 1rem;
-            background-color: #f5f5f5;
-            border-left: 4px solid #4CAF50;
+            padding: 1.25rem;
+            background-color: var(--gray-100);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent-color);
         }
+        
+        /* Buttons */
         .action-buttons {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray-500);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray-600);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--gray-900);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        /* Application Overview styling */
+        .application-details {
+            margin-bottom: 20px;
+        }
+        
+        .details-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            gap: 20px;
+        }
+        
+        .details-item {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .details-item label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--gray-700);
+        }
+        
+        .details-item span {
+            color: var(--gray-900);
+        }
+        
+        .details-section-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin: 25px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gray-300);
+            color: var(--gray-700);
+            text-transform: uppercase;
+        }
+        
+        .details-table-container {
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .details-table th, .details-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .details-table th {
+            background: var(--gray-100);
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .details-table tr:hover {
+            background-color: rgba(0, 112, 243, 0.02);
+        }
+        
+        .signatures-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin: 15px 0;
+        }
+        
+        .signature-preview {
+            max-width: 200px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 15px;
+        }
+        
+        .signature-preview h4 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+        
+        .signature-preview img {
+            max-width: 100%;
+            border: 1px solid var(--gray-200);
+            padding: 5px;
+            background: white;
+        }
+        
+        .signature-preview p {
+            margin: 8px 0 0;
+            font-size: 13px;
+            color: var(--gray-600);
+        }
+        
+        /* Branch Assignment Notice */
+        .branch-assigned-notice {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .branch-assigned-notice h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        
+        .assigned-branch-details {
+            padding: 15px;
+            background: white;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Info box */
+        .info-box {
+            background-color: var(--gray-100);
+            border-radius: var(--border-radius);
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--gray-300);
+        }
+
+        .info-box p {
+            margin: 0;
+            color: var(--gray-700);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -284,7 +676,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="content-container">
                 <div class="page-header">
                     <h1><?php echo $user_role === 'insurance_officer' ? 'Insurance Officer' : 'Loan Officer'; ?> Application Approval</h1>
-                    <a href="applications.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Applications</a>
+                    <a href="applications.php" class="btn"><i class="fas fa-arrow-left"></i> Back to Applications</a>
                 </div>
                 
                 <?php if (!empty($errors)): ?>
@@ -300,27 +692,187 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="approval-form">
                     <div class="form-section">
                         <h2>Application Overview</h2>
-                        <p><strong>Applicant:</strong> <?php echo htmlspecialchars($application['first_name'] . ' ' . $application['last_name']); ?></p>
-                        <p><strong>Email:</strong> <?php echo htmlspecialchars($application['email']); ?></p>
-                        <p><strong>Submitted:</strong> <?php echo date('F j, Y g:i a', strtotime($application['created_at'])); ?></p>
-                        <p>
-                            <a href="view_application.php?id=<?php echo $application_id; ?>" class="btn btn-secondary" target="_blank">
-                                <i class="fas fa-eye"></i> View Full Application
-                            </a>
-                        </p>
+                        <div class="application-details">
+                            <div class="details-row">
+                                <div class="details-item">
+                                    <label>Applicant:</label>
+                                    <span><?php echo htmlspecialchars($application['first_name'] . ' ' . $application['last_name']); ?></span>
+                                </div>
+                                <div class="details-item">
+                                    <label>Email:</label>
+                                    <span><?php echo htmlspecialchars($application['email']); ?></span>
+                                </div>
+                            </div>
+                            <div class="details-row">
+                                <div class="details-item">
+                                    <label>CID No:</label>
+                                    <span><?php echo htmlspecialchars($application['cid_no']); ?></span>
+                                </div>
+                                <div class="details-item">
+                                    <label>Submitted:</label>
+                                    <span><?php echo date('F j, Y g:i a', strtotime($application['created_at'])); ?></span>
+                                </div>
+                            </div>
+                            
+                            <div class="details-section-title">Plans & Classification</div>
+                            <div class="details-row">
+                                <div class="details-item">
+                                    <label>Plans:</label>
+                                    <span>
+                                        <?php 
+                                        $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
+                                        echo htmlspecialchars(implode(', ', $plans)); 
+                                        ?>
+                                    </span>
+                                </div>
+                                <div class="details-item">
+                                    <label>Classification:</label>
+                                    <span>
+                                        <?php 
+                                        $classification = json_decode($application['classification'] ?? '[]', true) ?: [];
+                                        echo htmlspecialchars(implode(', ', $classification)); 
+                                        ?>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="details-section-title">Address Information</div>
+                            <div class="details-row">
+                                <div class="details-item">
+                                    <label>Present Address:</label>
+                                    <span><?php echo htmlspecialchars($application['present_address']); ?></span>
+                                </div>
+                                <div class="details-item">
+                                    <label>Permanent Address:</label>
+                                    <span><?php echo htmlspecialchars($application['permanent_address']); ?></span>
+                                </div>
+                            </div>
+                            
+                            <div class="details-section-title">Business Information</div>
+                            <div class="details-row">
+                                <div class="details-item">
+                                    <label>Primary Business:</label>
+                                    <span><?php echo htmlspecialchars($application['primary_business']); ?></span>
+                                </div>
+                                <div class="details-item">
+                                    <label>Business Address:</label>
+                                    <span><?php echo htmlspecialchars($application['business_address'] ?: 'N/A'); ?></span>
+                                </div>
+                            </div>
+                            
+                            <?php
+                            // Check if beneficiaries exist
+                            $hasBeneficiaries = false;
+                            for ($i = 1; $i <= 5; $i++) {
+                                if (!empty($application["beneficiary_fn_{$i}"])) {
+                                    $hasBeneficiaries = true;
+                                    break;
+                                }
+                            }
+                            
+                            if ($hasBeneficiaries): ?>
+                            <div class="details-section-title">Beneficiaries</div>
+                            <div class="details-table-container">
+                                <table class="details-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Relationship</th>
+                                            <th>Birthdate</th>
+                                            <th>Dependent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php if (!empty($application["beneficiary_fn_{$i}"])): ?>
+                                                <tr>
+                                                    <td>
+                                                        <?php 
+                                                        echo htmlspecialchars(
+                                                            $application["beneficiary_fn_{$i}"] . ' ' . 
+                                                            ($application["beneficiary_mi_{$i}"] ? $application["beneficiary_mi_{$i}"] . '. ' : '') . 
+                                                            $application["beneficiary_ln_{$i}"]
+                                                        ); 
+                                                        ?>
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($application["beneficiary_relationship_{$i}"] ?: 'N/A'); ?></td>
+                                                    <td>
+                                                        <?php 
+                                                        echo !empty($application["beneficiary_birthdate_{$i}"]) ? 
+                                                            date('m/d/Y', strtotime($application["beneficiary_birthdate_{$i}"])) : 
+                                                            'N/A'; 
+                                                        ?>
+                                                    </td>
+                                                    <td><?php echo $application["beneficiary_dependent_{$i}"] ? 'Yes' : 'No'; ?></td>
+                                                </tr>
+                                            <?php endif; ?>
+                                        <?php endfor; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($application['trustee_name'])): ?>
+                            <div class="details-section-title">Trustee Information</div>
+                            <div class="details-row">
+                                <div class="details-item">
+                                    <label>Name:</label>
+                                    <span><?php echo htmlspecialchars($application['trustee_name']); ?></span>
+                                </div>
+                                <div class="details-item">
+                                    <label>Relationship:</label>
+                                    <span><?php echo htmlspecialchars($application['trustee_relationship'] ?: 'N/A'); ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($application['member_signature']) || !empty($application['beneficiary_signature'])): ?>
+                            <div class="details-section-title">Signatures</div>
+                            <div class="signatures-container">
+                                <?php if (!empty($application['member_signature'])): ?>
+                                <div class="signature-preview">
+                                    <h4>Member's Signature</h4>
+                                    <img src="../<?php echo $application['member_signature']; ?>" alt="Member Signature">
+                                    <p><?php echo htmlspecialchars($application['member_name']); ?></p>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($application['beneficiary_signature'])): ?>
+                                <div class="signature-preview">
+                                    <h4>Beneficiary's Signature</h4>
+                                    <img src="../<?php echo $application['beneficiary_signature']; ?>" alt="Beneficiary Signature">
+                                    <p><?php echo htmlspecialchars($application['sig_beneficiary_name']); ?></p>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
+                    
+                    <?php if ($branchAssigned): ?>
+                    <div class="form-section branch-assigned-notice">
+                        <h3>Branch Already Assigned</h3>
+                        <p>This application has already been assigned to a branch by the <?php echo $otherOfficer; ?>.</p>
+                        <div class="assigned-branch-details">
+                            <strong>Branch:</strong> <?php echo htmlspecialchars($application['branch']); ?>
+                            <?php if (!empty($application['center_no'])): ?>
+                            <br><strong>Center No:</strong> <?php echo htmlspecialchars($application['center_no']); ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     
                     <form method="post" action="" id="approval-form">
                         <div class="form-section">
                             <h2>Approval Decision</h2>
                             <div class="approval-options">
                                 <div class="approval-option" data-value="approve">
-                                    <i class="fas fa-check-circle fa-2x" style="color: #4CAF50;"></i>
+                                    <i class="fas fa-check-circle fa-2x" style="color: #00c853;"></i>
                                     <h3>Approve</h3>
                                     <p>Endorse this application for approval</p>
                                 </div>
                                 <div class="approval-option reject" data-value="reject">
-                                    <i class="fas fa-times-circle fa-2x" style="color: #F44336;"></i>
+                                    <i class="fas fa-times-circle fa-2x" style="color: #f44336;"></i>
                                     <h3>Reject</h3>
                                     <p>Decline this application</p>
                                 </div>
@@ -328,66 +880,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="hidden" name="action" id="action-input" value="">
                         </div>
                         
+                        <?php if (!$branchAssigned): ?>
                         <div class="form-section" id="approval-details">
-                            <h2>Approval Details</h2>
+                            <h2>Branch Assignment</h2>
+                            
+                            <!-- Address Information Section -->
+                            <div class="info-box">
+                                <div class="details-section-title">Address Information</div>
+                                <div class="details-row">
+                                    <div class="details-item">
+                                        <label>Present Address:</label>
+                                        <span><?php echo htmlspecialchars($application['present_address']); ?></span>
+                                    </div>
+                                    <div class="details-item">
+                                        <label>Permanent Address:</label>
+                                        <span><?php echo htmlspecialchars($application['permanent_address']); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Business Information Section -->
+                            <div class="info-box">
+                                <div class="details-section-title">Business Information</div>
+                                <div class="details-row">
+                                    <div class="details-item">
+                                        <label>Primary Business:</label>
+                                        <span><?php echo htmlspecialchars($application['primary_business']); ?></span>
+                                    </div>
+                                    <div class="details-item">
+                                        <label>Business Address:</label>
+                                        <span><?php echo htmlspecialchars($application['business_address'] ?: 'N/A'); ?></span>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="form-group">
-                                <label for="branch">Branch Assignment</label>
-                                <select id="branch" name="branch" required>
-                                    <option value="">Select Branch</option>
-                                    <?php foreach ($branches as $branch): ?>
-                                        <option value="<?php echo htmlspecialchars($branch['branch']); ?>" 
-                                                data-center="<?php echo htmlspecialchars($branch['center_no']); ?>">
-                                            <?php echo htmlspecialchars($branch['branch']); ?> 
-                                            (Center: <?php echo htmlspecialchars($branch['center_no']); ?>)
+                                <label for="region">Region</label>
+                                <select id="region" name="region" required>
+                                    <option value="">Select Region</option>
+                                    <?php foreach ($regions as $region): ?>
+                                        <option value="<?php echo htmlspecialchars($region['region']); ?>">
+                                            <?php echo htmlspecialchars($region['region']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             
                             <div class="form-group">
-                                <label>Member Classification</label>
-                                <div class="checkbox-group">
-                                    <div class="checkbox-item">
-                                        <input type="radio" id="class_tkp" name="classification" value="TKP" 
-                                            <?php echo (json_decode($application['classification'] ?? '[]')[0] ?? '') === 'TKP' ? 'checked' : ''; ?>>
-                                        <label for="class_tkp">TKP (Borrower)</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="radio" id="class_tpp" name="classification" value="TPP"
-                                            <?php echo (json_decode($application['classification'] ?? '[]')[0] ?? '') === 'TPP' ? 'checked' : ''; ?>>
-                                        <label for="class_tpp">TPP (Borrower)</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="radio" id="class_kapamilya" name="classification" value="Kapamilya"
-                                            <?php echo (json_decode($application['classification'] ?? '[]')[0] ?? '') === 'Kapamilya' ? 'checked' : ''; ?>>
-                                        <label for="class_kapamilya">Kapamilya</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Selected Plans</label>
-                                <div class="checkbox-group">
-                                    <?php 
-                                    $selectedPlans = json_decode($application['plans'] ?? '[]', true) ?: [];
-                                    ?>
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="plan_blip" name="plans[]" value="BLIP" 
-                                            <?php echo in_array('BLIP', $selectedPlans) ? 'checked' : ''; ?>>
-                                        <label for="plan_blip">Basic Life (BLIP)</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="plan_lpip" name="plans[]" value="LPIP"
-                                            <?php echo in_array('LPIP', $selectedPlans) ? 'checked' : ''; ?>>
-                                        <label for="plan_lpip">Life Plus (LPIP)</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="plan_lmip" name="plans[]" value="LMIP"
-                                            <?php echo in_array('LMIP', $selectedPlans) ? 'checked' : ''; ?>>
-                                        <label for="plan_lmip">Life Max (LMIP)</label>
-                                    </div>
-                                </div>
+                                <label for="branch">Branch</label>
+                                <select id="branch" name="branch" required disabled>
+                                    <option value="">Select Branch</option>
+                                    <!-- Branches will be loaded based on selected region -->
+                                </select>
                             </div>
                             
                             <div class="form-group">
@@ -395,15 +939,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <textarea id="notes" name="notes" rows="4" placeholder="Enter any notes or comments about this application"></textarea>
                             </div>
                         </div>
+                        <?php else: ?>
+                        <div class="form-section" id="approval-details">
+                            <h2>Additional Information</h2>
+                            <div class="form-group">
+                                <label for="notes">Notes/Comments</label>
+                                <textarea id="notes" name="notes" rows="4" placeholder="Enter any notes or comments about this application"></textarea>
+                            </div>
+                            <!-- Hidden field to keep the branch value -->
+                            <input type="hidden" name="branch" value="<?php echo htmlspecialchars($application['branch']); ?>">
+                        </div>
+                        <?php endif; ?>
                         
                         <div class="form-section" id="signature-section">
                             <h2>Officer Signature</h2>
+                            <!-- Officer name is now hidden, using their registered name -->
+                            <input type="hidden" id="officer_name" name="officer_name" value="<?php echo htmlspecialchars($current_user['name'] ?? ''); ?>">
+                            
                             <div class="form-group">
-                                <label for="officer_name">Your Name</label>
-                                <input type="text" id="officer_name" name="officer_name" value="<?php echo htmlspecialchars($current_user['name'] ?? ''); ?>" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Signature</label>
+                                <label for="signature">Signature</label>
                                 <div class="signature-pad-container">
                                     <canvas id="signature-pad"></canvas>
                                     <input type="hidden" name="signature" id="signature-data">
@@ -417,7 +971,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="disclaimer_agreement" name="disclaimer_agreement" required>
                                     <label for="disclaimer_agreement">
-                                        I, <strong id="officer_name_display"><?php echo htmlspecialchars($current_user['name'] ?? ''); ?></strong>, 
+                                        I, <strong><?php echo htmlspecialchars($current_user['name'] ?? ''); ?></strong>, 
                                         acting in my capacity as a <?php echo $user_role === 'insurance_officer' ? 'Insurance Officer' : 'Loan Officer'; ?>, 
                                         confirm that I have reviewed this application thoroughly and take responsibility for my decision.
                                     </label>
@@ -449,22 +1003,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Initialize signature pad
             const canvas = document.getElementById('signature-pad');
             const signaturePad = new SignaturePad(canvas, {
-                backgroundColor: 'rgba(255, 255, 255, 0)',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
                 penColor: 'black'
             });
             
-            // Resize canvas
+            canvas._signaturePad = signaturePad; // Store reference for later
+            
+            // Resize signature pad for responsiveness
             function resizeCanvas() {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear(); // Clear the canvas
+                const container = canvas.parentElement;
+                const savedData = signaturePad.toDataURL();
+                
+                canvas.width = container.offsetWidth * ratio;
+                canvas.height = container.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                
+                // Restore signature after resize if it exists
+                if (savedData && !signaturePad.isEmpty()) {
+                    signaturePad.fromDataURL(savedData);
+                } else {
+                    signaturePad.clear();
+                }
             }
             
-            // Set up the resize handler
-            window.addEventListener("resize", resizeCanvas);
-            resizeCanvas(); // Call on init
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas(); // Call once on init
             
             // Clear signature button
             document.getElementById('clear-signature').addEventListener('click', function() {
@@ -472,36 +1036,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.getElementById('signature-data').value = '';
             });
             
-            // Auto-select the approve option by default to ensure action value is set
-            const approveOption = document.querySelector('.approval-option[data-value="approve"]');
-            if (approveOption) {
-                approveOption.classList.add('selected');
-                document.getElementById('action-input').value = 'approve';
-                document.getElementById('approval-details').style.display = 'block';
-                document.getElementById('signature-section').style.display = 'block';
-                document.getElementById('rejection-section').style.display = 'none';
-            }
-            
-            // Handle form submission to save signature data
-            document.getElementById('approval-form').addEventListener('submit', function(e) {
-                if (document.getElementById('action-input').value === 'approve') {
-                    // Only require signature for approval
-                    if (signaturePad.isEmpty()) {
-                        e.preventDefault();
-                        alert('Please provide your signature before submitting.');
-                        return false;
-                    }
-                    
-                    // Save signature data to hidden input
-                    document.getElementById('signature-data').value = signaturePad.toDataURL();
-                }
+            // Save on any change to ensure we catch all signature actions
+            signaturePad.addEventListener('endStroke', function() {
+                document.getElementById('signature-data').value = signaturePad.toDataURL();
             });
             
             // Toggle between approval and rejection UI
             const approvalOptions = document.querySelectorAll('.approval-option');
             const actionInput = document.getElementById('action-input');
             const approvalDetails = document.getElementById('approval-details');
-            const signatureSection = document.getElementById('signature-section');
             const rejectionSection = document.getElementById('rejection-section');
             
             approvalOptions.forEach(option => {
@@ -520,68 +1063,122 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Toggle sections based on selection
                     if (value === 'approve') {
                         approvalDetails.style.display = 'block';
-                        signatureSection.style.display = 'block';
                         rejectionSection.style.display = 'none';
                     } else {
+                        <?php if(!$branchAssigned): ?>
                         approvalDetails.style.display = 'none';
-                        signatureSection.style.display = 'block'; // We still want signature for rejection
+                        <?php endif; ?>
                         rejectionSection.style.display = 'block';
                     }
                 });
             });
             
-            // Update officer name in disclaimer text when input changes
-            const officerNameInput = document.getElementById('officer_name');
-            const officerNameDisplay = document.getElementById('officer_name_display');
+            // Auto-select the approve option by default
+            const defaultOption = document.querySelector('.approval-option[data-value="approve"]');
+            if (defaultOption) {
+                defaultOption.click();
+            }
             
-            officerNameInput.addEventListener('input', function() {
-                officerNameDisplay.textContent = this.value || '[Your Name]';
-            });
+            // Region and Branch selection logic
+            const regionSelect = document.getElementById('region');
+            const branchSelect = document.getElementById('branch');
             
-            // Make form fields required if approving
+            // Hidden field for center_no
+            let centerNoInput = document.getElementById('center_no_input');
+            if (!centerNoInput) {
+                centerNoInput = document.createElement('input');
+                centerNoInput.type = 'hidden';
+                centerNoInput.id = 'center_no_input';
+                centerNoInput.name = 'center_no';
+                document.getElementById('approval-form').appendChild(centerNoInput);
+            }
+            
+            if (regionSelect && branchSelect) {
+                regionSelect.addEventListener('change', function() {
+                    const selectedRegion = this.value;
+                    
+                    if (selectedRegion) {
+                        // Enable the branch dropdown
+                        branchSelect.disabled = false;
+                        
+                        // Clear current options except the placeholder
+                        branchSelect.innerHTML = '<option value="">Select Branch</option>';
+                        
+                        // Fetch branches for the selected region
+                        fetchBranches(selectedRegion);
+                    } else {
+                        // If no region is selected, disable the branch dropdown
+                        branchSelect.disabled = true;
+                        branchSelect.innerHTML = '<option value="">Select Branch</option>';
+                        centerNoInput.value = '';
+                    }
+                });
+                
+                // Add change event for branch select to update center_no
+                branchSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.hasAttribute('data-center')) {
+                        centerNoInput.value = selectedOption.getAttribute('data-center');
+                    } else {
+                        centerNoInput.value = '';
+                    }
+                });
+            }
+            
+            // Function to fetch branches by region
+            function fetchBranches(region) {
+                // Use fetch API to get branches from server
+                fetch(`get_branches.php?region=${encodeURIComponent(region)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.branches) {
+                            // Populate branch options
+                            data.branches.forEach(branch => {
+                                const option = document.createElement('option');
+                                option.value = branch.branch;
+                                option.textContent = `${branch.branch} (${branch.center_no})`;
+                                option.setAttribute('data-center', branch.center_no);
+                                branchSelect.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching branches:', error);
+                    });
+            }
+            
+            // Form validation
             document.getElementById('approval-form').addEventListener('submit', function(e) {
-                const action = document.getElementById('action-input').value;
+                const action = actionInput.value;
                 
                 if (!action) {
                     e.preventDefault();
                     alert('Please select either Approve or Reject.');
-                    return false;
+                    return;
                 }
                 
-                // Double-check that the action value is set correctly
-                console.log("Form submission action value:", action);
-                
-                // For debugging - log current form state
-                if (action === 'approve') {
-                    console.log("Approving application", {
-                        officerName: document.getElementById('officer_name').value,
-                        branch: document.getElementById('branch').value
-                    });
+                if (action === 'approve' && !signaturePad.isEmpty() && !document.getElementById('disclaimer_agreement').checked) {
+                    e.preventDefault();
+                    alert('Please agree to the disclaimer before proceeding.');
+                    return;
                 }
                 
-                if (action === 'approve') {
+                if (signaturePad.isEmpty()) {
+                    e.preventDefault();
+                    alert('Please provide your signature before submitting.');
+                    return;
+                }
+                
+                // Save signature data to hidden input
+                document.getElementById('signature-data').value = signaturePad.toDataURL();
+                
+                // For approval, check branch is selected if not previously assigned
+                if (action === 'approve' && <?php echo !$branchAssigned ? 'true' : 'false'; ?>) {
                     const branch = document.getElementById('branch').value;
-                    
                     if (!branch) {
                         e.preventDefault();
                         alert('Please select a branch.');
-                        return false;
-                    }
-                    
-                    // Check if at least one plan is selected
-                    const plans = document.querySelectorAll('input[name="plans[]"]:checked');
-                    if (plans.length === 0) {
-                        e.preventDefault();
-                        alert('Please select at least one plan.');
-                        return false;
-                    }
-                    
-                    // Check if classification is selected
-                    const classification = document.querySelector('input[name="classification"]:checked');
-                    if (!classification) {
-                        e.preventDefault();
-                        alert('Please select a member classification.');
-                        return false;
+                        return;
                     }
                 }
             });
