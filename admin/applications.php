@@ -129,14 +129,12 @@ $user_role = $current_user['role'] ?? '';
                                                     <?php if ($app['lo_approved'] === 'approved'): ?>
                                                         by <?php echo htmlspecialchars($app['lo_name']); ?>
                                                     <?php endif; ?>
-                                                <?php if ($app['io_approved'] === 'approved' && $app['lo_approved'] === 'approved'): ?>
                                                 <span class="badge-secretary status-<?php echo strtolower($app['secretary_approved'] ?: 'pending'); ?>">
                                                     Secretary: <?php echo ucfirst($app['secretary_approved'] ?: 'Pending'); ?>
                                                     <?php if ($app['secretary_approved'] === 'approved'): ?>
                                                         by <?php echo htmlspecialchars($app['secretary_name']); ?>
                                                     <?php endif; ?>
                                                 </span>
-                                                <?php endif; ?>
                                             </div>
                                         </td>
                                         <td class="actions">
@@ -155,7 +153,7 @@ $user_role = $current_user['role'] ?? '';
                                             
                                             <?php if ($app['status'] === 'approved' && $app['io_approved'] === 'approved' && 
                                                      $app['lo_approved'] === 'approved' && $app['secretary_approved'] === 'approved'): ?>
-                                                <a href="generate_certificate.php?id=<?php echo $app['id']; ?>&mode=preview" class="btn-icon" title="View Certificate"><i class="fas fa-certificate"></i></a>
+                                                <a href="generate_application_pdf.php?id=<?php echo $app['id']; ?>&mode=preview" class="btn-icon" title="View Application Form"><i class="fas fa-file-pdf"></i></a>
                                                 <a href="generate_final_report.php?id=<?php echo $app['id']; ?>&mode=preview" class="btn-icon" title="View Report"><i class="fas fa-file-contract"></i></a>
                                             <?php endif; ?>
                                         </td>

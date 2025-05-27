@@ -3,3 +3,16 @@
 2025-05-27 11:46:26 [INFO] Application ID: 23 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
 2025-05-27 12:53:27 [INFO] Application ID: 24 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
 2025-05-27 12:54:01 [INFO] Application ID: 24 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":""}
+2025-05-27 13:18:43 [INFO] Application ID: 24 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-27 13:32:09 [INFO] Application ID: 25 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
+2025-05-27 13:32:55 [INFO] Application ID: 25 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":""}
+2025-05-27 13:33:46 [INFO] Application ID: 25 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-27 13:39:43 [INFO] Application ID: 26 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
+2025-05-27 13:41:20 [INFO] Application ID: 26 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":""}
+2025-05-27 13:42:36 [INFO] Application ID: 26 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-27 13:54:27 [INFO] Application ID: 27 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
+2025-05-27 13:55:19 [INFO] Application ID: 27 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":""}
+2025-05-27 13:56:36 [INFO] Application ID: 27 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-27 14:49:01 [INFO] Application ID: 27 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
+2025-05-27 16:55:08 [INFO] Application ID: 27 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-27 17:01:33 [INFO] Application ID: 27 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}

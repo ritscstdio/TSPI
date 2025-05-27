@@ -147,31 +147,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $signature_field = ?, 
                 $date_field = NOW(), 
                 $notes_field = ?,
-                branch = ?";
+                branch = ?,
+                center_no = ?
+                WHERE id = ?";
 
-        // Only update center_no if it's empty or not previously set
-        if (empty($application['center_no'])) {
-            $sql .= ", center_no = ?";
-            $params = [
-                $statusValue, 
-                $officer_name, 
-                $signaturePath, 
-                $notes,
-                $branch,
-                $center_no,
-                $application_id
-            ];
-        } else {
-            $sql .= " WHERE id = ?";
-            $params = [
-                $statusValue, 
-                $officer_name, 
-                $signaturePath, 
-                $notes,
-                $branch,
-                $application_id
-            ];
-        }
+        $params = [
+            $statusValue, 
+            $officer_name, 
+            $signaturePath, 
+            $notes,
+            $branch,
+            $center_no,
+            $application_id
+        ];
+
+        // Debug information
+        error_log("SQL: $sql");
+        error_log("Center No: " . ($center_no ?: "empty"));
+        error_log("Params: " . print_r($params, true));
 
         $stmt = $pdo->prepare($sql);
         $result = $stmt->execute($params);
@@ -1118,9 +1111,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 branchSelect.addEventListener('change', function() {
                     const selectedOption = this.options[this.selectedIndex];
                     if (selectedOption && selectedOption.hasAttribute('data-center')) {
-                        centerNoInput.value = selectedOption.getAttribute('data-center');
+                        const centerNo = selectedOption.getAttribute('data-center');
+                        centerNoInput.value = centerNo;
+                        console.log('Center No selected:', centerNo);
                     } else {
                         centerNoInput.value = '';
+                        console.log('No Center No associated with this branch');
                     }
                 });
             }

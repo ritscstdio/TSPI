@@ -64,6 +64,34 @@ function display_value($value, $is_date = false) {
     
     return htmlspecialchars($value);
 }
+
+// Store certificate dropdown HTML in a variable to use later
+$certificate_dropdown_html = '';
+$plans = json_decode($application['plans'], true) ?: [];
+if (count($plans) > 1): // If multiple plans exist
+    $certificate_dropdown_html = '
+    <div class="certificate-dropdown">
+        <a href="#" class="btn-success dropdown-toggle">
+            <i class="fas fa-certificate"></i> Preview Certificate <i class="fas fa-caret-down"></i>
+        </a>
+        <div class="dropdown-content dropdown-content-up">';
+    foreach ($plans as $plan) {
+        $certificate_dropdown_html .= '
+        <a href="generate_certificate.php?id='.$application['id'].'&mode=preview&plan='.urlencode($plan).'">
+            '.htmlspecialchars($plan).' Certificate
+        </a>';
+    }
+    $certificate_dropdown_html .= '
+        </div>
+    </div>';
+else: // Single plan or no plans
+    $certificate_dropdown_html = '
+    <a href="generate_certificate.php?id='.$application['id'].'&mode=preview" class="btn-success">
+        <i class="fas fa-certificate"></i> Preview Certificate
+    </a>';
+endif;
+
+// Now the HTML begins
 ?>
 
 <!DOCTYPE html>
@@ -192,7 +220,6 @@ function display_value($value, $is_date = false) {
                                     <label>Plans:</label>
                                     <span>
                                         <?php 
-                                        $plans = json_decode($application['plans'], true);
                                         echo $plans ? htmlspecialchars(implode(', ', $plans)) : 'None';
                                         ?>
                                     </span>
@@ -574,18 +601,6 @@ function display_value($value, $is_date = false) {
                                 <p><strong>Name:</strong> <?php echo htmlspecialchars($application['sig_beneficiary_name']); ?></p>
                             </div>
                             <?php endif; ?>
-                            
-                            <!-- Display Secretary signature if available -->
-                            <?php if (!empty($application['secretary_signature'])): ?>
-                            <div class="signature-block">
-                                <h3>Secretary's Signature</h3>
-                                <div class="signature-image">
-                                    <img src="<?php echo SITE_URL . '/' . $application['secretary_signature']; ?>" alt="Secretary Signature">
-                                </div>
-                                <p><strong>Name:</strong> <?php echo htmlspecialchars($application['secretary_name']); ?></p>
-                                <p><strong>Date:</strong> <?php echo date('F j, Y', strtotime($application['secretary_approval_date'])); ?></p>
-                            </div>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -597,37 +612,13 @@ function display_value($value, $is_date = false) {
                         <i class="fas fa-eye"></i> Preview PDF
                     </a>
                     
-                    <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=download" class="btn-primary">
-                        <i class="fas fa-file-pdf"></i> Download PDF
-                    </a>
-                    
                     <!-- Add links to new document types if IO and LO have both approved -->
                     <?php if ($application['io_approved'] === 'approved' && $application['lo_approved'] === 'approved'): ?>
                     <a href="generate_final_report.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-info">
                         <i class="fas fa-file-contract"></i> Preview Final Report
                     </a>
                     
-                    <?php 
-                    $plans = json_decode($application['plans'], true) ?: [];
-                    if (count($plans) > 1): // If multiple plans exist
-                    ?>
-                    <div class="certificate-dropdown">
-                        <a href="#" class="btn-success dropdown-toggle">
-                            <i class="fas fa-certificate"></i> Preview Certificate <i class="fas fa-caret-down"></i>
-                        </a>
-                        <div class="dropdown-content">
-                            <?php foreach ($plans as $plan): ?>
-                            <a href="generate_certificate.php?id=<?php echo $application['id']; ?>&mode=preview&plan=<?php echo urlencode($plan); ?>">
-                                <?php echo htmlspecialchars($plan); ?> Certificate
-                            </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <?php else: // Single plan or no plans ?>
-                    <a href="generate_certificate.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-success">
-                        <i class="fas fa-certificate"></i> Preview Certificate
-                    </a>
-                    <?php endif; ?>
+                    <?php echo $certificate_dropdown_html; ?>
                     <?php endif; ?>
                     
                     <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
@@ -909,6 +900,12 @@ function display_value($value, $is_date = false) {
         z-index: 1;
         border-radius: 4px;
         overflow: hidden;
+    }
+    
+    .certificate-dropdown .dropdown-content-up {
+        bottom: 100%;
+        top: auto;
+        margin-bottom: 5px;
     }
     
     .certificate-dropdown .dropdown-content a {

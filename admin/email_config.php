@@ -2,188 +2,58 @@
 /**
  * Email Configuration
  * 
- * Contains functions to send emails using PHPMailer
+ * This file contains the email configuration settings for the TSPI CMS.
  */
 
-// Import PHPMailer classes
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP;
+// Email settings
+$email_config = [
+    'from_email' => 'noreply@tspi.org',
+    'from_name' => 'TSPI Membership',
+    'reply_to' => 'support@tspi.org',
+    'smtp_host' => '', // Leave blank to use PHP's mail() function
+    'smtp_port' => 587,
+    'smtp_username' => '',
+    'smtp_password' => '',
+    'smtp_secure' => 'tls'
+];
 
 /**
- * Send an email using PHPMailer
- * 
- * @param string $to Recipient email address
- * @param string $subject Email subject
- * @param string $message Email message body (plain text)
- * @param string $html_message Optional HTML version of the message
- * @param array $attachments Optional array of file paths to attach
- * @return bool Whether the email was sent successfully
- */
-function send_application_email($to, $subject, $message, $html_message = '', $attachments = []) {
-    // Create a new PHPMailer instance
-    $mail = new PHPMailer(true);
-    
-    try {
-        // Configure email settings from config
-        $mail->isSMTP();
-        $mail->Host = EMAIL_HOST;
-        $mail->SMTPAuth = true;
-        $mail->Username = EMAIL_USERNAME;
-        $mail->Password = EMAIL_PASSWORD;
-        $mail->SMTPSecure = EMAIL_ENCRYPTION;
-        $mail->Port = EMAIL_PORT;
-        $mail->setFrom(EMAIL_FROM, EMAIL_FROM_NAME);
-        
-        // Add recipient
-        $mail->addAddress($to);
-        
-        // Set email content
-        $mail->isHTML(!empty($html_message));
-        $mail->Subject = $subject;
-        
-        if (!empty($html_message)) {
-            $mail->Body = $html_message;
-            $mail->AltBody = $message; // Plain text alternative
-        } else {
-            $mail->Body = $message;
-        }
-        
-        // Add attachments if any
-        if (!empty($attachments)) {
-            foreach ($attachments as $attachment) {
-                if (file_exists($attachment)) {
-                    $mail->addAttachment($attachment);
-                }
-            }
-        }
-        
-        // Send the email
-        $mail->send();
-        return true;
-    } catch (Exception $e) {
-        // Log error
-        error_log('Email sending failed: ' . $mail->ErrorInfo);
-        return false;
-    }
-}
-
-/**
- * Generate HTML email template for application status
+ * Helper function to generate HTML email content for applications
  * 
  * @param array $application Application data
- * @param string $status Application status (approved/rejected)
- * @return string HTML email content
+ * @param string $status Status of the application (approved, rejected)
+ * @return string HTML content
  */
 function generate_application_email_html($application, $status) {
-    $fullName = $application['first_name'] . ' ' . $application['last_name'];
-    $date = date('F j, Y');
-    
-    $html = '
-    <!DOCTYPE html>
-    <html lang="en">
+    $html = '<html>
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TSPI Membership Application Status</title>
         <style>
-            body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            .header {
-                text-align: center;
-                margin-bottom: 30px;
-            }
-            .header img {
-                max-width: 150px;
-                height: auto;
-            }
-            .content {
-                background-color: #f9f9f9;
-                padding: 20px;
-                border-radius: 5px;
-            }
-            .footer {
-                margin-top: 30px;
-                font-size: 12px;
-                text-align: center;
-                color: #777;
-            }
-            .approval {
-                color: #28a745;
-                font-weight: bold;
-            }
-            .rejection {
-                color: #dc3545;
-                font-weight: bold;
-            }
-            .details {
-                background-color: #fff;
-                padding: 15px;
-                border-left: 4px solid #0056b3;
-                margin: 20px 0;
-            }
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            h1 { color: #0070f3; font-size: 24px; margin-bottom: 20px; }
+            p { margin-bottom: 15px; }
+            .footer { margin-top: 30px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px; }
         </style>
     </head>
     <body>
-        <div class="header">
-            <h2>TSPI Membership Application</h2>
-        </div>
-        
-        <div class="content">
-            <p>Dear ' . $fullName . ',</p>';
-    
+        <div class="container">
+            <h1>TSPI Membership ' . ucfirst($status) . '</h1>
+            <p>Dear ' . htmlspecialchars($application['first_name'] . ' ' . $application['last_name']) . ',</p>';
+            
     if ($status === 'approved') {
-        $html .= '
-            <p>We are pleased to inform you that your membership application with TSPI has been <span class="approval">APPROVED</span>.</p>
-            
-            <p>Your application has undergone thorough review by our Insurance Officer and Loan Officer, and we are happy to welcome you as a TSPI member.</p>
-            
-            <div class="details">
-                <p><strong>Application ID:</strong> ' . $application['id'] . '</p>
-                <p><strong>Approval Date:</strong> ' . $date . '</p>
-                <p><strong>Branch:</strong> ' . $application['branch'] . '</p>
-                <p><strong>CID No:</strong> ' . $application['cid_no'] . '</p>
-            </div>
-            
-            <p>Please find attached to this email:</p>
-            <ol>
-                <li>Your official membership application form</li>
-                <li>Membership certificate</li>
-            </ol>
-            
-            <p>We recommend that you print these documents and keep them for your records.</p>
-            
-            <p>For any questions or assistance, please contact our branch at [Branch Contact Number] or reply to this email.</p>';
+        $html .= '<p>We are pleased to inform you that your TSPI membership application has been approved.</p>
+        <p>Your membership ID is: <strong>' . htmlspecialchars($application['cid_no']) . '</strong></p>
+        <p>Please find attached your official application form and membership certificate(s).</p>
+        <p>If you have any questions about your membership, please contact your assigned branch.</p>';
     } else {
-        $html .= '
-            <p>We regret to inform you that your membership application with TSPI has been <span class="rejection">REJECTED</span>.</p>
-            
-            <p>After careful consideration, our team has determined that your application does not meet our current requirements.</p>
-            
-            <div class="details">
-                <p><strong>Application ID:</strong> ' . $application['id'] . '</p>
-                <p><strong>Decision Date:</strong> ' . $date . '</p>
-            </div>
-            
-            <p>If you would like to discuss this decision or reapply in the future, please contact our branch at [Branch Contact Number] or reply to this email.</p>';
+        $html .= '<p>We regret to inform you that your TSPI membership application has been rejected.</p>
+        <p>If you have any questions regarding this decision, please contact us for more information.</p>';
     }
     
-    $html .= '
-            <p>Thank you for your interest in TSPI.</p>
-            
-            <p>Best Regards,<br>
-            TSPI Team</p>
-        </div>
-        
-        <div class="footer">
-            <p>&copy; ' . date('Y') . ' TSPI. All rights reserved.</p>
-            <p>This is an automated message. Please do not reply directly to this email.</p>
+    $html .= '<div class="footer">
+                <p>Thank you for choosing TSPI.</p>
+                <p>&copy; TSPI Membership Services</p>
+            </div>
         </div>
     </body>
     </html>';
@@ -192,51 +62,85 @@ function generate_application_email_html($application, $status) {
 }
 
 /**
- * Generate plain text email template for application status
+ * Helper function to generate plain text email content for applications
  * 
  * @param array $application Application data
- * @param string $status Application status (approved/rejected)
- * @return string Plain text email content
+ * @param string $status Status of the application (approved, rejected)
+ * @return string Plain text content
  */
 function generate_application_email_text($application, $status) {
-    $fullName = $application['first_name'] . ' ' . $application['last_name'];
-    $date = date('F j, Y');
-    
-    $text = "TSPI Membership Application\n\n";
-    $text .= "Dear {$fullName},\n\n";
+    $text = "Dear {$application['first_name']} {$application['last_name']},\n\n";
     
     if ($status === 'approved') {
-        $text .= "We are pleased to inform you that your membership application with TSPI has been APPROVED.\n\n";
-        $text .= "Your application has undergone thorough review by our Insurance Officer and Loan Officer, and we are happy to welcome you as a TSPI member.\n\n";
-        
-        $text .= "Application Details:\n";
-        $text .= "- Application ID: {$application['id']}\n";
-        $text .= "- Approval Date: {$date}\n";
-        $text .= "- Branch: {$application['branch']}\n";
-        $text .= "- CID No: {$application['cid_no']}\n\n";
-        
-        $text .= "Please find attached to this email:\n";
-        $text .= "1. Your official membership application form\n";
-        $text .= "2. Membership certificate\n\n";
-        
-        $text .= "We recommend that you print these documents and keep them for your records.\n\n";
-        
-        $text .= "For any questions or assistance, please contact our branch at [Branch Contact Number] or reply to this email.\n\n";
+        $text .= "We are pleased to inform you that your TSPI membership application has been approved.\n\n";
+        $text .= "Your membership ID is: {$application['cid_no']}\n\n";
+        $text .= "Please find attached your official application form and membership certificate(s).\n\n";
+        $text .= "If you have any questions about your membership, please contact your assigned branch.\n\n";
     } else {
-        $text .= "We regret to inform you that your membership application with TSPI has been REJECTED.\n\n";
-        $text .= "After careful consideration, our team has determined that your application does not meet our current requirements.\n\n";
-        
-        $text .= "Application Details:\n";
-        $text .= "- Application ID: {$application['id']}\n";
-        $text .= "- Decision Date: {$date}\n\n";
-        
-        $text .= "If you would like to discuss this decision or reapply in the future, please contact our branch at [Branch Contact Number] or reply to this email.\n\n";
+        $text .= "We regret to inform you that your TSPI membership application has been rejected.\n\n";
+        $text .= "If you have any questions regarding this decision, please contact us for more information.\n\n";
     }
     
-    $text .= "Thank you for your interest in TSPI.\n\n";
-    $text .= "Best Regards,\nTSPI Team\n\n";
-    $text .= "© " . date('Y') . " TSPI. All rights reserved.\n";
-    $text .= "This is an automated message. Please do not reply directly to this email.";
+    $text .= "Thank you for choosing TSPI.\n\n";
+    $text .= "TSPI Membership Services";
     
     return $text;
+}
+
+/**
+ * Function to send email with attachments
+ * 
+ * @param string $to Recipient email
+ * @param string $subject Email subject
+ * @param string $text_message Plain text message
+ * @param string $html_message HTML message
+ * @param array $attachments Array of attachment file paths
+ * @return boolean True if email sent successfully, false otherwise
+ */
+function send_application_email($to, $subject, $text_message, $html_message, $attachments = []) {
+    global $email_config;
+    
+    // Create email headers
+    $headers = "From: {$email_config['from_name']} <{$email_config['from_email']}>\r\n";
+    $headers .= "Reply-To: {$email_config['reply_to']}\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $boundary = md5(time());
+    $headers .= "Content-Type: multipart/mixed; boundary=\"".$boundary."\"\r\n";
+    
+    // Create email body
+    $message = "--".$boundary."\r\n";
+    $message .= "Content-Type: multipart/alternative; boundary=\"alt-".$boundary."\"\r\n\r\n";
+    
+    // Plain text version
+    $message .= "--alt-".$boundary."\r\n";
+    $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+    $message .= $text_message."\r\n\r\n";
+    
+    // HTML version
+    $message .= "--alt-".$boundary."\r\n";
+    $message .= "Content-Type: text/html; charset=UTF-8\r\n";
+    $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+    $message .= $html_message."\r\n\r\n";
+    $message .= "--alt-".$boundary."--\r\n\r\n";
+    
+    // Attach files
+    foreach ($attachments as $file) {
+        if (file_exists($file) && is_readable($file)) {
+            $attachment = file_get_contents($file);
+            $attachment = chunk_split(base64_encode($attachment));
+            $filename = basename($file);
+            
+            $message .= "--".$boundary."\r\n";
+            $message .= "Content-Type: application/pdf; name=\"".$filename."\"\r\n";
+            $message .= "Content-Transfer-Encoding: base64\r\n";
+            $message .= "Content-Disposition: attachment; filename=\"".$filename."\"\r\n\r\n";
+            $message .= $attachment."\r\n\r\n";
+        }
+    }
+    
+    $message .= "--".$boundary."--";
+    
+    // Send the email
+    return mail($to, $subject, $message, $headers);
 } 

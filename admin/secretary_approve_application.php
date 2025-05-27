@@ -146,55 +146,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Handle email notification if application is approved
             if ($approval_action === 'approved' && !empty($application['email'])) {
                 // Ensure email_config is included
-                require_once '../includes/email_config.php';
-                
-                // Generate temporary PDF files for attachment
-                $temp_dir = '../temp';
-                if (!is_dir($temp_dir)) {
-                    mkdir($temp_dir, 0755, true);
-                }
+                require_once 'email_config.php';
                 
                 // Get plans from application
                 $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
                 
-                // Generate application form PDF
-                $application_pdf = $temp_dir . '/application_' . $id . '.pdf';
-                ob_start();
-                include 'generate_application_pdf.php';
-                ob_end_clean();
-                $pdf->Output($application_pdf, 'F');
-                
-                // Create an array to store all certificate PDFs
-                $certificate_pdfs = [];
-                
-                // Generate certificate PDF for each plan
-                if (!empty($plans)) {
-                    foreach ($plans as $plan) {
-                        $plan_certificate_pdf = $temp_dir . '/certificate_' . $id . '_' . preg_replace('/[^A-Za-z0-9]/', '_', $plan) . '.pdf';
-                        ob_start();
-                        $_GET['plan'] = $plan; // Set plan for certificate generation
-                        include 'generate_certificate.php';
-                        ob_end_clean();
-                        $pdf->Output($plan_certificate_pdf, 'F');
-                        $certificate_pdfs[] = $plan_certificate_pdf;
-                    }
-                } else {
-                    // Generate default certificate if no plans
-                    $default_certificate_pdf = $temp_dir . '/certificate_' . $id . '.pdf';
-                    ob_start();
-                    include 'generate_certificate.php';
-                    ob_end_clean();
-                    $pdf->Output($default_certificate_pdf, 'F');
-                    $certificate_pdfs[] = $default_certificate_pdf;
-                }
-                
-                // Prepare attachments array starting with application PDF
-                $attachments = [$application_pdf];
-                
-                // Add all certificate PDFs to attachments
-                $attachments = array_merge($attachments, $certificate_pdfs);
-                
-                // Generate email content
+                // Set up email message without generating PDFs
                 $html_message = <<<HTML
                 <html>
                 <head>
@@ -212,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p>Dear {$application['first_name']} {$application['last_name']},</p>
                         <p>We are pleased to inform you that your TSPI membership application has been approved.</p>
                         <p>Your membership ID is: <strong>{$application['cid_no']}</strong></p>
-                        <p>Please find attached your official application form and membership certificate(s).</p>
+                        <p>Your official documents can be collected from your local branch office.</p>
                         <p>If you have any questions about your membership, please contact your assigned branch.</p>
                         <div class="footer">
                             <p>Thank you for choosing TSPI.</p>
@@ -226,12 +183,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $text_message = "Dear {$application['first_name']} {$application['last_name']},\n\n"
                     . "We are pleased to inform you that your TSPI membership application has been approved.\n\n"
                     . "Your membership ID is: {$application['cid_no']}\n\n"
-                    . "Please find attached your official application form and membership certificate(s).\n\n"
+                    . "Your official documents can be collected from your local branch office.\n\n"
                     . "If you have any questions about your membership, please contact your assigned branch.\n\n"
                     . "Thank you for choosing TSPI.\n\n"
                     . "TSPI Membership Services";
                 
-                // Send email with attachments
+                // Send email without attachments
                 try {
                     // Define email parameters
                     $to = $application['email'];
@@ -242,41 +199,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $headers .= "Reply-To: support@tspi.org\r\n";
                     $headers .= "MIME-Version: 1.0\r\n";
                     $boundary = md5(time());
-                    $headers .= "Content-Type: multipart/mixed; boundary=\"".$boundary."\"\r\n";
+                    $headers .= "Content-Type: multipart/alternative; boundary=\"".$boundary."\"\r\n";
                     
                     // Create email body
                     $message = "--".$boundary."\r\n";
-                    $message .= "Content-Type: multipart/alternative; boundary=\"alt-".$boundary."\"\r\n\r\n";
-                    
-                    // Plain text version
-                    $message .= "--alt-".$boundary."\r\n";
                     $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
                     $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
                     $message .= $text_message."\r\n\r\n";
                     
-                    // HTML version
-                    $message .= "--alt-".$boundary."\r\n";
+                    $message .= "--".$boundary."\r\n";
                     $message .= "Content-Type: text/html; charset=UTF-8\r\n";
                     $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
                     $message .= $html_message."\r\n\r\n";
-                    $message .= "--alt-".$boundary."--\r\n\r\n";
-                    
-                    // Attach files
-                    foreach ($attachments as $file) {
-                        if (file_exists($file) && is_readable($file)) {
-                            $attachment = file_get_contents($file);
-                            $attachment = chunk_split(base64_encode($attachment));
-                            $filename = basename($file);
-                            
-                            $message .= "--".$boundary."\r\n";
-                            $message .= "Content-Type: application/pdf; name=\"".$filename."\"\r\n";
-                            $message .= "Content-Transfer-Encoding: base64\r\n";
-                            $message .= "Content-Disposition: attachment; filename=\"".$filename."\"\r\n\r\n";
-                            $message .= $attachment."\r\n\r\n";
-                        }
-                    }
-                    
-                    $message .= "--".$boundary."--";
+                    $message .= "--".$boundary."--\r\n\r\n";
                     
                     // Send the email
                     $mail_sent = mail($to, $subject, $message, $headers);
@@ -292,13 +227,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mail_sent = false;
                 }
                 
-                // Clean up temporary files
-                foreach (array_merge([$application_pdf], $certificate_pdfs) as $file) {
-                    if (file_exists($file)) {
-                        @unlink($file);
-                    }
-                }
-                
                 if ($mail_sent) {
                     $_SESSION['message'] = "Application has been approved and an email notification has been sent to the applicant.";
                 } else {
@@ -308,6 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['message'] = "Application has been " . $approval_action . " successfully.";
             }
             
+            // Redirect to the view application page
             redirect('/admin/view_application.php?id=' . $id);
         } catch (Exception $e) {
             $pdo->rollBack();
@@ -317,8 +246,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Use the standard admin layout
-include 'includes/header.php';
 ?>
 
 <!DOCTYPE html>
@@ -633,7 +560,8 @@ include 'includes/header.php';
         
         .preview-links .dropdown-menu {
             position: relative;
-            z-index: 20;
+            z-index: 50;
+            display: inline-block;
         }
         
         .preview-links .dropdown-content {
@@ -641,15 +569,17 @@ include 'includes/header.php';
             left: 0;
             top: 100%;
             background-color: white;
-            min-width: 200px;
+            min-width: 220px;
             box-shadow: var(--shadow-md);
             border-radius: var(--border-radius);
-            z-index: 30;
+            z-index: 1000;
             border: 1px solid var(--gray-200);
             display: none;
+            overflow: visible;
         }
         
-        .preview-links .dropdown-menu:hover .dropdown-content {
+        .preview-links .dropdown-menu:hover .dropdown-content,
+        .preview-links .dropdown-content:hover {
             display: block;
         }
         
@@ -740,16 +670,47 @@ include 'includes/header.php';
             display: flex;
             justify-content: flex-start;
         }
-
-        /* Position dropdown content properly */
-        .dropdown-menu {
+        
+        .admin-card.pdf-preview {
             position: relative;
-            display: inline-block;
+            overflow: visible;
         }
 
-        .dropdown-menu .dropdown-content {
-            left: 0;
-            top: 100%;
+        /* Update textarea CSS to be non-resizable */
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+            resize: none;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start; /* Align items to the start for checkbox */
+            gap: 8px; /* Add gap between checkbox and label */
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-top: 0.2em; /* Adjust checkbox position */
+            width: auto; /* Override default width */
+        }
+
+        /* Add disclaimer box style */
+        .disclaimer-box {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background-color: var(--gray-100);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        /* Fix for dropdown menu in header */
+        .dropdown-menu.show {
+            display: block !important;
         }
     </style>
 </head>
@@ -759,6 +720,7 @@ include 'includes/header.php';
     <?php include 'includes/sidebar.php'; ?>
     
     <main class="admin-main">
+        <?php include 'includes/header.php'; ?>
         <div class="content-container">
             <?php if (!empty($errors)): ?>
                 <div class="message error">
@@ -861,53 +823,22 @@ include 'includes/header.php';
                             </div>
                         </div>
                         
+                        <div class="form-group disclaimer-box">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="disclaimer_agreement" name="disclaimer_agreement" required>
+                                <label for="disclaimer_agreement">
+                                    I, <strong><?php echo htmlspecialchars($current_user['name'] ?? ''); ?></strong>, 
+                                    acting in my capacity as a Secretary, 
+                                    confirm that I have reviewed this application thoroughly and take responsibility for my final decision.
+                                </label>
+                            </div>
+                        </div>
+                        
                         <div class="form-actions">
                             <a href="view_application.php?id=<?php echo $id; ?>" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">Submit Final Decision</button>
                         </div>
                     </form>
-                </div>
-            </div>
-            
-            <div class="admin-card pdf-preview">
-                <div class="admin-card-header">
-                    <h2>Document Previews</h2>
-                </div>
-                <div class="admin-card-body">
-                    <div class="preview-links">
-                        <a href="generate_application_pdf.php?id=<?php echo $id; ?>&mode=preview" target="_blank" class="btn btn-info">
-                            <i class="fas fa-file-pdf"></i> Preview Application Form
-                        </a>
-                        
-                        <?php 
-                        // Get the plans from the application
-                        $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
-                        
-                        // If there are plans, show the dropdown
-                        if (!empty($plans)):
-                        ?>
-                        <div class="dropdown-menu">
-                            <a href="#" class="btn btn-info">
-                                <i class="fas fa-certificate"></i> Preview Certificate <i class="fas fa-caret-down"></i>
-                            </a>
-                            <div class="dropdown-content">
-                                <?php foreach ($plans as $plan): ?>
-                                <a href="generate_certificate.php?id=<?php echo $id; ?>&mode=preview&plan=<?php echo urlencode($plan); ?>" target="_blank" class="dropdown-item">
-                                    <?php echo htmlspecialchars($plan); ?> Certificate
-                                </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <?php else: ?>
-                        <a href="generate_certificate.php?id=<?php echo $id; ?>&mode=preview" target="_blank" class="btn btn-info">
-                            <i class="fas fa-certificate"></i> Preview Certificate
-                        </a>
-                        <?php endif; ?>
-                        
-                        <a href="generate_final_report.php?id=<?php echo $id; ?>&mode=preview" target="_blank" class="btn btn-info">
-                            <i class="fas fa-file-contract"></i> Preview Final Report
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -961,6 +892,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (signaturePad.isEmpty()) {
             e.preventDefault();
             alert('Please provide your signature before submitting.');
+            return;
+        }
+        
+        // Check if disclaimer is checked
+        const disclaimerChecked = document.getElementById('disclaimer_agreement').checked;
+        if (!disclaimerChecked) {
+            e.preventDefault();
+            alert('Please confirm the disclaimer before proceeding.');
             return;
         }
         
