@@ -342,6 +342,62 @@ include 'includes/header.php';
     opacity: 1;
 }
 
+/* Enhanced Login Required Box Styling */
+.login-required-box {
+    /* background-color: #f8f9fa; */
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    /* max-width: 500px; */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login-required-box i {
+    font-size: 3rem;
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.login-required-box p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+.login-required-box .btn-primary {
+    display: inline-block;
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.login-required-box .btn-primary:hover {
+    background-color: var(--dark-navy);
+}
+
+.login-required-box .signup-link {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.login-required-box .signup-link a {
+    color: var(--primary-blue);
+    text-decoration: underline;
+}
+
+.login-required-box .signup-link a:hover {
+    color: var(--dark-navy);
+}
+
 /* Vote Button Styling */
 .comment-votes,
 .content-votes {
@@ -696,7 +752,7 @@ include 'includes/header.php';
         <?php if (!empty($tags)): ?>
             <div class="content-tags">
                 <?php foreach ($tags as $tag): ?>
-                    <a href="tag.php?slug=<?php echo $tag['slug']; ?>" class="tag">#<?php echo sanitize($tag['name']); ?></a>
+                    <span class="tag">#<?php echo sanitize($tag['name']); ?></span>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>

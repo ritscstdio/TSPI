@@ -154,19 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title><?php echo $page_title; ?> - TSPI CMS</title>
     <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
-        /* Additional styles for tag input */
-        .tag-input-container {
-            margin-bottom: 1.5rem;
-        }
-        
-        /* Fix spacing issue at the top */
-        .admin-main {
-            padding-top: 0 !important;
-        }
-        
+        /* Additional styles for content editing */
         .tag-container {
             display: flex;
             flex-wrap: wrap;
@@ -194,6 +184,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .tag-remove:hover {
             color: #dc3545;
         }
+
+        .thumbnail-preview-container {
+            margin-top: 1rem;
+        }
+
+        #thumbnail-preview {
+            max-width: 300px; 
+            border-radius: 4px;
+        }
+
+        .checkbox-group-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Disable resizing for excerpt textarea */
+        #excerpt {
+            resize: none;
+        }
     </style>
 </head>
 <body class="<?php echo $body_class; ?>">
@@ -205,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Add Content</h1>
+                    <h1><i class="fas fa-newspaper"></i> Add Content</h1>
                     <a href="content.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Content</a>
                 </div>
                 
@@ -224,23 +235,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-group">
                             <label for="title">Title</label>
                             <input type="text" id="title" name="title" value="<?php echo isset($_POST['title']) ? sanitize($_POST['title']) : ''; ?>" required>
+                            <small>The title of your content as it will appear on the site.</small>
                         </div>
                         
                         <div class="form-group">
                             <label for="thumbnail_select">Thumbnail Image</label>
                             <div class="thumbnail-controls">
-                                <button type="button" id="thumbnail-select-btn" class="btn btn-secondary">Choose a thumbnail</button>
+                                <button type="button" id="thumbnail-select-btn" class="btn btn-secondary">
+                                    <i class="fas fa-image"></i> Choose a thumbnail
+                                </button>
                                 <input type="hidden" id="thumbnail_select" name="thumbnail_select" value="<?php echo htmlspecialchars($_POST['thumbnail_select'] ?? ''); ?>">
                             </div>
-                            <div class="thumbnail-preview-container" style="margin-top: 1rem;">
-                                <img id="thumbnail-preview" src="<?php echo isset($_POST['thumbnail_select']) ? SITE_URL . '/' . htmlspecialchars($_POST['thumbnail_select']) : '../assets/placeholder-image.jpg'; ?>" alt="Thumbnail Preview" style="max-width: 300px; border-radius: 4px;">
+                            <div class="thumbnail-preview-container">
+                                <img id="thumbnail-preview" src="<?php echo isset($_POST['thumbnail_select']) ? SITE_URL . '/' . htmlspecialchars($_POST['thumbnail_select']) : '../assets/placeholder-image.jpg'; ?>" alt="Thumbnail Preview">
                             </div>
+                            <small>Select a featured image for your content. This will be displayed as a thumbnail.</small>
                         </div>
                         
                         <div class="form-group">
                             <label for="excerpt">Excerpt (optional)</label>
                             <textarea id="excerpt" name="excerpt" rows="3"><?php echo isset($_POST['excerpt']) ? sanitize($_POST['excerpt']) : ''; ?></textarea>
-                            <p class="form-hint">A short summary of the content. If left empty, an excerpt will be generated from the content.</p>
+                            <small>A short summary of the content. If left empty, an excerpt will be generated from the content.</small>
                         </div>
                         
                         <div class="form-group">
@@ -267,6 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <div class="editor-content" id="content-content-editor" contenteditable="true"><?php echo isset($_POST['content']) ? $_POST['content'] : ''; ?></div>
                             <input type="hidden" id="content-content" name="content" value="<?php echo isset($_POST['content']) ? htmlspecialchars($_POST['content']) : ''; ?>">
+                            <small>Use the toolbar to format your content. You can add text, images, links, and more.</small>
                         </div>
                         
                         <div class="form-group">
@@ -279,27 +295,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </div>
                                 <?php endforeach; ?>
                             </div>
+                            <small>Select one or more categories for your content. Categories help organize your content.</small>
                         </div>
                         
-                        <div class="form-group tag-input-container">
+                        <div class="form-group">
                             <label for="tag-input">Tags</label>
                             <input type="text" id="tag-input" placeholder="Add tags... (press Enter or comma after each tag)">
                             <div id="tag-container" class="tag-container"></div>
                             <input type="hidden" id="tags" name="tags" value="<?php echo isset($_POST['tags']) ? sanitize($_POST['tags']) : ''; ?>">
+                            <small>Enter tags separated by commas or press Enter after each tag. Tags help users find related content.</small>
                         </div>
                         
                         <div class="form-group">
                             <label for="status">Status</label>
                             <select id="status" name="status">
                                 <option value="draft" <?php echo (!isset($_POST['status']) || $_POST['status'] === 'draft') ? 'selected' : ''; ?>>Draft</option>
+                                <?php if (in_array($current_user['role'], ['admin', 'moderator'])): ?>
                                 <option value="published" <?php echo (isset($_POST['status']) && $_POST['status'] === 'published') ? 'selected' : ''; ?>>Published</option>
+                                <?php endif; ?>
                                 <option value="archived" <?php echo (isset($_POST['status']) && $_POST['status'] === 'archived') ? 'selected' : ''; ?>>Archived</option>
                             </select>
+                            <small>
+                                Draft: only visible to administrators. 
+                                <?php if (in_array($current_user['role'], ['admin', 'moderator'])): ?>
+                                Published: visible to everyone. 
+                                <?php else: ?>
+                                <span class="text-muted">Only Admins and Moderators can publish content.</span>
+                                <?php endif; ?>
+                                Archived: no longer visible on the site.
+                            </small>
                         </div>
                         
                         <div class="btn-group">
-                            <button type="submit" class="btn btn-primary">Save content</button>
-                            <a href="content.php" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Content</button>
+                            <a href="content.php" class="btn btn-light"><i class="fas fa-times"></i> Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -310,5 +339,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include 'includes/media-modal.php'; ?>
 
     <script src="../assets/js/admin.js"></script>
+    
+    <script>
+    // Fix for thumbnail preview update
+    document.addEventListener('DOMContentLoaded', function() {
+        // Completely replace the original function to ensure it works on first click
+        window.onMediaThumbClick = function(img) {
+            const modal = document.getElementById('media-modal');
+            const thumbnailSelect = document.getElementById('thumbnail_select');
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+            
+            if (window._selectThumbnailMode) {
+                // Update both the hidden input value and the visible preview
+                if (thumbnailSelect) {
+                    thumbnailSelect.value = img.dataset.url;
+                }
+                
+                if (thumbnailPreview) {
+                    // Make sure we're using the full URL for the preview
+                    thumbnailPreview.src = img.dataset.url.startsWith('http') 
+                        ? img.dataset.url 
+                        : '<?php echo SITE_URL; ?>/' + img.dataset.url;
+                }
+                
+                window._selectThumbnailMode = false;
+            } else {
+                document.execCommand('insertImage', false, img.dataset.url);
+            }
+            
+            modal.style.display = 'none';
+        };
+        
+        // Re-bind all media thumbs with our new function
+        window.bindMediaThumbs = function() {
+            document.querySelectorAll('#media-modal .media-thumb').forEach(img => {
+                // Remove any existing click handlers first
+                img.onclick = null;
+                // Add our new click handler
+                img.onclick = function() {
+                    window.onMediaThumbClick(img);
+                };
+            });
+        };
+        
+        // Initialize with our new bindings when media modal opens
+        const thumbnailSelectBtn = document.getElementById('thumbnail-select-btn');
+        if (thumbnailSelectBtn) {
+            thumbnailSelectBtn.addEventListener('click', function() {
+                window._selectThumbnailMode = true;
+                const modal = document.getElementById('media-modal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    window.bindMediaThumbs();
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>

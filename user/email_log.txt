@@ -12,3 +12,35 @@ Regards,
 TSPI Team
 SMTP Send Attempt: SUCCESS
 
+Time: 2025-05-28 22:08:04
+To: wolnatwolnat@gmail.com
+Subject: Verify your new email address
+Headers: From: no-reply@tspi.site
+Message:
+Hello Eugien,
+
+Click to verify your new email:
+http://localhost/TSPI/user/verify.php?code=d2cb14e35ad6bb1f7c51e0dd933fe424
+
+This link will expire in 24 hours.
+
+Regards,
+TSPI Team
+SMTP Send Attempt: SUCCESS
+
+Time: 2025-05-28 22:08:24
+To: wolnatwolnat@gmail.com
+Subject: Verify your new email address
+Headers: From: no-reply@tspi.site
+Message:
+Hello Eugien,
+
+Click to verify your new email:
+http://localhost/TSPI/user/verify.php?code=ddf0ffd056c35d12d0326c24978da303
+
+This link will expire in 24 hours.
+
+Regards,
+TSPI Team
+SMTP Send Attempt: SUCCESS
+
