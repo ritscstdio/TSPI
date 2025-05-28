@@ -704,6 +704,10 @@ if (!file_exists($template_file)) {
                     }
                 }
                 
+                // VERIFIED
+                $pdf->SetXY(26.1, 291);
+                $pdf->Write(0, 'X');
+
                 // Add approval information to page 2
                 // LO name at positions 100,295 and 100,290
                 if (!empty($application['lo_name'])) {
@@ -748,6 +752,7 @@ if (!file_exists($template_file)) {
                     $pdf->SetXY(30, 308);
                     $pdf->Write(0, safe_text($application['blip_mc']));
                 }
+                
                 
                 // Effective date (same as IO signed date)
                 if (!empty($application['io_approval_date'])) {

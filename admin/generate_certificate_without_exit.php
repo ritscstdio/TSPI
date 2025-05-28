@@ -196,56 +196,12 @@ if (!empty($secretaryName)) {
     $pdf->Cell(70, 10, $secretaryName, 0, 1, 'C');
 }
 
-// Write Member Name
-$pdf->SetFont('helvetica', 'B', 22);
-$pdf->SetXY(25, 175);
-$pdf->SetTextColor(0, 0, 0);
-$memberName = $application['first_name'] . ' ' . 
-              ($application['middle_name'] ? substr($application['middle_name'], 0, 1) . '. ' : '') . 
-              $application['last_name'];
-$pdf->Cell(162, 0, safe_text($memberName), 0, 0, 'C');
-
-// Write MC Number
-if (!empty($application[$planMcField])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(75, 187);
-    $pdf->Cell(60, 0, safe_text($application[$planMcField]), 0, 0, 'C');
-}
-
-// Write Certificate Date (Secretary Approval Date)
-if (!empty($application['secretary_approval_date'])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(85, 222);
-    $formattedDate = date('F j, Y', strtotime(safe_text($application['secretary_approval_date'])));
-    $pdf->Cell(40, 0, $formattedDate, 0, 0, 'C');
-}
-
-// Write CID Number
-if (!empty($application['cid_no'])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(129, 206);
-    $pdf->Cell(40, 0, safe_text($application['cid_no']), 0, 0, 'L');
-}
-
-// Write Branch
-if (!empty($application['branch'])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(106, 228);
-    $pdf->Cell(60, 0, safe_text($application['branch']), 0, 0, 'L');
-}
-
-// Secretary signature and name
-if (!empty($application['secretary_signature'])) {
-    $signaturePath = __DIR__ . '/../' . $application['secretary_signature'];
-    if (file_exists($signaturePath)) {
-        $pdf->Image($signaturePath, 128, 245, 35, 0, 'PNG');
-    }
-}
-
-if (!empty($application['secretary_name'])) {
-    $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->SetXY(110, 264);
-    $pdf->Cell(70, 0, safe_text($application['secretary_name']), 0, 0, 'C');
+// Append second page of template if it has more pages
+if (!empty($pageCount) && $pageCount > 1) {
+    // Add a new page and import the second page of the source template
+    $pdf->AddPage();
+    $tplId2 = $pdf->importPage(2);
+    $pdf->useTemplate($tplId2, 0, 0, 297, 210);
 }
 
 // Output the PDF
