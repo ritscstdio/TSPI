@@ -4,3 +4,9 @@
 2025-05-28 01:38:56 [ERROR] Failed to send email notification to ritscstdio@gmail.com for application ID: 34
 2025-05-28 07:41:56 [ERROR] Failed to send email notification to ritscstdio@gmail.com for application ID: 34
 2025-05-28 09:43:41 [ERROR] Failed to send email notification to ritscstdio@gmail.com for application ID: 34
+2025-05-28 16:33:00 [INFO] Application PDF generated: D:\Programs\XAMPP\htdocs\TSPI\uploads\temp/application_34.pdf
+2025-05-28 16:33:00 [INFO] Generating certificate for plan: BLIP...
+2025-05-28 16:33:00 [INFO] Certificate PDF for BLIP created successfully
+2025-05-28 16:33:00 [INFO] Generating certificate for plan: LPIP...
+2025-05-28 16:33:00 [INFO] Certificate PDF for LPIP created successfully
+2025-05-28 16:33:04 [INFO] Email notification sent successfully to ritscstdio@gmail.com for application ID: 34

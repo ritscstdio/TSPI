@@ -1,0 +1,13 @@
+{
+    "to": "ravila.k12042960@umak.edu.ph",
+    "subject": "TSPI Membership Application Approved (TEST)",
+    "time": "2025-05-28 16:07:23",
+    "application_id": "34",
+    "test_mode": "with_attachments",
+    "attachments": [
+        "Application PDF: application_34.pdf",
+        "Certificate PDF (BLIP): certificate_34_BLIP.pdf",
+        "Certificate PDF (LPIP): certificate_34_LPIP.pdf"
+    ],
+    "result": "success"
+}

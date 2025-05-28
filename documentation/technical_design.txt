@@ -1,0 +1,309 @@
+# TSPI WEBSITE TECHNICAL DESIGN DOCUMENTATION
+
+## 3.1 ORGANIZATION STRUCTURE
+### LOGICAL LAYOUT FOR HIERARCHICAL NETWORK
+
+The TSPI website follows a structured hierarchical network layout with the following components:
+
+1. **Web Server (Apache)**: Hosts the PHP application through XAMPP
+2. **Database Server (MySQL)**: Stores all website content, user information, and system data
+3. **Content Delivery**: Static assets stored locally with potential for CDN integration
+4. **Email Service**: Integrated for notifications and verifications
+5. **Development Environment**: Local XAMPP setup for development and testing
+
+## 3.2 COMPANY ROLES AND ACCESS
+
+Based on the system design, the following roles have been defined with specific access levels:
+
+1. **Super Admin**: Full system access with ability to manage all aspects of the website
+2. **Secretary**: Handle administrative tasks and manage specific content areas
+3. **Loan Officers**: Process and manage loan applications
+4. **Insurance Officers**: Handle insurance-related applications and inquiries
+5. **Moderators**: Manage user comments and content submissions
+6. **Clients**: Registered users with access to personalized features
+7. **Visitors**: Public access to general website content
+
+## 4. PROJECT DESIGN
+
+The TSPI website is designed as a PHP-based web application with the following structure:
+
+1. **Frontend**: 
+   - HTML5, CSS3, and JavaScript
+   - Responsive design for multiple device compatibility
+   - Interactive elements using JavaScript
+
+2. **Backend**:
+   - PHP (7.x/8.x) application
+   - MySQL database for data storage
+   - Authentication and authorization system
+
+3. **File Structure**:
+   - Root directory: Primary pages and entry points
+   - `/admin/`: Administrator interface and functions
+   - `/includes/`: Reusable components (header, footer, config)
+   - `/user/`: User account management and authentication
+   - `/assets/`: Static resources (images, CSS, JavaScript)
+   - `/documentation/`: Project documentation
+   - `/uploads/`: User-uploaded content
+   - `/templates/`: PDF and email templates
+
+4. **Key Pages**:
+   - Homepage (`homepage.php`): Main landing page
+   - About Us (`AboutUs.php`): Organization information
+   - Offers (`offers.php`): Services provided by TSPI
+   - User authentication pages (login, signup, profile)
+   - Admin dashboard and management interfaces
+
+## 5. SECURITY REQUIREMENTS
+
+### 5.1 CONTENT MANAGEMENT SYSTEM (CMS) ROLES
+
+The CMS implements a role-based access control system with the following roles:
+
+1. **Admin**: Complete access to all CMS functions
+   - Content creation, editing, and deletion
+   - User management
+   - System configuration
+   - Analytics and reporting
+
+2. **Moderator**: Content and community management
+   - Review and approve comments
+   - Moderate user-generated content
+   - Content editing (limited scope)
+
+3. **Insurance Officer**: Insurance-related management
+   - Process insurance applications
+   - Handle insurance-related inquiries
+   - Generate insurance certificates
+
+4. **Loan Officer**: Loan application processing
+   - Review loan applications
+   - Process loan approvals/rejections
+   - Generate loan documentation
+
+5. **Secretary**: Administrative support
+   - Manage general content
+   - Process applications
+   - Handle document generation
+
+### 5.2 SECURITY ROLES AND ACCESS
+
+The system implements a comprehensive security model:
+
+1. **Admin**: Full site access
+   - Access to all backend functions
+   - User management capabilities
+   - System configuration
+
+2. **Client**: Interact with content
+   - Profile management
+   - Comment/vote on content
+   - Submit applications
+   - Access personalized features
+
+3. **Visitor**: View content only
+   - Browse public pages
+   - View news and information
+   - Contact the organization
+   - Submit inquiries
+
+**Security Features**:
+- **Email verification**: Required for account activation
+- **Password Hashing**: Using PHP's password_hash() with PASSWORD_DEFAULT
+- **Password Policy**: 
+  - Minimum 8 characters
+  - Mix of uppercase and lowercase letters
+  - Numeric characters
+  - Special characters
+- **2FA**: Two-factor authentication for admin accounts
+
+### 5.3 MULTI-FACTOR AUTHENTICATION (MFA)
+
+The system implements two-step authentication for enhanced security:
+
+- Two-factor authentication for admin and client accounts
+- Email-based verification codes
+- Secure session management
+- Login attempt limitations
+
+### 5.4 CLOUDFLARE INTEGRATION
+
+The system is designed to integrate with Cloudflare for additional security:
+
+- Protection against bot abuse for forms and comment sections
+- Traffic management to reduce server load
+- Human verification mechanisms (CAPTCHA)
+- DDoS protection
+
+### 5.5 PROFILE-BASED PDF GENERATION
+
+The system features comprehensive PDF generation capabilities:
+
+- Membership application PDF generation
+- Certificate generation for insurance and loans
+- Customized documents based on user profile data
+- Integration with TCPDF library for PDF handling
+- Template-based generation with dynamic content insertion
+
+## 6. ADDITIONAL FUNCTIONS
+
+### 6.1 REVISABLE USER PROFILE
+
+Users have full control over their profile information:
+
+- Edit personal details (name, contact information)
+- Update email address with verification
+- Change password with strict validation
+- Profile picture upload and management
+- Account status monitoring
+
+### 6.2 EMAIL NOTIFICATION
+
+The system implements comprehensive email notifications:
+
+- Account verification emails
+- Password reset links
+- Application status updates
+- Comment and content engagement notifications
+- Administrative alerts
+- System integrated with PHPMailer for reliable delivery
+
+### 6.3 VOTING AND COMMENT SYSTEM
+
+A Reddit-inspired voting and comment system is implemented:
+
+- Upvote/downvote functionality for content and comments
+- Comment threading and nested replies
+- Vote score calculation and tracking
+- Comment moderation tools for administrators
+- Trending content calculation based on engagement metrics
+
+## 7. CONTENT MANAGEMENT SYSTEM
+
+### 7.1 ADMIN DASHBOARD
+
+The admin dashboard provides comprehensive content management:
+
+- Content creation, editing, and publishing
+- Media library management
+- User management interface
+- Article engagement metrics and reporting
+- System status monitoring
+- Role-based access controls
+
+### 7.2 CONTENT TRACKING
+
+The system tracks engagement metrics for all content:
+
+- Vote counts (upvotes/downvotes)
+- Comment activity
+- View counts and user engagement
+- Social sharing statistics
+- Content performance analytics
+- Trending content identification
+
+### 7.3 CONTENT MANAGEMENT SYSTEM (CMS) CONTROLLED FAQs
+
+The FAQ system is fully manageable through the CMS:
+
+- Admin interface for FAQ creation and management
+- Category-based organization
+- Review and approval workflow
+- Searchable FAQ database
+- Dynamic FAQ rendering on the frontend
+
+## 8. INTEGRATION
+
+### 8.1 CLOUD SERVICE PROVIDER
+
+The system is designed for potential cloud hosting:
+
+- Compatibility with major cloud platforms
+- Scalable architecture for varying load requirements
+- Database backup and migration capabilities
+- Environment configuration for cloud deployment
+
+### 8.2 CLOUDFLARE
+
+Cloudflare integration provides:
+
+- Enhanced security protection
+- Content delivery optimization
+- SSL/TLS encryption
+- Bot protection and traffic filtering
+- Cache management for improved performance
+
+### 8.3 CAPTCHA
+
+The system integrates CAPTCHA verification:
+
+- Form submission protection
+- Account creation verification
+- Login attempt security
+- API-based implementation
+- Accessible alternatives for all users
+
+## 9. MITIGATION
+
+### 9.1 CLOUD BACKUP AND DISASTER RECOVERY
+
+The system includes comprehensive data protection:
+
+- Regular automated database backups
+- File system backups for uploaded content
+- Versioned content management
+- Disaster recovery procedures
+- Backup rotation and retention policies
+- Quick restoration capabilities
+
+## 10. USER ROLES AND PERMISSIONS
+
+The system implements the following user roles with specific permissions:
+
+1. **Visitors**: 
+   - Browse public content
+   - View announcements
+   - Access contact information
+   - Submit inquiries
+
+2. **Applicants**:
+   - Submit forms and applications
+   - Track application status
+   - Receive notifications
+
+3. **Clients (Logged-in Users)**:
+   - View personalized content
+   - Submit comments
+   - Upvote/downvote content
+   - Receive email notifications
+   - Manage profile information
+
+4. **Super Admin**:
+   - Manage all website content
+   - Control user accounts
+   - Configure system settings
+   - Access all administrative functions
+
+5. **Secretary**:
+   - Process applications
+   - Generate documents
+   - Manage routine content updates
+   - Handle administrative tasks
+
+6. **Loan Officers**:
+   - Process loan applications
+   - Generate loan documents
+   - Manage loan-related content
+   - Contact applicants
+
+7. **Moderators**:
+   - Review and approve comments
+   - Moderate user-generated content
+   - Flag inappropriate content
+   - Manage community interactions
+
+8. **Insurance Officer**:
+   - Process insurance applications
+   - Generate insurance certificates
+   - Manage insurance-related content
+   - Handle insurance inquiries 
