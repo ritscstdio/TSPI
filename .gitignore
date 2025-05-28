@@ -2,6 +2,7 @@ node_modules
 
 # Environment and secrets files
 .env
+email_secrets.php
 user/email_secrets.php
 user/email_debug.txt
 user/email_log.txt
