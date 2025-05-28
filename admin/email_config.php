@@ -7,9 +7,9 @@
 
 // Email settings
 $email_config = [
-    'from_email' => 'noreply@tspi.org',
+    'from_email' => 'no-reply@tspi.site',
     'from_name' => 'TSPI Membership',
-    'reply_to' => 'support@tspi.org',
+    'reply_to' => 'reply@tspi.site',
     'smtp_host' => '', // Leave blank to use PHP's mail() function
     'smtp_port' => 587,
     'smtp_username' => '',

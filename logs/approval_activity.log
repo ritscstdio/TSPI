@@ -44,3 +44,4 @@
 2025-05-28 22:58:47 [INFO] Application ID: 35 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":"095"}
 2025-05-28 22:59:02 [INFO] Application ID: 35 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TSPI CORPORATE CENTER BRANCH","center_no":""}
 2025-05-28 22:59:26 [INFO] Application ID: 35 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-28 23:41:21 [INFO] Application ID: 35 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}

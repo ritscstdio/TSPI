@@ -210,9 +210,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail_sent = send_email($to, $subject, $html_message);
             
             // For development/testing purposes - always display the verification link
-            $show_verification_link = true; // Set to false in production
+            // Set to false by default, but can be toggled via keyboard shortcut (Alt+D)
+            $show_verification_link = false;
             
             $success = true;
+            
+            // Redirect to homepage after successful registration
+            $_SESSION['message'] = "Registration successful! Please check your email to verify your account.";
+            redirect('/homepage.php');
         } catch (PDOException $e) {
             $pdo->rollBack();
             $errors[] = "Registration failed: " . $e->getMessage();
@@ -408,6 +413,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (passwordInput.value && strength < 60) {
             e.preventDefault();
             alert('Please create a stronger password (at least green level)');
+        }
+    });
+
+    // Add a keyboard shortcut to show verification link (Alt+D)
+    document.addEventListener('keydown', function(e) {
+        // Alt+D to toggle developer tools
+        if (e.altKey && e.key === 'd') {
+            e.preventDefault();
+            const devSection = document.querySelector('.dev-verification-link');
+            if (devSection) {
+                devSection.style.display = devSection.style.display === 'none' ? 'block' : 'none';
+            } else {
+                console.log('Developer section not available on this page');
+            }
         }
     });
 });
