@@ -39,7 +39,7 @@ $users = $stmt->fetchAll();
             <?php include 'includes/header.php'; ?>
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Users</h1>
+                    <h1>Admin Users</h1>
                 </div>
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>

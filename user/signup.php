@@ -100,17 +100,114 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Send verification email
             $verify_url = SITE_URL . "/user/verify.php?code=" . $verification_code;
             $to = $email;
-            $subject = "Verify your email address";
+            $subject = "[TSPI] Please Verify Your Email Address";
+            
+            // Check if logo exists
+            $logo_path = "/assets/images/logo.png";
+            $logo_url = file_exists($_SERVER['DOCUMENT_ROOT'] . $logo_path) ? 
+                        SITE_URL . $logo_path : 
+                        "";
+            
+            // Create HTML version of the email with better formatting
+            $html_message = "
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Verify Your TSPI Account</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header {
+            background-color: #4a69bd;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid #eeeeee;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4a69bd;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999999;
+        }
+        .verification-link {
+            word-break: break-all;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        " . (!empty($logo_url) ? "<div class='logo'><img src='" . $logo_url . "' alt='TSPI Logo' style='max-height: 60px;'></div>" : "<div style='text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px;'>TSPI</div>") . "
+        <div class='header'>
+            <h1>Verify Your Email Address</h1>
+        </div>
+        <div class='content'>
+            <p>Hello " . htmlspecialchars($username) . ",</p>
+            <p>Thank you for creating an account with TSPI. To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
+            <div style='text-align: center;'>
+                <a href='" . $verify_url . "' class='button'>Verify My Email</a>
+            </div>
+            <p>This verification link will expire in 24 hours.</p>
+            <p>If the button doesn't work, you can copy and paste the following URL into your browser:</p>
+            <div class='verification-link'>" . $verify_url . "</div>
+            <p>If you didn't create this account, you can safely ignore this email.</p>
+            <p>Best regards,<br>The TSPI Team</p>
+        </div>
+        <div class='footer'>
+            <p>&copy; " . date('Y') . " TSPI. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+";
+
+            // Plain text version as fallback
             $message = "Hello $username,\n\n";
-            $message .= "Thank you for signing up. Please verify your email address by clicking the link below:\n\n";
+            $message .= "Thank you for creating an account with TSPI. To complete your registration, please verify your email address using the link below:\n\n";
             $message .= $verify_url . "\n\n";
             $message .= "This link will expire in 24 hours.\n\n";
-            $message .= "Regards,\nTSPI Team";
-            $headers = "From: " . ADMIN_EMAIL;
+            $message .= "If you didn't create this account, you can safely ignore this email.\n\n";
+            $message .= "Best regards,\nThe TSPI Team ";
             
             // Attempt to send email - use the configured mailer
             require_once __DIR__ . '/email_config.php';
-            $mail_sent = send_email($to, $subject, $message, $headers);
+            $mail_sent = send_email($to, $subject, $html_message);
             
             // For development/testing purposes - always display the verification link
             $show_verification_link = true; // Set to false in production

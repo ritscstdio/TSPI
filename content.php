@@ -438,6 +438,32 @@ include 'includes/header.php';
     transform: scale(0.9);
 }
 
+.comment-reply-btn, .comment-delete-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.comment-reply-btn {
+    color: var(--primary-blue);
+}
+
+.comment-reply-btn:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.comment-delete-btn {
+    color: #dc3545;
+}
+
+.comment-delete-btn:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
 .vote-btn.active.upvote-btn,
 .vote-btn.active.content-upvote-btn {
     color: var(--primary-blue);
@@ -819,7 +845,7 @@ include 'includes/header.php';
             <?php if (!empty($comments)): ?>
                 <div class="comments-list">
                     <?php foreach ($comments as $comment): ?>
-                        <div class="comment">
+                        <div class="comment" data-comment-id="<?php echo $comment['id']; ?>">
                             <div class="comment-content">
                                 <div class="comment-header">
                                     <?php if ($comment['profile_picture']): ?>
@@ -851,6 +877,15 @@ include 'includes/header.php';
                                             </button>
                                         </div>
                                         <button class="comment-reply-btn" data-comment-id="<?php echo $comment['id']; ?>">Reply</button>
+                                        <?php 
+                                        // Show delete button if user is admin/mod or comment owner
+                                        $user = get_logged_in_user();
+                                        $can_delete = ($comment['user_id'] == $user['id']) || 
+                                                     (in_array($user['role'], ['admin', 'moderator', 'comment_moderator']));
+                                        if ($can_delete): 
+                                        ?>
+                                        <button class="comment-delete-btn" data-comment-id="<?php echo $comment['id']; ?>">Delete</button>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                                 <?php if (is_logged_in()): ?>
@@ -874,7 +909,7 @@ include 'includes/header.php';
                                     echo '<div class="comment-replies-container">'; // Optional: a container for all replies if needed for specific styling
                                     foreach ($replies as $reply): 
                                 ?>
-                                    <div class="comment comment-reply">
+                                    <div class="comment comment-reply" data-comment-id="<?php echo $reply['id']; ?>">
                                         <div class="comment-content">
                                             <div class="comment-header">
                                                 <?php if ($reply['profile_picture']): ?>
@@ -888,6 +923,16 @@ include 'includes/header.php';
                                             <div class="comment-body">
                                                 <p><?php echo nl2br(sanitize($reply['content'])); ?></p>
                                             </div>
+                                            <?php if (is_logged_in()): 
+                                                $user = get_logged_in_user();
+                                                $can_delete_reply = ($reply['user_id'] == $user['id']) || 
+                                                                   (in_array($user['role'], ['admin', 'moderator', 'comment_moderator']));
+                                                if ($can_delete_reply): 
+                                            ?>
+                                            <div class="comment-actions">
+                                                <button class="comment-delete-btn" data-comment-id="<?php echo $reply['id']; ?>">Delete</button>
+                                            </div>
+                                            <?php endif; endif; ?>
                                         </div>
                                     </div>
                                 <?php 
@@ -958,6 +1003,39 @@ include 'includes/header.php';
                 
                 // Toggle this reply form's visibility
                 replyForm.classList.toggle('visible');
+            });
+        });
+
+        // Add event handlers for delete buttons
+        document.querySelectorAll('.comment-delete-btn').forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to delete this comment?')) {
+                    const commentId = this.getAttribute('data-comment-id');
+                    fetch(`comment-actions.php?action=delete&comment_id=${commentId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove the comment from the DOM
+                            const commentElement = document.querySelector(`.comment[data-comment-id="${commentId}"]`);
+                            if (commentElement) {
+                                commentElement.remove();
+                                showToast('Comment deleted successfully');
+                            }
+                        } else {
+                            showToast(data.message || 'Error deleting comment');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Error deleting comment');
+                    });
+                }
             });
         });
 

@@ -62,7 +62,32 @@ $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.
         font-size: 1.1rem; 
         line-height: 1.7;
         color: var(--text-gray);
-        margin-bottom: 0; 
+        margin-bottom: 1.5rem; /* Added spacing below paragraph */
+    }
+
+    /* Membership Button Styles */
+    .membership-btn {
+        display: inline-block;
+        background-color: var(--primary-blue, #1B3FAB);
+        color: white;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(27, 63, 171, 0.2);
+        margin-bottom: 1.5rem;
+    }
+    
+    .membership-btn:hover {
+        background-color: var(--dark-navy, #0a2a80);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(27, 63, 171, 0.3);
+    }
+    
+    .membership-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(27, 63, 171, 0.2);
     }
 
     /* Client Story Carousel Styles */
@@ -352,6 +377,7 @@ $sql = "SELECT a.id, a.title, a.slug, a.thumbnail, a.content, a.published_at, a.
             <div class="intro-text-content">
                  <h1>Our Commitment to Empowerment</h1> 
                  <p>TSPI empowers microentrepreneurs through integrated financial and social programs rooted in spiritual values, financial literacy, and livelihood skills development. These programs foster responsible business practices, community solidarity, and collective responsibility.</p>
+                 <a href="<?php echo SITE_URL; ?>/user/membership-form.php" class="membership-btn">Become a Member</a>
             </div>
 
             <?php if (!empty($client_stories)): ?>

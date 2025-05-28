@@ -60,3 +60,9 @@
 2025-05-28 21:19:47 [DEBUG] Update succeeded. Role: loan_officer, Status field: lo_approved, Action: approved, App ID: 34
 2025-05-28 21:19:47 [DEBUG] Verification check - Field lo_approved is now set to: approved
 2025-05-28 21:20:12 [DEBUG] Verification check - Secretary approval now set to: approved, Status: approved
+2025-05-28 22:58:47 [DEBUG] Update succeeded. Role: loan_officer, Status field: lo_approved, Action: approved, App ID: 35
+2025-05-28 22:58:47 [DEBUG] Verification check - Field lo_approved is now set to: approved
+2025-05-28 22:59:02 [DEBUG] Preserving center_no: 095
+2025-05-28 22:59:02 [DEBUG] Update succeeded. Role: insurance_officer, Status field: io_approved, Action: approved, App ID: 35
+2025-05-28 22:59:02 [DEBUG] Verification check - Field io_approved is now set to: approved
+2025-05-28 22:59:26 [DEBUG] Verification check - Secretary approval now set to: approved, Status: approved

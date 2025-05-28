@@ -48,14 +48,32 @@ function send_email($to, $subject, $message, $headers = '') {
         $mail->Port       = 587;
         
         // Recipients - use the verified sender
-        $mail->setFrom('no-reply@tspi.site', 'Ketano');
-        $mail->addReplyTo('reply@tspi.site', 'Ketano');
+        $mail->setFrom('no-reply@tspi.site', 'TSPI (Ketano)');
+        $mail->addReplyTo('reply@tspi.site', 'TSPI Support (Ketano)');
         $mail->addAddress($to);
         
+        // Spam prevention headers
+        $mail->addCustomHeader('Precedence', 'bulk');
+        $mail->addCustomHeader('X-Auto-Response-Suppress', 'OOF, DR, RN, NRN, AutoReply');
+        $mail->addCustomHeader('Auto-Submitted', 'auto-generated');
+        $mail->addCustomHeader('X-Mailer', 'PHPMailer ' . $mail::VERSION . ' (https://github.com/PHPMailer/PHPMailer)');
+        
+        // Check if message is already HTML
+        $isHTML = (strpos($message, '<html') !== false);
+        
         // Content
-        $mail->isHTML(false);
+        $mail->isHTML($isHTML);
         $mail->Subject = $subject;
-        $mail->Body    = $message;
+        
+        if ($isHTML) {
+            $mail->Body = $message;
+            // Create plain text version by stripping HTML
+            $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>', '<br />', '</p>'], "\n", $message));
+        } else {
+            // Convert plain text to HTML and keep the plain text as AltBody
+            $mail->AltBody = $message;
+            $mail->Body = nl2br(htmlspecialchars($message));
+        }
         
         $result = $mail->send();
         file_put_contents($debug_log, "RESULT: Email sent successfully\n", FILE_APPEND);
@@ -131,8 +149,8 @@ function send_email_with_attachments($to, $subject, $text_message, $html_message
         $mail->Port       = 587;
         
         // Recipients - use the verified sender
-        $mail->setFrom('no-reply@tspi.site', 'Ketano');
-        $mail->addReplyTo('reply@tspi.site', 'Ketano');
+        $mail->setFrom('no-reply@tspi.site', 'TSPI (Ketano)');
+        $mail->addReplyTo('reply@tspi.site', 'TSPI Support (Ketano)');
         $mail->addAddress($to);
         
         // Content

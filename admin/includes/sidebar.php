@@ -73,7 +73,11 @@ $user_role = $current_admin ? $current_admin['role'] : '';
                 <li class="nav-header"><span>Administration</span></li>
                 
                 <li class="<?php echo in_array($current_page, ['users.php', 'add-user.php', 'edit-user.php']) ? 'active' : ''; ?>">
-                    <a href="users.php"><i class="fas fa-users"></i> <span>Users</span></a>
+                    <a href="users.php"><i class="fas fa-users-cog"></i> <span>Admins</span></a>
+                </li>
+                
+                <li class="<?php echo $current_page === 'members.php' ? 'active' : ''; ?>">
+                    <a href="members.php"><i class="fas fa-users"></i> <span>Members</span></a>
                 </li>
             <?php endif; ?>
         </ul>

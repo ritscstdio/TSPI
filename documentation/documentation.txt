@@ -222,6 +222,70 @@ For details on the new upvote and pinning features in the comment system, includ
 - If you see errors related to `Unknown column 'content_id'` or similar, verify the SQL migration scripts were executed properly.
 - Some PHP files may still reference the old column name `article_id`. These files need to be edited to reference `content_id` instead, or you need to maintain the old column name in your database.
 
+## Email Verification System
+
+The website implements an email verification system for new user registrations. This ensures that users provide valid email addresses and helps prevent spam accounts.
+
+### Implementation Details:
+
+1. **Verification Process**
+   - When a user registers, their account is created with an 'inactive' status
+   - A unique verification code is generated and stored in the `email_verifications` table
+   - An HTML email containing a verification link is sent to the user's email address
+   - The verification link expires after 24 hours
+   - Once verified, the user's account status is updated to 'active'
+
+2. **Spam Prevention Measures**
+   - HTML emails with proper formatting to avoid spam filters
+   - Important anti-spam headers added to all emails:
+     - `Precedence: bulk`
+     - `X-Auto-Response-Suppress: OOF, DR, RN, NRN, AutoReply`
+     - `Auto-Submitted: auto-generated`
+     - `X-Mailer: PHPMailer [version] (https://github.com/PHPMailer/PHPMailer)`
+   - Both HTML and plain text versions included in all emails (multipart/alternative)
+   - Clear subject lines with identifying prefix: "[TSPI] Please Verify Your Email Address"
+   - Professional design with proper branding and clear call-to-action buttons
+   - SendGrid SMTP service used for improved deliverability
+
+3. **Technical Implementation**
+   - PHPMailer used for sending emails via SendGrid SMTP
+   - Email debugging and logging capabilities for troubleshooting
+   - Fallback mechanism to display verification link on screen if email sending fails
+
+4. **Future Improvements**
+   - Consider implementing DKIM, SPF, and DMARC for better email authentication
+   - Monitor email deliverability and bounce rates
+   - Add ability to resend verification emails if not received
+
+The email system can be found in `user/email_config.php` and the verification email is sent from `user/signup.php`.
+
+## Membership System
+
+The website offers a membership system that allows users to register and become members of TSPI.
+
+### User Journey:
+
+1. **Registration and Verification**
+   - Users register on the signup page (`user/signup.php`)
+   - Email verification confirms the user's identity
+   - Verified users can then apply for membership
+
+2. **Membership Application**
+   - A prominent "Become a Member" button is available on the Offers page (`offers.php`)
+   - The button redirects to the membership form (`user/membership-form.php`)
+   - The membership form collects comprehensive user information for TSPI membership
+
+3. **Admin Management**
+   - Administrators can view and manage members through a dedicated admin page (`admin/members.php`)
+   - The admin interface allows viewing member details and deleting members if necessary
+   - Members are separate from administrators in the system
+
+### Technical Implementation:
+   - Membership button styled with visual feedback (hover and active states)
+   - Admin members page includes filtering by role and status
+   - Pagination implemented for large numbers of members
+   - Modal view for detailed member information
+
 ## Membership Form
 
 The website includes a comprehensive membership form for users to join TSPI. This feature allows users to sign up through two main entry points:
