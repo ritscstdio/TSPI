@@ -25,3 +25,4 @@
 2025-05-28 01:29:26 [INFO] Application ID: 34 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TAGUIG","center_no":"094"}
 2025-05-28 01:29:42 [INFO] Application ID: 34 | Role: insurance_officer | Action: approve | Data: {"officer_name":"Maria Clara Reyes","status_field":"io_approved","has_signature":true,"branch":"TAGUIG","center_no":""}
 2025-05-28 01:38:54 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-28 07:41:54 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}

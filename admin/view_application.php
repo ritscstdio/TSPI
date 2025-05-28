@@ -213,6 +213,30 @@ endif;
                                     <label>Center No:</label>
                                     <span><?php echo display_value($application['center_no']); ?></span>
                                 </div>
+                                
+                                <?php if (!empty($application['blip_mc']) || !empty($application['lpip_mc']) || !empty($application['lmip_mc'])): ?>
+                                <!-- Display MC numbers if they exist -->
+                                <?php if (!empty($application['blip_mc'])): ?>
+                                <div class="info-item">
+                                    <label>BLIP MC No:</label>
+                                    <span><?php echo display_value($application['blip_mc']); ?></span>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($application['lpip_mc'])): ?>
+                                <div class="info-item">
+                                    <label>LPIP MC No:</label>
+                                    <span><?php echo display_value($application['lpip_mc']); ?></span>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($application['lmip_mc'])): ?>
+                                <div class="info-item">
+                                    <label>LMIP MC No:</label>
+                                    <span><?php echo display_value($application['lmip_mc']); ?></span>
+                                </div>
+                                <?php endif; ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="info-group">

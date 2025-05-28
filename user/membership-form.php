@@ -298,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Dynamically build INSERT statement to match parameter count
         $columns = [
-            'fk_user_id','branch','cid_no','center_no','plans','classification',
+            'fk_user_id','branch','cid_no','center_no','blip_mc','lpip_mc','lmip_mc','plans','classification',
             'first_name','middle_name','last_name','gender','civil_status',
             'birthdate','age','birth_place','email','cell_phone','contact_no','nationality',
             'id_number','other_valid_ids','mothers_maiden_last_name','mothers_maiden_first_name','mothers_maiden_middle_name',
@@ -346,6 +346,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $branch,                                              // branch
             $cid_no,                                              // cid_no
             $center_no,                                           // center_no
+            null,                                                 // blip_mc
+            null,                                                 // lpip_mc
+            null,                                                 // lmip_mc
             $plansJson,                                           // plans
             $classificationJson,                                  // classification
             $first_name,                                          // first_name

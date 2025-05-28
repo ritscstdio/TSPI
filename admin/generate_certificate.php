@@ -3,6 +3,7 @@
  * Generate Membership Certificate
  * 
  * This file generates a PDF certificate for approved members
+ * Uses predefined templates based on plan selection
  */
 
 require_once '../includes/config.php';
@@ -33,45 +34,11 @@ if ($application['io_approved'] !== 'approved' || $application['lo_approved'] !=
     redirect('/admin/view_application.php?id=' . $id);
 }
 
-// Include TCPDF
+// Include required libraries
 require_once '../vendor/autoload.php';
+use setasign\Fpdi\Tcpdf\Fpdi;
 
-// Create new PDF document
-$pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
-
-// Set document information
-$pdf->SetCreator('TSPI CMS');
-$pdf->SetAuthor('TSPI Admin');
-$pdf->SetTitle('TSPI Membership Certificate');
-$pdf->SetSubject('Membership Certificate');
-
-// Remove default header/footer
-$pdf->setPrintHeader(false);
-$pdf->setPrintFooter(false);
-
-// Set margins
-$pdf->SetMargins(0, 0, 0);
-$pdf->SetAutoPageBreak(true, 0);
-
-// Add a page
-$pdf->AddPage();
-
-// Set background image if exists (placeholder for now)
-if (file_exists('../assets/images/certificate_bg.jpg')) {
-    $pdf->Image('../assets/images/certificate_bg.jpg', 0, 0, 297, 210, '', '', '', false, 300, '', false, false, 0);
-} else {
-    // If no background image exists, create a decorative border
-    $pdf->SetLineWidth(1.5);
-    $pdf->SetDrawColor(0, 86, 179); // TSPI blue color
-    $pdf->Rect(10, 10, 277, 190);
-    
-    // Inner border
-    $pdf->SetLineWidth(0.5);
-    $pdf->SetDrawColor(0, 56, 119); // Darker blue
-    $pdf->Rect(15, 15, 267, 180);
-}
-
-// Check if a specific plan is requested
+// Get plan from query parameter or from application data
 $plan = $_GET['plan'] ?? null;
 
 // Get all plans if not passed as a parameter
@@ -82,99 +49,138 @@ if (!$plan && !empty($application['plans'])) {
     }
 }
 
-// Get plans for certificate type
-$plans = json_decode($application['plans'], true) ?: [];
-$certificateType = $plan ?: (!empty($plans) ? implode(' & ', $plans) : 'Membership');
+// Format the member's full name
+$fullName = strtoupper($application['first_name'] . ' ' . 
+    (!empty($application['middle_name']) ? $application['middle_name'] . ' ' : '') . 
+    $application['last_name']);
 
-// Set the certificate background and content based on the plan
-if ($plan) {
-    // Load different certificate templates based on plan
-    switch (strtolower($plan)) {
-        case 'msbl':
-            $pdf->Image('../assets/images/certificates/msbl_template.png', 0, 0, 297, 210);
-            break;
-        case 'damayan':
-            $pdf->Image('../assets/images/certificates/damayan_template.png', 0, 0, 297, 210);
-            break;
-        case 'insurance':
-            $pdf->Image('../assets/images/certificates/insurance_template.png', 0, 0, 297, 210);
-            break;
-        case 'kabuhayan':
-            $pdf->Image('../assets/images/certificates/kabuhayan_template.png', 0, 0, 297, 210);
-            break;
-        default:
-            // Default certificate template
-            $pdf->Image('../assets/images/certificates/default_template.png', 0, 0, 297, 210);
-    }
-} else {
-    // Use default template if no specific plan is selected
-    $pdf->Image('../assets/images/certificates/default_template.png', 0, 0, 297, 210);
+// Format secretary name in uppercase
+$secretaryName = !empty($application['secretary_name']) 
+    ? strtoupper($application['secretary_name']) 
+    : '';
+
+// Get MC number based on plan
+$mcNumber = '';
+switch (strtoupper($plan)) {
+    case 'BLIP':
+        $mcNumber = $application['blip_mc'] ?? '';
+        break;
+    case 'LPIP':
+        $mcNumber = $application['lpip_mc'] ?? '';
+        break;
+    case 'LMIP':
+        $mcNumber = $application['lmip_mc'] ?? '';
+        break;
 }
 
-// Set font
-$pdf->SetFont('helvetica', 'B', 30);
-$pdf->SetTextColor(0, 56, 119); // Dark blue
+// Format date as MM/DD/YYYY
+$approvalDate = !empty($application['secretary_approval_date']) 
+    ? date('m/d/Y', strtotime($application['secretary_approval_date'])) 
+    : date('m/d/Y'); // Default to today if not approved yet
 
-// Title
-$pdf->SetY(40);
-$pdf->Cell(0, 0, 'CERTIFICATE OF MEMBERSHIP', 0, 1, 'C');
+// Branch information
+$branch = !empty($application['branch']) ? $application['branch'] : 'MAIN BRANCH';
 
-// TSPI Program/Plan name
-$pdf->SetFont('helvetica', 'B', 16);
-$pdf->SetY(55);
-$pdf->Cell(0, 0, $certificateType . ' PROGRAM', 0, 1, 'C');
+// Determine which template to use
+$templatePath = '';
+switch (strtoupper($plan)) {
+    case 'BLIP':
+        $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-BLIP.pdf';
+        break;
+    case 'LPIP':
+        $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-LPIP.pdf';
+        break;
+    case 'LMIP':
+        $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-LMIP.pdf';
+        break;
+    default:
+        $templatePath = '../templates/membership_template.pdf';
+}
 
-// Content
-$pdf->SetY(80);
-$pdf->SetFont('helvetica', '', 12);
+// Check if template exists
+if (!file_exists($templatePath)) {
+    $_SESSION['message'] = "Certificate template not found. Please contact system administrator.";
+    redirect('/admin/view_application.php?id=' . $id);
+}
+
+// President signature path
+$presidentSignaturePath = '../templates/president_signature.png';
+
+// Create new PDF instance
+$pdf = new Fpdi('L', 'mm', 'A4', true, 'UTF-8', false);
+
+// Set document information
+$pdf->SetCreator('TSPI CMS');
+$pdf->SetAuthor('TSPI Admin');
+$pdf->SetTitle('TSPI Membership Certificate - ' . $fullName);
+$pdf->SetSubject('Membership Certificate for ' . $plan);
+
+// Remove default header/footer
+$pdf->setPrintHeader(false);
+$pdf->setPrintFooter(false);
+
+// Add a page
+$pdf->AddPage();
+
+// Import the template PDF
+$pageCount = $pdf->setSourceFile($templatePath);
+$tplId = $pdf->importPage(1); // Import first page of template
+$pdf->useTemplate($tplId, 0, 0, 297, 210); // Use template on full page (A4 landscape)
+
+// Set font for adding content
+$pdf->SetFont('helvetica', 'B', 12);
 $pdf->SetTextColor(0, 0, 0);
-$pdf->Cell(0, 0, 'This certifies that', 0, 1, 'C');
 
-// Member name
-$pdf->SetY(95);
-$pdf->SetFont('helvetica', 'B', 24);
-$pdf->SetTextColor(0, 56, 119); // Dark blue
-$pdf->Cell(0, 0, strtoupper($application['first_name'] . ' ' . $application['middle_name'] . ' ' . $application['last_name']), 0, 1, 'C');
+// Add member name - Position will need adjustment based on actual template
 
-// Content continued
-$pdf->SetY(110);
-$pdf->SetFont('helvetica', '', 12);
-$pdf->SetTextColor(0, 0, 0);
-$pdf->Cell(0, 0, 'has been accepted as a member of', 0, 1, 'C');
+$pdf->SetFont('helvetica', 'B', 15);
+$pdf->SetXY(40, 56);
+$pdf->Cell(220, 10, $fullName, 0, 1, 'C');
+$pdf->SetFont('helvetica', 'B', 12);
+// Add MC number if available
+if (!empty($mcNumber)) {
+    $pdf->SetXY(129, 28);
+    $pdf->Cell(220, 10, $mcNumber, 0, 1, 'C');
+}
 
-// Organization name
-$pdf->SetY(120);
-$pdf->SetFont('helvetica', 'B', 18);
-$pdf->Cell(0, 0, 'TSPI MEMBERSHIP PROGRAM', 0, 1, 'C');
+// Add branch name
+$pdf->SetXY(130, 35);
+$pdf->Cell(220, 10, $branch, 0, 1, 'C');
 
-// Current date
-$pdf->SetY(135);
-$pdf->SetFont('helvetica', '', 12);
-$pdf->Cell(0, 0, 'Starting ' . date('F j, Y'), 0, 1, 'C');
+// Add date (MM/DD/YYYY)
 
-// Signature section
-$pdf->SetY(160);
+$pdf->SetFont('helvetica', 'B', 14);
+$pdf->SetXY(88, 114);
+$pdf->Cell(50, 10, $approvalDate, 0, 1, 'L');
+$pdf->SetFont('helvetica', 'B', 12);
 
-// Left signature - Secretary
-$pdf->SetX(60);
-$pdf->Line(30, 160, 90, 160);
-$pdf->SetFont('helvetica', 'B', 11);
-$pdf->Cell(60, 0, 'Secretary', 0, 0, 'C');
+    // Add president's signature if exists
+if (file_exists($presidentSignaturePath)) {
+    // Position will need adjustment based on actual template
+    $pdf->Image($presidentSignaturePath, 185, 135, 70, '', 'PNG');
+    // Add aDD pRESIDENT
+    $pdf->SetXY(180, 142);
+    $pdf->Cell(70, 10, "RENE E. CRISTOBAL", 0, 1, 'C');
 
-// Right signature - Branch Manager (placeholder)
-$pdf->SetX(180);
-$pdf->Line(150, 160, 210, 160);
-$pdf->Cell(60, 0, 'Branch Manager', 0, 1, 'C');
+}
 
-// Certificate ID and details at bottom
-$pdf->SetY(180);
-$pdf->SetFont('helvetica', '', 8);
-$pdf->Cell(0, 0, 'Certificate No: TSPI-' . sprintf('%06d', $application['id']) . ' | CID No: ' . $application['cid_no'], 0, 1, 'C');
-$pdf->SetY(185);
-$pdf->Cell(0, 0, 'Issue Date: ' . date('m/d/Y'), 0, 1, 'C');
+
+
+// Add secretary's signature if exists
+if (!empty($application['secretary_signature']) && file_exists('../' . $application['secretary_signature'])) {
+    // Position will need adjustment based on actual template
+    $pdf->Image('../' . $application['secretary_signature'], 55, 130, 70, '', 'PNG');
+}
+
+// Add secretary name
+if (!empty($secretaryName)) {
+    $pdf->SetXY(50, 142);
+    $pdf->Cell(70, 10, $secretaryName, 0, 1, 'C');
+}
+
 
 // Output the PDF
-$filename = 'TSPI_Certificate_' . $application['id'] . '_' . date('Ymd') . '.pdf';
+$filename = 'TSPI_Certificate_' . $application['id'] . '_' . $plan . '_' . date('Ymd') . '.pdf';
 
 if ($mode === 'download') {
     // Output as download

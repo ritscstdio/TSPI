@@ -127,6 +127,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $id
             ]);
             
+            // Generate and assign MC numbers if approved
+            if ($approval_action === 'approved') {
+                // Get the plans from application
+                $plansStmt = $pdo->prepare("SELECT plans FROM members_information WHERE id = ?");
+                $plansStmt->execute([$id]);
+                $plansData = $plansStmt->fetch(PDO::FETCH_ASSOC);
+                $plans = json_decode($plansData['plans'] ?? '[]', true);
+                
+                // Function to generate a unique 6-digit number
+                function generateUniqueMcNumber($pdo, $columnName) {
+                    $isUnique = false;
+                    $mcNumber = '';
+                    
+                    while (!$isUnique) {
+                        // Generate a random 6-digit number
+                        $mcNumber = sprintf('%06d', rand(1, 999999));
+                        
+                        // Check if it exists already
+                        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM members_information WHERE $columnName = ?");
+                        $checkStmt->execute([$mcNumber]);
+                        $exists = (int)$checkStmt->fetchColumn() > 0;
+                        
+                        if (!$exists) {
+                            $isUnique = true;
+                        }
+                    }
+                    
+                    return $mcNumber;
+                }
+                
+                // Initialize update columns and values
+                $updateColumns = [];
+                $updateValues = [];
+                
+                // Check each plan and generate a number if needed
+                if (in_array('BLIP', $plans)) {
+                    $blipMc = generateUniqueMcNumber($pdo, 'blip_mc');
+                    $updateColumns[] = 'blip_mc = ?';
+                    $updateValues[] = $blipMc;
+                }
+                
+                if (in_array('LPIP', $plans)) {
+                    $lpipMc = generateUniqueMcNumber($pdo, 'lpip_mc');
+                    $updateColumns[] = 'lpip_mc = ?';
+                    $updateValues[] = $lpipMc;
+                }
+                
+                if (in_array('LMIP', $plans)) {
+                    $lmipMc = generateUniqueMcNumber($pdo, 'lmip_mc');
+                    $updateColumns[] = 'lmip_mc = ?';
+                    $updateValues[] = $lmipMc;
+                }
+                
+                // If there are MC numbers to update, run the update query
+                if (!empty($updateColumns)) {
+                    $updateValues[] = $id; // Add ID for WHERE clause
+                    $updateQuery = "UPDATE members_information SET " . implode(', ', $updateColumns) . " WHERE id = ?";
+                    $updateStmt = $pdo->prepare($updateQuery);
+                    $updateStmt->execute($updateValues);
+                    
+                    // Log the MC numbers generation
+                    log_message("Generated MC numbers for application ID: {$id}", 'info', 'approval');
+                }
+            }
+            
             log_approval_activity($id, 'secretary', $approval_action, [
                 'secretary_name' => $secretary_name,
                 'has_signature' => !empty($signature_db_path),

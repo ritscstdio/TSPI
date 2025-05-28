@@ -687,10 +687,88 @@ if (!file_exists($template_file)) {
                     // Check if the file exists at the resolved path before attempting to insert
                     if ($resolvedImagePathMember && file_exists($resolvedImagePathMember)) {
                         $pdf->Image($resolvedImagePathMember, 95, 247.5, 40, 20);
-                    } else {
-     
                     }
                 }
+                
+                // Add approval information to page 2
+                // LO name at positions 100,295 and 100,290
+                if (!empty($application['lo_name'])) {
+                    $pdf->SetXY(85, 294);
+                    $pdf->Write(0, $application['lo_name']);
+        
+                                       // LO signature image
+                if (!empty($application['lo_signature'])) {
+                    $dbPathLO = $application['lo_signature'];
+                    $cleanedDbPathLO = ltrim($dbPathLO, '/');
+                    $imagePathLO = '../' . $cleanedDbPathLO;
+                    $resolvedImagePathLO = realpath($imagePathLO);
+                    
+                    if ($resolvedImagePathLO && file_exists($resolvedImagePathLO)) {
+                        // Insert at two positions as specified
+                        $pdf->Image($resolvedImagePathLO, 87, 285, 30, 15);
+                    }
+                }
+                }
+                
+                // Secretary name and signature
+                if (!empty($application['secretary_name'])) {
+                    $pdf->SetXY(150, 294);
+                    $pdf->Write(0, $application['secretary_name']);
+                }
+                
+                if (!empty($application['secretary_signature'])) {
+                               
+                    // Insert the actual secretary signature image
+                    $dbPathSecretary = $application['secretary_signature'];
+                    $cleanedDbPathSecretary = ltrim($dbPathSecretary, '/');
+                    $imagePathSecretary = '../' . $cleanedDbPathSecretary;
+                    $resolvedImagePathSecretary = realpath($imagePathSecretary);
+                    
+                    if ($resolvedImagePathSecretary && file_exists($resolvedImagePathSecretary)) {
+                        $pdf->Image($resolvedImagePathSecretary, 150, 288, 30, 15);
+                    }
+                }
+                
+                // BLIP MC number
+                if (!empty($application['blip_mc'])) {
+                    $pdf->SetXY(30, 308);
+                    $pdf->Write(0, $application['blip_mc']);
+                }
+                
+                // Effective date (same as IO signed date)
+                if (!empty($application['io_approval_date'])) {
+                    $pdf->SetXY(80, 308);
+                    $pdf->Write(0, date('m/d/Y', strtotime($application['io_approval_date'])));
+                }
+                
+                // IO information
+                if (!empty($application['io_name'])) {
+                    $pdf->SetXY(120, 308);
+                    $pdf->Write(0, $application['io_name']);
+                    
+                    if (!empty($application['io_signature'])) {
+                                   
+                        // Insert the actual IO signature image
+                        $dbPathIO = $application['io_signature'];
+                        $cleanedDbPathIO = ltrim($dbPathIO, '/');
+                        $imagePathIO = '../' . $cleanedDbPathIO;
+                        $resolvedImagePathIO = realpath($imagePathIO);
+                        
+                        if ($resolvedImagePathIO && file_exists($resolvedImagePathIO)) {
+                            $pdf->Image($resolvedImagePathIO, 120, 300, 30, 15);
+                        }
+                    }
+                }
+                
+          
+                
+                // IO signed date
+                if (!empty($application['io_approval_date'])) {
+                    $pdf->SetXY(170, 308);
+                    $pdf->Write(0, date('m/d/Y', strtotime($application['io_approval_date'])));
+                }
+                
+ 
                
                 // Signed Date Member
                 $pdf->SetY(257);
