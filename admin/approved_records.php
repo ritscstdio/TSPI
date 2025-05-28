@@ -23,26 +23,7 @@ $user_role = $current_user['role'] ?? '';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            display: inline-block;
-        }
-        .status-pending { 
-            background-color: #ffe58f; 
-            color: #856404;
-        }
-        .status-approved { 
-            background-color: #b7eb8f; 
-            color: #52c41a;
-        }
-        .status-rejected { 
-            background-color: #ffccc7; 
-            color: #f5222d; 
-        }
+ 
         .approval-badges {
             display: flex;
             flex-direction: column;

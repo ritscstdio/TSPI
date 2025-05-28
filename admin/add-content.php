@@ -162,6 +162,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 1.5rem;
         }
         
+        /* Fix spacing issue at the top */
+        .admin-main {
+            padding-top: 0 !important;
+        }
+        
         .tag-container {
             display: flex;
             flex-wrap: wrap;

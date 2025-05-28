@@ -34,9 +34,7 @@ a {
 a:hover {
     color: var(--accent-color);
 }
-main {
-    padding-top: var(--navbar-height);
-}
+
 .navbar {
     position: fixed;
     top: 0;

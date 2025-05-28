@@ -4,11 +4,11 @@ $body_class = "admin-applications-page";
 require_once '../includes/config.php';
 require_admin_login();
 
-// Fetch all applications
+// Fetch all PENDING applications
 $stmt = $pdo->query("SELECT * FROM members_information WHERE status = 'pending' ORDER BY created_at DESC");
 $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get current user role
+// Get current user (though not strictly used for filtering in this specific list view)
 $current_user = get_admin_user();
 $user_role = $current_user['role'] ?? '';
 ?>
@@ -16,35 +16,15 @@ $user_role = $current_user['role'] ?? '';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?> - TSPI CMS</title>
     <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
-    <style>
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            display: inline-block;
-        }
-        .status-pending { 
-            background-color: #ffe58f; 
-            color: #856404;
-        }
-        .status-approved { 
-            background-color: #b7eb8f; 
-            color: #52c41a;
-        }
-        .status-rejected { 
-            background-color: #ffccc7; 
-            color: #f5222d; 
-        }
-        .approval-badges {
+   
+   <style>
+           .approval-badges {
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -127,7 +107,7 @@ $user_role = $current_user['role'] ?? '';
                             <tbody>
                                 <?php if (empty($applications)): ?>
                                     <tr>
-                                        <td colspan="7">No applications found.</td>
+                                        <td colspan="7">No approved records found.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($applications as $app): ?>
@@ -172,8 +152,8 @@ $user_role = $current_user['role'] ?? '';
                     </div>
                 </div>
             </div>
-        </main>
     </div>
+    
     
     <?php include 'includes/footer.php'; ?>
     

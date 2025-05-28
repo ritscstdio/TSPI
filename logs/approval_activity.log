@@ -39,3 +39,5 @@
 2025-05-28 17:22:05 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
 2025-05-28 17:27:31 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
 2025-05-28 17:54:01 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}
+2025-05-28 21:19:47 [INFO] Application ID: 34 | Role: loan_officer | Action: approve | Data: {"officer_name":"Jose Rizal Mercado","status_field":"lo_approved","has_signature":true,"branch":"TAGUIG","center_no":""}
+2025-05-28 21:20:12 [INFO] Application ID: 34 | Role: secretary | Action: approved | Data: {"secretary_name":"Maria Santos","has_signature":true,"send_email":"yes"}

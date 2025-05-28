@@ -13,7 +13,7 @@ $status_filter_options = [
 ];
 $filter_status = isset($_GET['status_filter']) && array_key_exists($_GET['status_filter'], $status_filter_options)
                     ? $_GET['status_filter']
-                    : '';
+                    : 'pending';
 
 // Build WHERE clause for status
 $where_sql = "";
@@ -28,7 +28,7 @@ $sql = "SELECT c.*, a.title AS content_title, a.slug AS content_slug
         FROM comments c 
         JOIN content a ON c.content_id = a.id 
         $where_sql 
-        ORDER BY c.pinned DESC, c.vote_score DESC, c.posted_at DESC";
+        ORDER BY c.pinned DESC, c.posted_at DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $comments = $stmt->fetchAll();

@@ -40,22 +40,137 @@ $recent_comments = $stmt->fetchAll();
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
+        :root {
+            --primary-color: #0070f3;
+            --primary-light: #e3f2fd;
+            --primary-dark: #005bc1;
+            --accent-color: #00c853;
+            --danger-color: #f44336;
+            --warning-color: #ffc107;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --border-radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
         /* Fix spacing issue in dashboard */
         .dashboard-container {
-            padding-top: 0; /* Remove extra top padding */
+            padding: 20px; /* Add consistent padding */
         }
         
+        /* Page header styling to match content.php */
+        .page-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
         /* Make stat boxes more responsive */
         .stat-boxes {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            display: flex;
+            flex-wrap: nowrap;
             gap: 20px;
             margin-bottom: 30px;
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 10px; /* Add padding for scrollbar */
         }
         
         .stat-box {
+            flex: 1;
+            min-width: 250px;
             height: 100%;
             min-height: 130px;
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        /* Custom scrollbar for stat boxes */
+        .stat-boxes::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .stat-boxes::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .stat-boxes::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        
+        .stat-boxes::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+        
+        /* Additional style to fix the header spacing issue */
+        .admin-main {
+            padding-top: 0 !important;
+        }
+        
+        /* Dashboard section styling */
+        .dashboard-section {
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-section:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        
+        /* Hide scrollbar on larger screens */
+        @media (min-width: 1200px) {
+            .stat-boxes {
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
         }
         
         /* Improve table responsiveness */
@@ -85,7 +200,9 @@ $recent_comments = $stmt->fetchAll();
             <?php include 'includes/header.php'; ?>
             
             <div class="dashboard-container">
-                <h1>Dashboard</h1>
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                </div>
                 
                 <?php if ($message = get_flash_message()): ?>
                     <div class="message"><?php echo $message; ?></div>

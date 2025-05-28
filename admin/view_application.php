@@ -102,7 +102,6 @@ endif;
     <title><?php echo $page_title; ?> - TSPI CMS</title>
     <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body class="<?php echo $body_class; ?>">
@@ -904,24 +903,14 @@ endif;
         text-transform: uppercase;
         margin-right: 10px;
     }
-    .status-pending { 
-        background-color: #ffe58f; 
-        color: #856404;
-    }
-    .status-approved { 
-        background-color: #b7eb8f; 
-        color: #52c41a;
-    }
-    .status-rejected { 
-        background-color: #ffccc7; 
-        color: #f5222d; 
-    }
+  
     .status-info {
         font-size: 14px;
         color: #555;
     }
     .approval-actions {
         margin-top: 20px;
+        margin-bottom: 20px;
     }
     
     .certificate-dropdown {

@@ -15,8 +15,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.getElementById('menuToggle');
     
     if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function() {
+        menuToggle.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default behavior
+            
+            // Force sidebar to be visible
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+            }
+            
             sidebar.classList.toggle('active');
+            
+            // Ensure the body doesn't have the collapsed class when sidebar is active
+            if (sidebar.classList.contains('active')) {
+                body.classList.remove('body-sidebar-collapsed');
+            }
         });
     }
     

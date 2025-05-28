@@ -306,4 +306,132 @@ The system implements the following user roles with specific permissions:
    - Process insurance applications
    - Generate insurance certificates
    - Manage insurance-related content
-   - Handle insurance inquiries 
+   - Handle insurance inquiries
+
+## 8. MICROINSURANCE SYSTEM
+
+### 8.1 MICROINSURANCE APPLICATION FORM
+
+The Microinsurance Application Form is a comprehensive web-based system that allows TSPI clients to apply for microinsurance coverage through the organization's website.
+
+**Technical Components:**
+
+1. **Form Interface**:
+   - Implemented in `user/membership-form.php`
+   - Responsive design supporting various device sizes
+   - Multi-step form with progressive disclosure of fields
+   - Client-side validation using JavaScript
+   - Server-side validation with PHP
+
+2. **Data Structure**:
+   - Stores application data in the `members_information` table
+   - Captures comprehensive personal information:
+     - Basic personal details (name, gender, civil status, birthdate)
+     - Contact information (address, phone, email)
+     - ID verification
+     - Business information
+     - Spouse details (if married)
+     - Beneficiary information (up to 5 beneficiaries)
+
+3. **Insurance Plans**:
+   - Supports multiple insurance products:
+     - BLIP (Basic Life Insurance Plan)
+     - LPIP (Loan Protection Insurance Plan)
+     - LMIP (Life with Medical Insurance Plan)
+   - Stored as JSON array in the `plans` field
+
+4. **Classification**:
+   - Categorizes applications by program type (e.g., TKP)
+   - Stored as JSON array in the `classification` field
+
+5. **Document Management**:
+   - Digital signature capture and storage
+   - ID verification document upload
+   - Secure file storage in `uploads` directory
+
+6. **Duplicate Prevention**:
+   - Checks for existing applications by email and user ID
+   - Prevents duplicate submissions
+   - Shows appropriate status messages for pending/approved applications
+
+7. **Integration**:
+   - Ties to user authentication system
+   - Automatically assigns unique CID numbers
+   - Generates PDF certificates for approved applications
+
+8. **Security Measures**:
+   - Input sanitization
+   - CSRF protection
+   - Validation of all form inputs
+   - Access control requiring user login
+
+### 8.2 MICROINSURANCE APPROVAL SYSTEM
+
+The Microinsurance Approval System provides a structured workflow for reviewing and processing microinsurance applications through a multi-level approval process.
+
+**Technical Components:**
+
+1. **Role-Based Access Control**:
+   - Restricted to authorized administrators with specific roles:
+     - Insurance Officer (IO)
+     - Loan Officer (LO)
+     - Secretary
+   - Each role has specific permissions and approval capabilities
+
+2. **Approval Workflow**:
+   - Three-stage approval process:
+     1. Insurance Officer review and approval
+     2. Loan Officer review and approval
+     3. Secretary final verification and approval
+   - Implemented in `admin/approve_application.php`
+
+3. **Application Status Tracking**:
+   - Tracks application through various states:
+     - `pending`: Initial state for new applications
+     - `approved`: Application fully approved
+     - `rejected`: Application rejected at any stage
+   - Per-officer approval status tracking:
+     - `io_approved`: Insurance Officer approval status
+     - `lo_approved`: Loan Officer approval status
+     - `secretary_approved`: Secretary approval status
+
+4. **Branch Assignment**:
+   - Officers assign applications to specific branches
+   - Branch data pulled from `branches` table
+   - Center number assignment for client tracking
+
+5. **Officer Verification**:
+   - Digital signature capture for each approving officer
+   - Officer name recording
+   - Timestamp of approval actions
+   - Notes/comments field for approval context
+
+6. **Automated Status Updates**:
+   - Database triggers (`before_member_approval`, `before_member_update`)
+   - Automatically updates application status when all approvals complete
+   - Automatically updates application status if any rejection occurs
+
+7. **Certificate Generation**:
+   - Generates membership certificates for approved applications
+   - Different certificate templates based on plan type:
+     - BLIP: Basic Life Insurance Plan certificate
+     - LPIP: Loan Protection Insurance Plan certificate
+     - LMIP: Life with Medical Insurance Plan certificate
+   - Templates stored in `templates` directory
+
+8. **Audit Trail**:
+   - Comprehensive logging of all approval actions
+   - Captures officer name, timestamp, and action
+   - Logs stored in system for accountability and tracking
+
+9. **Notification System**:
+   - Email notifications to applicants upon status changes
+   - Internal notifications for pending applications
+   - Alerts for applications requiring attention
+
+10. **Insurance ID Generation**:
+    - Automatic generation of unique insurance membership certificate numbers
+    - Format-specific identifiers for each insurance product:
+      - BLIP_MC: Basic Life Insurance Plan membership certificate
+      - LPIP_MC: Loan Protection Insurance Plan membership certificate
+      - LMIP_MC: Life with Medical Insurance Plan membership certificate 

@@ -58,18 +58,20 @@ $filter_status = isset($_GET['status_filter']) && array_key_exists($_GET['status
                     ? $_GET['status_filter']
                     : '';
 
-// Define sort options (status sorting removed)
+// Define sort options
 $sort_options = [
     'published_at_desc' => 'Date (Newest First)',
     'published_at_asc' => 'Date (Oldest First)',
     'title_asc' => 'Title (A-Z)',
     'title_desc' => 'Title (Z-A)',
+    'votes_desc' => 'Votes (Highest First)',
+    'votes_asc' => 'Votes (Lowest First)',
 ];
 $current_sort_order = isset($_GET['sort_order']) && array_key_exists($_GET['sort_order'], $sort_options) 
                         ? $_GET['sort_order'] 
                         : 'published_at_desc'; // Default sort order
 
-// Build ORDER BY clause (status cases removed)
+// Build ORDER BY clause
 $order_by_clause = "ORDER BY ";
 switch ($current_sort_order) {
     case 'published_at_asc':
@@ -80,6 +82,12 @@ switch ($current_sort_order) {
         break;
     case 'title_desc':
         $order_by_clause .= "a.title DESC";
+        break;
+    case 'votes_desc':
+        $order_by_clause .= "vote_count DESC";
+        break;
+    case 'votes_asc':
+        $order_by_clause .= "vote_count ASC";
         break;
     case 'published_at_desc':
     default:
@@ -118,7 +126,10 @@ $total_contents = $stmt->fetchColumn();
 $total_pages = ceil($total_contents / $items_per_page);
 
 // Get contents for current page
-$contents_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role FROM content a JOIN administrators u ON a.author_id = u.id";
+$contents_sql = "SELECT DISTINCT a.*, u.name as author_name, u.email as author_email, u.role as author_role, 
+                    (SELECT COUNT(*) FROM content_votes WHERE content_id = a.id) as vote_count 
+                FROM content a 
+                JOIN administrators u ON a.author_id = u.id";
 if ($filter_category) {
     $contents_sql .= " JOIN content_categories ac ON a.id = ac.content_id";
 }
@@ -141,6 +152,56 @@ $contents = $stmt->fetchAll();
     <link rel="icon" type="image/png" href="../src/assets/favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <style>
+        /* Fix spacing issue at the top */
+        .admin-main {
+            padding-top: 0 !important;
+        }
+        
+        /* Improve filter form responsiveness */
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .filter-form label {
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .filter-form select {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .filter-form button {
+            margin-left: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-form label {
+                margin-bottom: 5px;
+            }
+            
+            .filter-form select {
+                width: 100%;
+            }
+            
+            .filter-form button {
+                width: 100%;
+                margin-top: 10px;
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 <body class="<?php echo $body_class; ?>">
     <div class="admin-container">
@@ -163,27 +224,33 @@ $contents = $stmt->fetchAll();
                 
                 <!-- Category Filter Form -->
                 <form method="get" class="filter-form">
-                    <label for="category-filter">Filter by Category:</label>
-                    <select id="category-filter" name="category">
-                        <option value="">All Categories</option>
-                        <?php foreach ($categories_list as $cat): ?>
-                            <option value="<?php echo $cat['id']; ?>" <?php echo $filter_category == $cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="filter-item">
+                        <label for="category-filter">Filter by Category:</label>
+                        <select id="category-filter" name="category">
+                            <option value="">All Categories</option>
+                            <?php foreach ($categories_list as $cat): ?>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo $filter_category == $cat['id'] ? 'selected' : ''; ?>><?php echo sanitize($cat['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
-                    <label for="status-filter" style="margin-left: 1rem;">Filter by Status:</label>
-                    <select id="status-filter" name="status_filter">
-                        <?php foreach ($status_filter_options as $key => $value): ?>
-                            <option value="<?php echo $key; ?>" <?php echo $filter_status == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="filter-item">
+                        <label for="status-filter">Filter by Status:</label>
+                        <select id="status-filter" name="status_filter">
+                            <?php foreach ($status_filter_options as $key => $value): ?>
+                                <option value="<?php echo $key; ?>" <?php echo $filter_status == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
-                    <label for="sort-order" style="margin-left: 1rem;">Sort by:</label>
-                    <select id="sort-order" name="sort_order">
-                        <?php foreach ($sort_options as $key => $value): ?>
-                            <option value="<?php echo $key; ?>" <?php echo $current_sort_order == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="filter-item">
+                        <label for="sort-order">Sort by:</label>
+                        <select id="sort-order" name="sort_order">
+                            <?php foreach ($sort_options as $key => $value): ?>
+                                <option value="<?php echo $key; ?>" <?php echo $current_sort_order == $key ? 'selected' : ''; ?>><?php echo $value; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
                     <button type="submit" class="btn btn-light">Apply Filters</button>
                 </form>
@@ -196,6 +263,7 @@ $contents = $stmt->fetchAll();
                                     <th>Title</th>
                                     <th>Author</th>
                                     <th>Status</th>
+                                    <th>Votes</th>
                                     <th>Date</th>
                                     <th>Actions</th>
                                 </tr>
@@ -221,6 +289,7 @@ $contents = $stmt->fetchAll();
                                                     <?php echo ucfirst($content['status']); ?>
                                                 </span>
                                             </td>
+                                            <td><?php echo (int)$content['vote_count']; ?></td>
                                             <td><?php echo date('M j, Y', strtotime($content['published_at'])); ?></td>
                                             <td class="actions">
                                                 <a href="edit-content.php?id=<?php echo $content['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>

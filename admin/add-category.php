@@ -3,6 +3,7 @@ $page_title = "Add Category";
 $body_class = "admin-add-category-page";
 require_once '../includes/config.php';
 require_admin_login();
+require_admin_role(['admin','moderator']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'] ?? '';
@@ -44,19 +45,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php include 'includes/header.php'; ?>
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Add Category</h1>
+                    <h1><i class="fas fa-folder-plus"></i> Add Category</h1>
                     <a href="categories.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Categories</a>
                 </div>
+
                 <?php if (!empty($errors)): ?>
-                    <div class="message error"><ul><?php foreach ($errors as $e): ?><li><?php echo $e; ?></li><?php endforeach; ?></ul></div>
-                <?php endif; ?>
-                <form action="" method="post" class="form">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" value="<?php echo sanitize($name ?? ''); ?>" required>
+                    <div class="message error">
+                        <ul>
+                            <?php foreach ($errors as $e): ?>
+                                <li><?php echo $e; ?></li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
-                    <button type="submit" class="btn btn-primary">Add Category</button>
-                </form>
+                <?php endif; ?>
+
+                <div class="admin-form-container">
+                    <form action="" method="post" class="admin-form">
+                        <div class="form-group">
+                            <label for="name">Category Name</label>
+                            <input type="text" id="name" name="name" value="<?php echo sanitize($name ?? ''); ?>" required>
+                            <small>The name is how it appears on your site</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="slug">Slug (Optional)</label>
+                            <input type="text" id="slug" name="slug" value="<?php echo sanitize($slug ?? ''); ?>">
+                            <small>The "slug" is the URL-friendly version of the name. It is usually all lowercase and contains only letters, numbers, and hyphens. Leave blank for automatic generation.</small>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Add Category</button>
+                            <a href="categories.php" class="btn btn-light"><i class="fas fa-times"></i> Cancel</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     </div>

@@ -543,8 +543,6 @@ body {
     .header {
         background: var(--white) !important;
         box-shadow: 0 4px 18px rgba(26, 61, 143, 0.13);
-        border-bottom: 3px solid var(--secondary-gold);
-        padding-bottom: 0.5rem;
     }
     .header-top {
         display: none !important;
@@ -559,7 +557,7 @@ body {
     }
     .logo img {
         height: 60px;
-        margin: 0.5rem 0 0.5rem 1rem;
+        margin: 1.5rem 0 0.5rem 1rem;
         padding: 0;
     }
     .main-nav {

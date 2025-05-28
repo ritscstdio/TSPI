@@ -872,14 +872,26 @@ tbody tr:hover {
         transform: translateX(-100%);
         position: fixed;
         z-index: 1000;
+        width: 100%;
+        max-width: var(--sidebar-width);
     }
     
     .admin-sidebar.active {
         transform: translateX(0);
     }
     
+    .admin-sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+    
     .admin-main {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .body-sidebar-collapsed .admin-main {
+        margin-left: 0 !important;
+        width: 100% !important;
     }
     
     .menu-toggle {

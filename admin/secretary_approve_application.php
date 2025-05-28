@@ -480,54 +480,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
         }
 
-        .admin-main {
-            padding: 1rem;
-        }
-        
-        .content-container {
-            padding: 20px;
-        }
-
-        .approval-form {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .page-header {
-            margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--gray-300);
-        }
-        
-        .page-header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-        }
-        
-        .page-header .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--border-radius);
-            background-color: var(--gray-200);
-            color: var(--gray-800);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: 1px solid var(--gray-300);
-        }
-        
-        .page-header .btn:hover {
-            background-color: var(--gray-300);
-            box-shadow: var(--shadow-sm);
-        }
-
         .admin-card {
             margin-bottom: 2rem;
             padding: 0;
@@ -1156,11 +1108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="admin-card">
                 <div class="admin-card-header">
                     <h2>Secretary Final Approval</h2>
-                    <?php if (!empty($application['email'])): ?>
-                    <a href="test_email.php?id=<?php echo $id; ?>" target="_blank" class="btn btn-info" style="float: right;">
-                        <i class="fas fa-envelope"></i> Test Email System
-                    </a>
-                    <?php endif; ?>
+                   
                 </div>
                 <div class="admin-card-body">
                     <form method="post" id="final-approval-form">
