@@ -674,46 +674,19 @@ endif;
                 <div class="action-buttons-bottom modern-buttons">
                     <a href="applications.php" class="btn-secondary">Back to List</a>
                     
+                    <?php if ($application['io_approved'] === 'approved' && $application['lo_approved'] === 'approved'): ?>
+                        <?php echo $certificate_dropdown_html; ?>
+                    <?php endif; ?>
                     <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-primary">
                         <i class="fas fa-eye"></i> View PDF
                     </a>
-                    
                     <!-- Add links to new document types if IO and LO have both approved -->
                     <?php if ($application['io_approved'] === 'approved' && $application['lo_approved'] === 'approved'): ?>
-                    <a href="generate_final_report.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-info">
-                        <i class="fas fa-file-contract"></i> View Final Report
-                    </a>
-                    
-                    <?php echo $certificate_dropdown_html; ?>
+                        <a href="generate_final_report.php?id=<?php echo $application['id']; ?>&mode=preview" class="btn-info">
+                            <i class="fas fa-file-contract"></i> View Final Report
+                        </a>
                     <?php endif; ?>
-                    
-                    <a href="generate_application_pdf.php?id=<?php echo $application['id']; ?>&mode=preview&debug=1" class="btn-warning">
-                        <i class="fas fa-bug"></i> Debug PDF Grid
-                    </a>
                 </div>
-                
-                <!-- Debug information for approval conditions -->
-                <?php if ($user_role === 'secretary'): ?>
-                <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px;">
-                    <h4>Debug Information (only visible to Secretary)</h4>
-                    <ul style="margin: 0; padding-left: 20px;">
-                        <li>User Role: <?php echo $user_role; ?></li>
-                        <li>IO Approved: <?php echo $application['io_approved']; ?></li>
-                        <li>LO Approved: <?php echo $application['lo_approved']; ?></li>
-                        <li>Secretary Approved: <?php echo $application['secretary_approved']; ?></li>
-                        <li>Can Final Approve: <?php echo $can_final_approve ? 'Yes' : 'No'; ?></li>
-                        <li>Final Approve Condition: 
-                            ($user_role === 'secretary' && 
-                            $application['io_approved'] === 'approved' && 
-                            $application['lo_approved'] === 'approved' && 
-                            $application['secretary_approved'] !== 'approved')
-                        </li>
-                    </ul>
-                    <p style="margin-top: 10px;">
-                        <strong>Note:</strong> For the "Final Approval" button to appear, all conditions must be met.
-                    </p>
-                </div>
-                <?php endif; ?>
             </div>
         </main>
     </div>
@@ -855,6 +828,8 @@ endif;
         border: none;
         border-radius: 4px;
         cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
     }
     
     .btn-success {

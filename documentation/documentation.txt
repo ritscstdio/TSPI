@@ -680,3 +680,8 @@ PDF Generation Issues:
 Application Processing Issues:
 - Check database connectivity in includes/config.php
 - Verify admin user permissions in database
+
+*   **Button underlines removed** - Removed text-decoration from primary buttons across admin (no underlines).
+*   **Hidden debug tools in view_application.php** - Removed Debug PDF Grid link and secretary debug panel to hide debugging.
+*   **Fixed undefined variable in generate_certificate.php** - Replaced $planMcField with $mcNumber for MC number output.
+*   **Certificate PDF improvements** - Simplified certificate PDF generation to maintain clean template display with minimal overlaid text, and added support for multi-page certificate templates.
