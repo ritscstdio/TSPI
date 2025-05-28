@@ -1,11 +1,11 @@
 <?php
-$page_title = "Membership Applications";
-$body_class = "admin-applications-page";
+$page_title = "Rejected Applications";
+$body_class = "admin-rejected-applications-page";
 require_once '../includes/config.php';
 require_admin_login();
 
-// Fetch all applications
-$stmt = $pdo->query("SELECT * FROM members_information WHERE status = 'pending' ORDER BY created_at DESC");
+// Fetch all rejected applications
+$stmt = $pdo->query("SELECT * FROM members_information WHERE status = 'rejected' OR io_approved = 'rejected' OR lo_approved = 'rejected' OR secretary_approved = 'rejected' ORDER BY created_at DESC");
 $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get current user role
@@ -91,6 +91,14 @@ $user_role = $current_user['role'] ?? '';
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
+            
+            table {
+                min-width: 650px; /* Ensure table is wide enough for scrolling on small screens */
+            }
+            
+            .approval-badges {
+                min-width: 120px; /* Ensure badge column is wide enough */
+            }
         }
     </style>
 </head>
@@ -103,7 +111,7 @@ $user_role = $current_user['role'] ?? '';
             
             <div class="content-container dashboard-container">
                 <div class="page-header">
-                    <h1>Pending Membership Applications</h1>
+                    <h1>Rejected Membership Applications</h1>
                 </div>
                 
                 <?php if ($message = get_flash_message()): ?>
@@ -120,14 +128,14 @@ $user_role = $current_user['role'] ?? '';
                                     <th>Email</th>
                                     <th>Branch</th>
                                     <th>Submitted</th>
-                                    <th>Status</th>
+                                    <th>Rejection Reason</th>
                                     <th>Approvals</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($applications)): ?>
                                     <tr>
-                                        <td colspan="7">No applications found.</td>
+                                        <td colspan="7">No rejected applications found.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($applications as $app): ?>
@@ -138,30 +146,41 @@ $user_role = $current_user['role'] ?? '';
                                         <td><?php echo !empty($app['branch']) ? htmlspecialchars($app['branch']) : 'Not Assigned'; ?></td>
                                         <td><?php echo date('M j, Y', strtotime($app['created_at'])); ?></td>
                                         <td>
-                                            <span class="status-badge status-<?php echo strtolower($app['status']); ?>">
-                                                <?php echo ucfirst($app['status']); ?>
-                                            </span>
+                                            <?php 
+                                            // Display the comments from whoever rejected the application
+                                            if ($app['io_approved'] === 'rejected') {
+                                                echo !empty($app['io_comments']) ? htmlspecialchars($app['io_comments']) : 'No reason provided';
+                                            } elseif ($app['lo_approved'] === 'rejected') {
+                                                echo !empty($app['lo_comments']) ? htmlspecialchars($app['lo_comments']) : 'No reason provided';
+                                            } elseif ($app['secretary_approved'] === 'rejected') {
+                                                echo !empty($app['secretary_comments']) ? htmlspecialchars($app['secretary_comments']) : 'No reason provided';
+                                            } else {
+                                                echo 'No reason provided';
+                                            }
+                                            ?>
                                         </td>
                                         <td>
                                             <div class="approval-badges">
                                                 <span class="badge-io status-<?php echo strtolower($app['io_approved']); ?>">
                                                     IO: <?php echo ucfirst($app['io_approved']); ?>
-                                                    <?php if ($app['io_approved'] === 'approved'): ?>
-                                                        by <?php echo htmlspecialchars($app['io_name']); ?>
+                                                    <?php if ($app['io_approved'] !== 'pending'): ?>
+                                                        by <?php echo htmlspecialchars($app['io_name'] ?: 'Unknown'); ?>
                                                     <?php endif; ?>
                                                 </span>
                                                 <span class="badge-lo status-<?php echo strtolower($app['lo_approved']); ?>">
                                                     LO: <?php echo ucfirst($app['lo_approved']); ?>
-                                                    <?php if ($app['lo_approved'] === 'approved'): ?>
-                                                        by <?php echo htmlspecialchars($app['lo_name']); ?>
+                                                    <?php if ($app['lo_approved'] !== 'pending'): ?>
+                                                        by <?php echo htmlspecialchars($app['lo_name'] ?: 'Unknown'); ?>
                                                     <?php endif; ?>
                                                 </span>
-                                                <span class="badge-secretary status-<?php echo strtolower($app['secretary_approved'] ?: 'pending'); ?>">
-                                                    Secretary: <?php echo ucfirst($app['secretary_approved'] ?: 'Pending'); ?>
-                                                    <?php if ($app['secretary_approved'] === 'approved'): ?>
-                                                        by <?php echo htmlspecialchars($app['secretary_name']); ?>
+                                                <?php if ($app['secretary_approved']): ?>
+                                                <span class="badge-secretary status-<?php echo strtolower($app['secretary_approved']); ?>">
+                                                    Secretary: <?php echo ucfirst($app['secretary_approved']); ?>
+                                                    <?php if ($app['secretary_approved'] !== 'pending'): ?>
+                                                        by <?php echo htmlspecialchars($app['secretary_name'] ?: 'Unknown'); ?>
                                                     <?php endif; ?>
                                                 </span>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>

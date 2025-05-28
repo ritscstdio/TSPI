@@ -64,6 +64,9 @@ $user_role = $current_admin ? $current_admin['role'] : '';
                 <li class="<?php echo $current_page === 'approved_records.php' ? 'active' : ''; ?>">
                     <a href="approved_records.php"><i class="fas fa-check-circle"></i> <span>Approved Records</span></a>
                 </li>
+                <li class="<?php echo $current_page === 'rejected_records.php' ? 'active' : ''; ?>">
+                    <a href="rejected_records.php"><i class="fas fa-times-circle"></i> <span>Rejected Records</span></a>
+                </li>
             <?php endif; ?>
             
             <?php if ($user_role === 'admin'): ?>

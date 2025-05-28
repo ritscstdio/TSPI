@@ -581,107 +581,81 @@ Branch information is stored in the `branches` table, which includes:
 - `address`: Physical address of the branch
 - `contact_number`: Contact information for the branch
 
-TSPI CMS Documentation
-======================
+## Admin Panel Design System
 
-This document provides an overview of the system architecture and key components
-of the TSPI CMS (Content Management System).
+### Objective
+Rebuild the styling of the admin panel to establish a cohesive and modern user interface across all admin pages.
 
-Table of Contents:
-1. System Overview
-2. Admin Panel
-3. User Portal
-4. Email System
-5. PDF Generation
-6. Directory Structure
-7. Troubleshooting
+### Design Tokens
+- Define CSS custom properties in `admin/css/global.css` for color palette, spacing, and typography:
+  - `--primary-color`: #2c7b67
+  - `--secondary-color`: #f7fafc
+  - `--accent-color`: #4fd1c5
+  - `--font-family`: 'Helvetica Neue', Arial, sans-serif
+  - `--font-size-base`: 16px
+  - `--spacing-sm`: 8px
+  - `--spacing-md`: 16px
+  - `--navbar-height`: 60px
+  - `--navbar-scroll-offset`: calc(var(--navbar-height) + var(--spacing-lg))
 
-1. System Overview
-------------------
-The TSPI CMS is a PHP-based content management system designed to handle membership
-applications, user management, and content administration. It uses a MySQL database
-for data storage and includes features for email notifications and PDF generation.
+### Global Styles
+- Include `admin/css/global.css` in every admin page `<head>` before `admin.css`.
+- Apply reset styles and global typography rules.
 
-2. Admin Panel
--------------
-The admin panel is accessible at /admin/ and requires authentication. It provides
-interfaces for:
-- User management
-- Application processing
-- Content management
-- System configuration
+### Components
+#### Navbar
+Use `.navbar`, `.navbar-brand`, and `.navbar-menu` classes for consistent header layout.
 
-3. User Portal
--------------
-The user portal is the public-facing part of the system, allowing:
-- Membership applications
-- Account management
-- Content browsing
+#### Buttons
+Use `.button` and `.button-secondary` for primary and secondary actions.
 
-4. Email System
---------------
-The email system uses PHPMailer with SendGrid SMTP for sending notifications.
-Key files:
-- user/email_config.php: Main email configuration and functions
-- user/email_secrets.php: API keys (not in version control)
+#### Forms
+Style form controls (`input`, `select`, `textarea`) with consistent padding, borders, and focus states.
 
-Testing the email system:
-- Use admin/test_email.php for email diagnostics
-- Both simple emails and emails with PDF attachments can be tested
+#### Cards
+Use `.card` class for content containers with border, padding, and subtle shadows.
 
-Note about PDF attachments in emails:
-The system includes a mechanism to include application forms and certificates as PDF attachments 
-in emails. When using the "Full Test with PDF Attachments" option in the email test tool, the system 
-generates these PDFs on the fly. Due to the way PDF generation works, special handling is required to 
-prevent unexpected behavior.
+### Accessibility & Responsiveness
+- Ensure color contrast meets WCAG AA standards.
+- Add visible focus outlines and smooth transitions.
+- Use media queries at breakpoints 768px and 1024px for responsive layouts.
 
-The file admin/test_email.php uses modified versions of the PDF generators that don't terminate script 
-execution:
-- admin/generate_application_pdf_without_exit.php
-- admin/generate_certificate_without_exit.php
-
-These modified versions allow the email test to complete properly with attached PDFs.
-
-5. PDF Generation
-----------------
-PDF generation uses TCPDF and FPDI to create:
-- Membership application forms
-- Membership certificates
-
-PDF generation files:
-- admin/generate_application_pdf.php: Generates application PDFs
-- admin/generate_certificate.php: Generates certificate PDFs
-
-6. Directory Structure
----------------------
-- /admin/: Administrative interfaces
-- /assets/: CSS, JS, and image files
-- /includes/: Shared PHP functions and configuration
-- /logs/: System logs
-- /templates/: PDF templates and email templates
-- /uploads/: User-uploaded files
-- /user/: User portal functionality
-- /vendor/: Composer dependencies
-
-7. Troubleshooting
------------------
-Common issues and solutions:
-
-Email Issues:
-- Check SendGrid API key in user/email_secrets.php
-- Verify sender domain is verified in SendGrid
-- Check email logs in /logs/ directory and user/email_debug.txt
-
-PDF Generation Issues:
-- Ensure templates exist in /templates/ directory
-- Check file permissions for the /uploads/temp/ directory
-- Make sure TCPDF and FPDI are properly installed (composer require setasign/fpdi)
-
-Application Processing Issues:
-- Check database connectivity in includes/config.php
-- Verify admin user permissions in database
-
-*   **Button underlines removed** - Removed text-decoration from primary buttons across admin (no underlines).
-*   **Hidden debug tools in view_application.php** - Removed Debug PDF Grid link and secretary debug panel to hide debugging.
-*   **Fixed undefined variable in generate_certificate.php** - Replaced $planMcField with $mcNumber for MC number output.
-*   **Certificate PDF improvements** - Simplified certificate PDF generation to maintain clean template display with minimal overlaid text, and added support for multi-page certificate templates.
+## Admin Panel Responsive Design
++ To ensure the admin interface is fully responsive across devices, the following approaches are implemented in `assets/css/admin.css`:
++ 
++ 1. **Sidebar Behavior:**
++    - Below 992px: The sidebar slides out of view (`transform: translateX(-100%)`) and can be toggled into view with the menu button. The `.menu-toggle` button is displayed on smaller screens to control this behavior.
++    - Below 992px: The main content area (`.admin-main`) resets its margin to occupy full width when the sidebar is hidden.
++   
++ 2. **Grid Layout Adjustments:**
++    - **Stat Boxes:** Default to a single column on mobile, expand to 2 columns at 576px, 3 columns at 768px, and 4 columns at 992px.
++    - **Dashboard Sections:** Stack sections in a single column on small screens, ensuring readability and preventing horizontal scrolling.
++    - **Table Views:** Tables are wrapped in `.table-responsive` containers, allowing horizontal scrolling on narrow viewports.
++    - **Media Grids:** Use `grid-template-columns: repeat(auto-fill, minmax(150px, 1fr))` to wrap media items based on available width.
++    - **Form Groups & Actions:** On screens below 768px, form button groups and action controls switch to vertical layouts for easier tapping.
++    
++ 3. **Header & Navbar:**
++    - The admin header remains sticky at the top, with the sidebar toggle and user dropdown accessible on all viewports.
++    - Navigation interactions adapt to touch devices, ensuring dropdown menus are usable on mobile.
++    
++ 4. **Page Headers & Search Bars:**
++    - The `.page-header` container wraps and stacks its elements (title, search bar, buttons) on narrow viewports using `flex-wrap: wrap;` and `gap`.
++    - Search inputs expand to full width below 768px.
++    
++ 5. **Custom Responsive Tweaks:**
++    - Specific pages (e.g., final approval) include inline responsive rules for complex layouts like signature pads, ID previews, and document previews to ensure these components resize gracefully.
++    - Additional breakpoints at 768px and 992px target significant layout shifts, balancing readability and functionality.
++    
++ 6. **Enhanced Table Responsiveness:**
++    - Tables use `white-space: nowrap` to prevent content wrapping in cells, ensuring data remains readable.
++    - Minimum width applied to tables (650px-800px) to maintain structure when scrolling horizontally.
++    - Optimized padding on table cells for different screen sizes (12px/15px on desktop, 10px on mobile).
++    - Action buttons in table rows adjust to wrap rather than stack vertically, preserving horizontal space.
++    
++ 7. **Font Size and Spacing Adjustments:**
++    - Base font size reduces from 14px to 13px on mobile screens (below 576px).
++    - Heading sizes scale down proportionally on small screens.
++    - Content padding reduces on mobile to maximize usable space.
++    - Card and section padding adjusts from 1.5rem to 1rem on mobile.
++    
++ By centralizing these responsive patterns in `admin.css`, all admin pages inherently adapt to various device widths without per-page adjustments.

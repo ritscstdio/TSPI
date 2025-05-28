@@ -37,6 +37,7 @@ These instructions will guide you to get a copy of the project up and running on
 2.  **Set up the Web Server:**
     *   Ensure your web server (Apache, Nginx) is configured to serve PHP files from the project directory.
     *   If using a local development server like XAMPP, place the project folder inside the `htdocs` directory.
+    *   **Include Admin Global Stylesheet**: In each admin page's `<head>`, add `<link rel="stylesheet" href="css/global.css">` before the existing `admin.css` to apply the new design system.
 
 3.  **Database Setup (If applicable, especially for WordPress integration):**
     *   If this project is a theme or plugin for WordPress, or directly uses a WordPress database, you will need an existing WordPress installation.
