@@ -1,0 +1,14 @@
+{
+    "to": "ritscstdio@gmail.com",
+    "subject": "TSPI Email Test",
+    "headers": "From: TSPI Membership <noreply@tspi.site>\r\nReply-To: support@tspi.site\r\nMIME-Version: 1.0\r\nContent-Type: text\/html; charset=UTF-8\r\n",
+    "message": "<html>\r\n<body>\r\n    <h1>TSPI Email Test<\/h1>\r\n    <p>This is a test email from TSPI CMS.<\/p>\r\n    <p>If you received this email, the email system is working correctly.<\/p>\r\n    <p>Application ID: 34<\/p>\r\n    <p>Test Time: 2025-05-28 09:57:05<\/p>\r\n<\/body>\r\n<\/html>\r\n                                ",
+    "result": false,
+    "error": {
+        "type": 2,
+        "message": "mail(): Failed to connect to mailserver at &quot;localhost&quot; port 25, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set()",
+        "file": "D:\\Programs\\XAMPP\\htdocs\\TSPI\\admin\\test_email.php",
+        "line": 60
+    },
+    "time": "2025-05-28 09:59:09"
+}

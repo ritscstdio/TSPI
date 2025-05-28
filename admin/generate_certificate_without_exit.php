@@ -1,46 +1,39 @@
 <?php
 /**
- * Generate Membership Certificate
+ * Generate Certificate PDF - Without Exit
  * 
- * This file generates a PDF certificate for approved members
- * Uses predefined templates based on plan selection
+ * This file is a modified version of generate_certificate.php that doesn't exit.
+ * It's specifically for use in the test_email.php script.
  */
 
+// Include necessary files
 require_once '../includes/config.php';
 require_admin_login();
 
-/**
- * Safely convert potentially null values to string
- * Prevents "Deprecated: strlen(): Passing null to parameter #1 ($string) of type string is deprecated" warning in TCPDF
- * 
- * @param mixed $text The text value that might be null
- * @return string A safe string value
- */
-function safe_text($text) {
-    return ($text === null) ? '' : (string)$text;
+// Safely convert potentially null values to string - only define if not already defined
+if (!function_exists('safe_text')) {
+    function safe_text($text) {
+        return ($text === null) ? '' : (string)$text;
+    }
 }
 
-// Check if an 'id' parameter is provided
-if (!isset($_GET['id']) && !isset($id)) {
+// Ensure an 'id' parameter is provided
+if (!isset($_GET['id'])) {
     $_SESSION['message'] = "No application ID specified.";
-    redirect('/admin/applications.php');
-    exit;
+    $pdf_error = "No application ID specified.";
+    return false;
 }
+$id = $_GET['id'];
 
-// Get ID either from query parameter or from parent script
-$id = isset($_GET['id']) ? $_GET['id'] : $id;
-
-// Ensure we have a plan specified
-if (!isset($_GET['plan']) && !isset($plan)) {
+// Ensure a 'plan' parameter is provided
+if (!isset($_GET['plan'])) {
     $_SESSION['message'] = "No plan specified.";
-    redirect('/admin/view_application.php?id=' . $id);
-    exit;
+    $pdf_error = "No plan specified.";
+    return false;
 }
+$plan = $_GET['plan'];
 
-// Get plan either from query parameter or from parent script
-$plan = isset($_GET['plan']) ? $_GET['plan'] : $plan;
-
-$mode = $_GET['mode'] ?? 'preview'; // Default to preview
+$mode = $_GET['mode'] ?? 'preview'; // Default to preview mode
 
 // Fetch the application details
 $stmt = $pdo->prepare("SELECT * FROM members_information WHERE id = ?");
@@ -49,28 +42,18 @@ $application = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$application) {
     $_SESSION['message'] = "Application not found.";
-    redirect('/admin/applications.php');
+    $pdf_error = "Application not found.";
+    return false;
 }
 
-// Check if both IO and LO have approved
-if ($application['io_approved'] !== 'approved' || $application['lo_approved'] !== 'approved') {
-    $_SESSION['message'] = "Cannot generate certificate. Both Insurance Officer and Loan Officer must approve first.";
-    redirect('/admin/view_application.php?id=' . $id);
-}
-
-// Include required libraries
+// Include TCPDF and FPDI
 require_once '../vendor/autoload.php';
 use setasign\Fpdi\Tcpdf\Fpdi;
 
-// Get all plans if not passed as a parameter
-if (!$plan && !empty($application['plans'])) {
-    $plans = json_decode($application['plans'], true);
-    if (is_array($plans) && !empty($plans)) {
-        $plan = $plans[0]; // Default to first plan
-    }
-}
+// Determine MC field name based on plan
+$planMcField = strtolower($plan) . '_mc';
 
-// Format the member's full name
+// Format full name
 $fullName = strtoupper($application['first_name'] . ' ' . 
     (!empty($application['middle_name']) ? $application['middle_name'] . ' ' : '') . 
     $application['last_name']);
@@ -120,8 +103,8 @@ switch (strtoupper($plan)) {
 
 // Check if template exists
 if (!file_exists($templatePath)) {
-    $_SESSION['message'] = "Certificate template not found. Please contact system administrator.";
-    redirect('/admin/view_application.php?id=' . $id);
+    $pdf_error = "Certificate template not found. Please contact system administrator.";
+    return false;
 }
 
 // President signature path
@@ -153,11 +136,11 @@ $pdf->SetFont('helvetica', 'B', 12);
 $pdf->SetTextColor(0, 0, 0);
 
 // Add member name - Position will need adjustment based on actual template
-
 $pdf->SetFont('helvetica', 'B', 15);
 $pdf->SetXY(40, 56);
 $pdf->Cell(220, 10, $fullName, 0, 1, 'C');
 $pdf->SetFont('helvetica', 'B', 12);
+
 // Add MC number if available
 if (!empty($mcNumber)) {
     $pdf->SetXY(129, 28);
@@ -169,23 +152,19 @@ $pdf->SetXY(130, 35);
 $pdf->Cell(220, 10, $branch, 0, 1, 'C');
 
 // Add date (MM/DD/YYYY)
-
 $pdf->SetFont('helvetica', 'B', 14);
 $pdf->SetXY(88, 114);
 $pdf->Cell(50, 10, $approvalDate, 0, 1, 'L');
 $pdf->SetFont('helvetica', 'B', 12);
 
-    // Add president's signature if exists
+// Add president's signature if exists
 if (file_exists($presidentSignaturePath)) {
     // Position will need adjustment based on actual template
     $pdf->Image($presidentSignaturePath, 185, 135, 70, '', 'PNG');
-    // Add aDD pRESIDENT
+    // Add President
     $pdf->SetXY(180, 142);
     $pdf->Cell(70, 10, "RENE E. CRISTOBAL", 0, 1, 'C');
-
 }
-
-
 
 // Add secretary's signature if exists
 if (!empty($application['secretary_signature']) && file_exists('../' . $application['secretary_signature'])) {
@@ -255,13 +234,15 @@ if (!empty($application['secretary_name'])) {
 $filename = 'TSPI_Certificate_' . $application['id'] . '_' . $plan . '_' . date('Ymd') . '.pdf';
 
 if (isset($_GET['output_path']) && $mode === 'save') {
-    // Save to specified file path
+    // Save to specified file path without exiting
     $pdf->Output($_GET['output_path'], 'F');
+    return true; // Return true to indicate success
 } else if ($mode === 'download') {
-    // Output as download
+    // Output as download without exiting
     $pdf->Output($filename, 'D');
+    return true;
 } else {
-    // Output inline (preview in browser)
+    // Output inline (preview in browser) without exiting
     $pdf->Output($filename, 'I');
-}
-exit; 
+    return true;
+} 

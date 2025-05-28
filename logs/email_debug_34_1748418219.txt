@@ -1,0 +1,60 @@
+TO: ritscstdio@gmail.com
+SUBJECT: TSPI Membership Application Approved
+HEADERS: 
+From: TSPI Membership <noreply@tspi.org>
+Reply-To: support@tspi.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="faae2b1fe4209a41f863762a0e9bb58c"
+
+MESSAGE: 
+--faae2b1fe4209a41f863762a0e9bb58c
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Dear RICH DARIEN CUSTODIO,
+
+We are pleased to inform you that your TSPI membership application has been approved.
+
+Your membership ID is: 3O78Q9
+
+Your official documents can be collected from your local branch office.
+
+If you have any questions about your membership, please contact your assigned branch.
+
+Thank you for choosing TSPI.
+
+TSPI Membership Services
+
+--faae2b1fe4209a41f863762a0e9bb58c
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { color: #0070f3; font-size: 24px; margin-bottom: 20px; }
+        p { margin-bottom: 15px; }
+        .footer { margin-top: 30px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TSPI Membership Approved</h1>
+        <p>Dear RICH DARIEN CUSTODIO,</p>
+        <p>We are pleased to inform you that your TSPI membership application has been approved.</p>
+        <p>Your membership ID is: <strong>3O78Q9</strong></p>
+        <p>Your official documents can be collected from your local branch office.</p>
+        <p>If you have any questions about your membership, please contact your assigned branch.</p>
+        <div class="footer">
+            <p>Thank you for choosing TSPI.</p>
+            <p>&copy; TSPI Membership Services</p>
+        </div>
+    </div>
+</body>
+</html>
+
+--faae2b1fe4209a41f863762a0e9bb58c--
+
+

@@ -1,0 +1,9 @@
+{
+    "to": "ritscstdio@gmail.com",
+    "subject": "TSPI Email Test",
+    "from": "no-reply@tspi.site",
+    "reply_to": "reply@tspi.site",
+    "message": "<html>\r\n<body>\r\n    <h1>TSPI Email Test<\/h1>\r\n    <p>This is a test email from TSPI CMS.<\/p>\r\n    <p>If you received this email, the email system is working correctly.<\/p>\r\n    <p>Application ID: 34<\/p>\r\n    <p>Test Time: 2025-05-28 11:16:50<\/p>\r\n<\/body>\r\n<\/html>\r\n                                ",
+    "result": true,
+    "time": "2025-05-28 11:18:08"
+}

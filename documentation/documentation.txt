@@ -542,3 +542,103 @@ Branch information is stored in the `branches` table, which includes:
 - `center_no`: Center number associated with the branch
 - `address`: Physical address of the branch
 - `contact_number`: Contact information for the branch
+
+TSPI CMS Documentation
+======================
+
+This document provides an overview of the system architecture and key components
+of the TSPI CMS (Content Management System).
+
+Table of Contents:
+1. System Overview
+2. Admin Panel
+3. User Portal
+4. Email System
+5. PDF Generation
+6. Directory Structure
+7. Troubleshooting
+
+1. System Overview
+------------------
+The TSPI CMS is a PHP-based content management system designed to handle membership
+applications, user management, and content administration. It uses a MySQL database
+for data storage and includes features for email notifications and PDF generation.
+
+2. Admin Panel
+-------------
+The admin panel is accessible at /admin/ and requires authentication. It provides
+interfaces for:
+- User management
+- Application processing
+- Content management
+- System configuration
+
+3. User Portal
+-------------
+The user portal is the public-facing part of the system, allowing:
+- Membership applications
+- Account management
+- Content browsing
+
+4. Email System
+--------------
+The email system uses PHPMailer with SendGrid SMTP for sending notifications.
+Key files:
+- user/email_config.php: Main email configuration and functions
+- user/email_secrets.php: API keys (not in version control)
+
+Testing the email system:
+- Use admin/test_email.php for email diagnostics
+- Both simple emails and emails with PDF attachments can be tested
+
+Note about PDF attachments in emails:
+The system includes a mechanism to include application forms and certificates as PDF attachments 
+in emails. When using the "Full Test with PDF Attachments" option in the email test tool, the system 
+generates these PDFs on the fly. Due to the way PDF generation works, special handling is required to 
+prevent unexpected behavior.
+
+The file admin/test_email.php uses modified versions of the PDF generators that don't terminate script 
+execution:
+- admin/generate_application_pdf_without_exit.php
+- admin/generate_certificate_without_exit.php
+
+These modified versions allow the email test to complete properly with attached PDFs.
+
+5. PDF Generation
+----------------
+PDF generation uses TCPDF and FPDI to create:
+- Membership application forms
+- Membership certificates
+
+PDF generation files:
+- admin/generate_application_pdf.php: Generates application PDFs
+- admin/generate_certificate.php: Generates certificate PDFs
+
+6. Directory Structure
+---------------------
+- /admin/: Administrative interfaces
+- /assets/: CSS, JS, and image files
+- /includes/: Shared PHP functions and configuration
+- /logs/: System logs
+- /templates/: PDF templates and email templates
+- /uploads/: User-uploaded files
+- /user/: User portal functionality
+- /vendor/: Composer dependencies
+
+7. Troubleshooting
+-----------------
+Common issues and solutions:
+
+Email Issues:
+- Check SendGrid API key in user/email_secrets.php
+- Verify sender domain is verified in SendGrid
+- Check email logs in /logs/ directory and user/email_debug.txt
+
+PDF Generation Issues:
+- Ensure templates exist in /templates/ directory
+- Check file permissions for the /uploads/temp/ directory
+- Make sure TCPDF and FPDI are properly installed (composer require setasign/fpdi)
+
+Application Processing Issues:
+- Check database connectivity in includes/config.php
+- Verify admin user permissions in database

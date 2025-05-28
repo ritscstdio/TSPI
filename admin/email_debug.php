@@ -1,201 +1,41 @@
 <?php
 /**
- * Email Debugging Tool
+ * Email Debug Viewer
  * 
- * This file helps debug email sending issues by testing different methods:
- * 1. PHP's mail() function
- * 2. PHPMailer library
+ * This file displays detailed information about email attempts
  */
 
-$page_title = "Email Debug";
-$body_class = "admin-email-debug";
 require_once '../includes/config.php';
 require_admin_login();
 
-// Only administrators can access this page
+// Ensure user has permission to access this page (admin or secretary)
 $current_user = get_admin_user();
-if ($current_user['role'] !== 'admin') {
-    $_SESSION['message'] = "Only administrators can access the email debugging tool.";
+if (!in_array($current_user['role'], ['admin', 'secretary'])) {
+    $_SESSION['message'] = "You don't have permission to access this page.";
     redirect('/admin/index.php');
+    exit;
 }
 
-$test_recipient = isset($_POST['recipient']) ? $_POST['recipient'] : '';
-$test_method = isset($_POST['method']) ? $_POST['method'] : 'mail';
-$mail_result = null;
-$debug_output = '';
-$error_message = '';
+// Get application ID from URL
+$id = isset($_GET['id']) ? $_GET['id'] : null;
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['test_email'])) {
-    if (empty($test_recipient) || !filter_var($test_recipient, FILTER_VALIDATE_EMAIL)) {
-        $error_message = "Please enter a valid email address.";
-    } else {
-        ob_start(); // Capture any output or errors
-        
-        $subject = 'TSPI Email System Test';
-        $message = 'This is a test email from the TSPI system. If you received this, email sending is working correctly.';
-        
-        switch ($test_method) {
-            case 'mail':
-                // Test PHP's mail() function
-                $headers = "From: " . ADMIN_EMAIL . "\r\n";
-                $headers .= "Reply-To: " . ADMIN_EMAIL . "\r\n";
-                $headers .= "X-Mailer: PHP/" . phpversion();
-                
-                $mail_result = mail($test_recipient, $subject, $message, $headers);
-                $debug_output .= "Using PHP's mail() function\n";
-                $debug_output .= "Headers: " . print_r($headers, true) . "\n";
-                if ($mail_result === false) {
-                    $debug_output .= "mail() function returned FALSE\n";
-                    // Check if we can get more info
-                    if (function_exists('error_get_last')) {
-                        $debug_output .= "Last error: " . print_r(error_get_last(), true) . "\n";
-                    }
-                }
-                break;
-                
-            case 'phpmailer':
-                // Test PHPMailer
-                require_once '../vendor/autoload.php';
-                
-                $debug_output .= "Using PHPMailer library\n";
-                
-                try {
-                    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-                    
-                    // Server settings
-                    $mail->SMTPDebug = 2; // Enable verbose debug output
-                    $mail->isSMTP(); // Send using SMTP
-                    
-                    // Check if email config exists
-                    if (file_exists(__DIR__ . '/email_config.php')) {
-                        require_once __DIR__ . '/email_config.php';
-                        
-                        $debug_output .= "Found email_config.php\n";
-                        
-                        // If config defines SMTP constants, use them
-                        if (defined('SMTP_HOST')) {
-                            $mail->Host = SMTP_HOST;
-                            $debug_output .= "Using SMTP host: " . SMTP_HOST . "\n";
-                            
-                            if (defined('SMTP_PORT')) {
-                                $mail->Port = SMTP_PORT;
-                                $debug_output .= "Using SMTP port: " . SMTP_PORT . "\n";
-                            }
-                            
-                            if (defined('SMTP_SECURE')) {
-                                $mail->SMTPSecure = SMTP_SECURE;
-                                $debug_output .= "Using SMTP secure: " . SMTP_SECURE . "\n";
-                            }
-                            
-                            if (defined('SMTP_AUTH') && SMTP_AUTH) {
-                                $mail->SMTPAuth = true;
-                                $debug_output .= "Using SMTP authentication\n";
-                                
-                                if (defined('SMTP_USERNAME') && defined('SMTP_PASSWORD')) {
-                                    $mail->Username = SMTP_USERNAME;
-                                    $mail->Password = '********'; // Don't log actual password
-                                    $debug_output .= "Using SMTP username: " . SMTP_USERNAME . "\n";
-                                } else {
-                                    $debug_output .= "WARNING: SMTP_AUTH is true but SMTP_USERNAME or SMTP_PASSWORD not defined\n";
-                                }
-                            } else {
-                                $mail->SMTPAuth = false;
-                                $debug_output .= "SMTP authentication disabled\n";
-                            }
-                        } else {
-                            $debug_output .= "WARNING: No SMTP_HOST defined in email_config.php\n";
-                            // Fallback to default settings
-                            $mail->Host = 'localhost';
-                            $mail->Port = 25;
-                            $mail->SMTPAuth = false;
-                        }
-                    } else {
-                        $debug_output .= "WARNING: email_config.php not found, using default settings\n";
-                        // Default settings
-                        $mail->Host = 'localhost';
-                        $mail->Port = 25;
-                        $mail->SMTPAuth = false;
-                    }
-                    
-                    // Recipients
-                    $mail->setFrom(ADMIN_EMAIL, 'TSPI System');
-                    $mail->addAddress($test_recipient);
-                    
-                    // Content
-                    $mail->isHTML(false);
-                    $mail->Subject = $subject;
-                    $mail->Body = $message;
-                    
-                    // Send and capture results
-                    $mail_result = $mail->send();
-                    $debug_output .= "PHPMailer result: Message sent successfully\n";
-                    
-                } catch (Exception $e) {
-                    $mail_result = false;
-                    $debug_output .= "PHPMailer exception: " . $e->getMessage() . "\n";
-                    $debug_output .= "PHPMailer error info: " . (isset($mail) ? $mail->ErrorInfo : 'N/A') . "\n";
-                }
-                
-                break;
-                
-            case 'custom':
-                // Test custom email function if it exists
-                $debug_output .= "Testing custom email function\n";
-                
-                if (file_exists(__DIR__ . '/email_config.php')) {
-                    require_once __DIR__ . '/email_config.php';
-                    $debug_output .= "Found email_config.php\n";
-                    
-                    if (function_exists('send_email')) {
-                        $debug_output .= "Found send_email() function\n";
-                        try {
-                            $mail_result = send_email($test_recipient, $subject, $message, "From: " . ADMIN_EMAIL);
-                            $debug_output .= "send_email() result: " . ($mail_result ? "SUCCESS" : "FAILURE") . "\n";
-                        } catch (Exception $e) {
-                            $mail_result = false;
-                            $debug_output .= "send_email() exception: " . $e->getMessage() . "\n";
-                        }
-                    } else {
-                        $debug_output .= "WARNING: send_email() function not found\n";
-                        $mail_result = false;
-                    }
-                    
-                    if (function_exists('dev_send_email')) {
-                        $debug_output .= "Found dev_send_email() function\n";
-                        try {
-                            $mail_result = dev_send_email($test_recipient, $subject, $message, "From: " . ADMIN_EMAIL);
-                            $debug_output .= "dev_send_email() result: " . ($mail_result ? "SUCCESS" : "FAILURE") . "\n";
-                        } catch (Exception $e) {
-                            $mail_result = false;
-                            $debug_output .= "dev_send_email() exception: " . $e->getMessage() . "\n";
-                        }
-                    } else {
-                        $debug_output .= "WARNING: dev_send_email() function not found\n";
-                    }
-                } else {
-                    $debug_output .= "WARNING: email_config.php not found\n";
-                    $mail_result = false;
-                }
-                break;
-        }
-        
-        // Capture output buffer
-        $debug_output .= ob_get_clean();
-    }
+if (!$id) {
+    $_SESSION['message'] = "No application ID specified.";
+    redirect('/admin/applications.php');
+    exit;
 }
 
-// Check PHPMailer installation
-$phpmailer_installed = class_exists('PHPMailer\PHPMailer\PHPMailer');
-$phpmailer_version = $phpmailer_installed ? PHPMailer\PHPMailer\PHPMailer::VERSION : 'Not installed';
+// Load email log files for this application
+$log_files = glob("../logs/email_*{$id}*.{txt,json}", GLOB_BRACE);
+$status_file = "../logs/email_status_{$id}.json";
+$exception_file = "../logs/email_exception_{$id}.txt";
 
-// Check PHP mail configuration
-$php_mail_enabled = function_exists('mail') && !in_array('mail', explode(',', ini_get('disable_functions')));
-$sendmail_path = ini_get('sendmail_path');
+// Check if status file exists
+$status_data = file_exists($status_file) ? json_decode(file_get_contents($status_file), true) : null;
 
-include 'includes/header.php';
+// Page title
+$page_title = "Email Debug for Application #{$id}";
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -206,127 +46,54 @@ include 'includes/header.php';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
-        .admin-card {
-            margin-bottom: 2rem;
-            padding: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        
-        .admin-card-header {
-            padding: 1.25rem 1.5rem;
+        .debug-section {
             background-color: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .admin-card-header h2 {
-            margin: 0;
-            font-size: 1.4rem;
-            color: #343a40;
-        }
-        
-        .admin-card-body {
-            padding: 1.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px 12px;
             border: 1px solid #dee2e6;
             border-radius: 4px;
-            font-size: 1rem;
-            transition: all 0.2s;
-            font-family: inherit;
+            padding: 15px;
+            margin-bottom: 20px;
         }
         
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
-            outline: none;
+        .data-item {
+            margin-bottom: 10px;
         }
         
-        .btn {
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-decoration: none;
+        .data-item strong {
+            display: inline-block;
+            min-width: 150px;
+            margin-right: 10px;
         }
         
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #0056b3;
-            transform: translateY(-1px);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-        }
-        
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .debug-output {
+        pre.code-block {
             background-color: #f8f9fa;
-            padding: 1rem;
+            border: 1px solid #dee2e6;
+            padding: 15px;
             border-radius: 4px;
-            font-family: monospace;
             white-space: pre-wrap;
-            max-height: 400px;
-            overflow: auto;
-            font-size: 0.9rem;
-            margin-top: 1.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: monospace;
         }
         
-        .status-ok {
-            color: #28a745;
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
             font-weight: bold;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
         }
         
         .status-error {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        
-        .status-unknown {
-            color: #6c757d;
-            font-weight: bold;
+            background-color: #f8d7da;
+            color: #721c24;
         }
     </style>
 </head>
-<body class="<?php echo $body_class; ?>">
+<body>
     <div class="admin-container">
         <?php include 'includes/sidebar.php'; ?>
         
@@ -335,126 +102,134 @@ include 'includes/header.php';
             
             <div class="content-container">
                 <div class="page-header">
-                    <h1>Email System Debug</h1>
-                    <a href="index.php" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
-                    </a>
+                    <h1>Email Debug for Application #<?php echo $id; ?></h1>
+                    <div>
+                        <a href="test_email.php?id=<?php echo $id; ?>" class="btn">
+                            <i class="fas fa-paper-plane"></i> Test Email
+                        </a>
+                        <a href="view_application.php?id=<?php echo $id; ?>" class="btn">
+                            <i class="fas fa-arrow-left"></i> Back to Application
+                        </a>
+                    </div>
                 </div>
                 
-                <?php if (!empty($error_message)): ?>
-                    <div class="message error"><?php echo $error_message; ?></div>
-                <?php endif; ?>
-                
-                <div class="grid-container">
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <h2>Email Configuration Status</h2>
-                        </div>
-                        <div class="admin-card-body">
-                            <ul>
-                                <li>
-                                    PHP mail() function: 
-                                    <?php if ($php_mail_enabled): ?>
-                                        <span class="status-ok">Enabled</span>
-                                    <?php else: ?>
-                                        <span class="status-error">Disabled</span>
-                                    <?php endif; ?>
-                                </li>
-                                <li>Sendmail path: <?php echo !empty($sendmail_path) ? $sendmail_path : '<span class="status-error">Not configured</span>'; ?></li>
-                                <li>
-                                    PHPMailer: 
-                                    <?php if ($phpmailer_installed): ?>
-                                        <span class="status-ok">Installed</span> (v<?php echo $phpmailer_version; ?>)
-                                    <?php else: ?>
-                                        <span class="status-error">Not installed</span>
-                                    <?php endif; ?>
-                                </li>
-                                <li>
-                                    email_config.php: 
-                                    <?php if (file_exists(__DIR__ . '/email_config.php')): ?>
-                                        <span class="status-ok">Found</span>
-                                    <?php else: ?>
-                                        <span class="status-error">Not found</span>
-                                    <?php endif; ?>
-                                </li>
-                                <li>
-                                    Admin email: 
-                                    <?php if (defined('ADMIN_EMAIL')): ?>
-                                        <?php echo ADMIN_EMAIL; ?>
-                                    <?php else: ?>
-                                        <span class="status-error">Not defined</span>
-                                    <?php endif; ?>
-                                </li>
-                                <li>
-                                    Custom send_email() function: 
-                                    <?php if (function_exists('send_email')): ?>
-                                        <span class="status-ok">Found</span>
-                                    <?php else: ?>
-                                        <span class="status-error">Not found</span>
-                                    <?php endif; ?>
-                                </li>
-                                <li>
-                                    Development send_email() function: 
-                                    <?php if (function_exists('dev_send_email')): ?>
-                                        <span class="status-ok">Found</span>
-                                    <?php else: ?>
-                                        <span class="status-unknown">Not found</span> (This is only needed in development)
-                                    <?php endif; ?>
-                                </li>
-                            </ul>
-                        </div>
+                <!-- Email Status -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2>Email Status</h2>
                     </div>
-                    
-                    <div class="admin-card">
-                        <div class="admin-card-header">
-                            <h2>Test Email Sending</h2>
-                        </div>
-                        <div class="admin-card-body">
-                            <form method="post" action="">
-                                <div class="form-group">
-                                    <label for="recipient">Test Recipient Email:</label>
-                                    <input type="email" id="recipient" name="recipient" value="<?php echo htmlspecialchars($test_recipient); ?>" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="method">Email Method:</label>
-                                    <select id="method" name="method">
-                                        <option value="mail" <?php echo $test_method === 'mail' ? 'selected' : ''; ?>>PHP mail() Function</option>
-                                        <option value="phpmailer" <?php echo $test_method === 'phpmailer' ? 'selected' : ''; ?> <?php echo !$phpmailer_installed ? 'disabled' : ''; ?>>PHPMailer Library</option>
-                                        <option value="custom" <?php echo $test_method === 'custom' ? 'selected' : ''; ?>>Custom Email Function</option>
-                                    </select>
-                                </div>
-                                
-                                <button type="submit" name="test_email" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i> Send Test Email
-                                </button>
-                            </form>
+                    <div class="admin-card-body">
+                        <?php if ($status_data): ?>
+                        <div class="debug-section">
+                            <div class="data-item">
+                                <strong>Status:</strong>
+                                <span class="status-badge <?php echo $status_data['mail_sent'] === 'yes' ? 'status-success' : 'status-error'; ?>">
+                                    <?php echo $status_data['mail_sent'] === 'yes' ? 'Sent Successfully' : 'Failed'; ?>
+                                </span>
+                            </div>
                             
-                            <?php if ($mail_result !== null): ?>
-                                <div class="form-group" style="margin-top: 1.5rem;">
-                                    <label>Test Result:</label>
-                                    <div class="debug-output">
-                                        <?php if ($mail_result): ?>
-                                            <span class="status-ok">SUCCESS!</span> Test email was sent successfully.
-                                        <?php else: ?>
-                                            <span class="status-error">FAILED!</span> Test email could not be sent.
-                                        <?php endif; ?>
-                                        
-                                        <?php if (!empty($debug_output)): ?>
-                                            <hr>
-                                            <h4>Debug Output:</h4>
-                                            <?php echo nl2br(htmlspecialchars($debug_output)); ?>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
+                            <div class="data-item">
+                                <strong>Recipient:</strong>
+                                <?php echo htmlspecialchars($status_data['recipient'] ?? 'N/A'); ?>
+                            </div>
+                            
+                            <div class="data-item">
+                                <strong>Subject:</strong>
+                                <?php echo htmlspecialchars($status_data['subject'] ?? 'N/A'); ?>
+                            </div>
+                            
+                            <div class="data-item">
+                                <strong>Sent at:</strong>
+                                <?php echo htmlspecialchars($status_data['time'] ?? 'N/A'); ?>
+                            </div>
+                            
+                            <?php if (isset($status_data['error']) && !empty($status_data['error'])): ?>
+                            <div class="data-item">
+                                <strong>Error:</strong>
+                                <pre class="code-block"><?php print_r($status_data['error']); ?></pre>
+                            </div>
                             <?php endif; ?>
                         </div>
+                        <?php else: ?>
+                        <p>No email status information available for this application.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                
+                <!-- Exception Details -->
+                <?php if (file_exists($exception_file)): ?>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2>Exception Details</h2>
+                    </div>
+                    <div class="admin-card-body">
+                        <pre class="code-block"><?php echo htmlspecialchars(file_get_contents($exception_file)); ?></pre>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Email Content -->
+                <?php if (!empty($log_files)): ?>
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2>Email Content Logs</h2>
+                    </div>
+                    <div class="admin-card-body">
+                        <?php foreach ($log_files as $index => $log_file): ?>
+                        <div class="debug-section">
+                            <h3>Log #<?php echo $index + 1; ?> (<?php echo date('Y-m-d H:i:s', filemtime($log_file)); ?>)</h3>
+                            <pre class="code-block"><?php echo htmlspecialchars(file_get_contents($log_file)); ?></pre>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- PHP Mail Configuration -->
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h2>PHP Mail Configuration</h2>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="debug-section">
+                            <div class="data-item">
+                                <strong>PHP mail() Function:</strong>
+                                <?php echo function_exists('mail') ? 'Enabled' : 'Disabled'; ?>
+                            </div>
+                            
+                            <div class="data-item">
+                                <strong>SMTP Host:</strong>
+                                <?php echo ini_get('SMTP') ?: 'Not configured'; ?>
+                            </div>
+                            
+                            <div class="data-item">
+                                <strong>SMTP Port:</strong>
+                                <?php echo ini_get('smtp_port') ?: 'Not configured'; ?>
+                            </div>
+                            
+                            <div class="data-item">
+                                <strong>Sendmail Path:</strong>
+                                <?php echo ini_get('sendmail_path') ?: 'Not configured'; ?>
+                            </div>
+                            
+                            <div class="data-item">
+                                <strong>PHP Version:</strong>
+                                <?php echo phpversion(); ?>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px;">Troubleshooting Steps</h3>
+                        <ul style="margin-left: 20px; line-height: 1.6;">
+                            <li>Check that the SMTP server is properly configured in php.ini</li>
+                            <li>Verify that the email recipient address is valid</li>
+                            <li>Ensure your server has outbound email access (not blocked by firewall)</li>
+                            <li>Try using an alternative SMTP service if PHP mail() is not working</li>
+                            <li>Consider implementing a proper SMTP library like PHPMailer or Swift Mailer</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    
-    <?php include 'includes/footer.php'; ?>
 </body>
 </html> 

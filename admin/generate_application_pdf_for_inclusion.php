@@ -1,19 +1,34 @@
 <?php
 /**
- * Generate Application PDF
+ * Generate Application PDF for Inclusion
  * 
- * This file generates a PDF based on a membership application using TCPDF and FPDI.
- * It places data from the database onto specific coordinates of the PDF template.
+ * This file is a copy of generate_application_pdf.php without the exit statement.
+ * It's specifically for inclusion in generate_application_pdf_without_exit.php.
  */
 
 // Include necessary files
 require_once '../includes/config.php';
 require_admin_login();
 
+// Check if safe_text function already exists
+if (!function_exists('safe_text')) {
+    /**
+     * Safely convert potentially null values to string
+     * Prevents "Deprecated: strlen(): Passing null to parameter #1 ($string) of type string is deprecated" warning in TCPDF
+     * 
+     * @param mixed $text The text value that might be null
+     * @return string A safe string value
+     */
+    function safe_text($text) {
+        return ($text === null) ? '' : (string)$text;
+    }
+}
+
 // Ensure an 'id' parameter is provided (allow '0' as valid)
 if (!isset($_GET['id'])) {
     $_SESSION['message'] = "No application ID specified.";
     redirect('/admin/applications.php');
+    return false;
 }
 $id = $_GET['id'];
 $mode = $_GET['mode'] ?? 'preview'; // Default to preview mode instead of download
@@ -27,6 +42,7 @@ $application = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$application) {
     $_SESSION['message'] = "Application not found.";
     redirect('/admin/applications.php');
+    return false;
 }
 
 // Include TCPDF and FPDI
@@ -35,20 +51,6 @@ require_once '../vendor/autoload.php';
 // Check if FPDI is properly installed
 if (!class_exists('setasign\Fpdi\Tcpdf\Fpdi')) {
     die("FPDI library not found. Please run 'composer require setasign/fpdi' to install the FPDI library.");
-}
-
-// Add a safe_text function at the beginning of the file to handle potential null values
-// This will prevent the "Deprecated: strlen(): Passing null to parameter #1 ($string) of type string is deprecated" warning
-
-/**
- * Safely convert potentially null values to string
- * Prevents "Deprecated: strlen(): Passing null to parameter #1 ($string) of type string is deprecated" warning in TCPDF
- * 
- * @param mixed $text The text value that might be null
- * @return string A safe string value
- */
-function safe_text($text) {
-    return ($text === null) ? '' : (string)$text;
 }
 
 // Create new PDF document using FPDI
@@ -148,86 +150,86 @@ if (!file_exists($template_file)) {
                     $pdf->SetDrawColor(0, 0, 0);
                 }
                 
-                $pdf->SetFont('helvetica', '', 10);
-            
+                // Add all the personal information, addresses, etc.
+                // This includes exactly the same logic as in generate_application_pdf.php
+                
                 // Branch and ID information
-                $pdf->SetFont('helvetica', '', 7); // Set smaller font size using helvetica
-                $pdf->SetXY(21, 24); // Branch
+                $pdf->SetFont('helvetica', '', 7);
+                $pdf->SetXY(21, 24);
                 $pdf->Write(0, safe_text($application['branch']));
                 
-                $pdf->SetXY(26.5, 28); // CID No
+                $pdf->SetXY(26.5, 28);
                 $pdf->Write(0, safe_text($application['cid_no']));
                 
-                $pdf->SetXY(37, 31.5); // Center No
+                $pdf->SetXY(37, 31.5);
                 $pdf->Write(0, safe_text($application['center_no'] ?: ''));
                 
-                $pdf->SetFont('helvetica', '', 10); // Set smaller font size using helvetica
-
-
+                $pdf->SetFont('helvetica', '', 10);
+                
                 // Check plans and classification checkboxes
                 // Plan checkboxes
                 if (in_array('BLIP', $plans)) {
-                    $pdf->SetXY(131.3, 31.5); // X,Y coordinate for BLIP checkbox (adjust as needed)
+                    $pdf->SetXY(131.3, 31.5);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('LPIP', $plans)) {
-                    $pdf->SetXY(131.3, 34.8); // X,Y coordinate for LPIP checkbox (adjust as needed)
+                    $pdf->SetXY(131.3, 34.8);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('LMIP', $plans)) {
-                    $pdf->SetXY(131.3, 38); // X,Y coordinate for LMIP checkbox (adjust as needed)
+                    $pdf->SetXY(131.3, 38);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('CLIP', $plans)) {
-                    $pdf->SetXY(170.5, 28.5); // X,Y coordinate for CLIP checkbox (adjust as needed)
+                    $pdf->SetXY(170.5, 28.5);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('MRI', $plans)) {
-                    $pdf->SetXY(170.5, 31.7); // X,Y coordinate for MRI checkbox (adjust as needed)
+                    $pdf->SetXY(170.5, 31.7);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('GLIP', $plans)) {
-                    $pdf->SetXY(170.5, 38); // X,Y coordinate for GLIP checkbox (adjust as needed)
+                    $pdf->SetXY(170.5, 38);
                     $pdf->Write(0, 'X');
                 }
                 
                 // Classification checkboxes
                 if (in_array('Borrower', $classification)) {
-                    $pdf->SetXY(82.5, 26.5); // X,Y coordinate for Borrower checkbox (adjust as needed)
+                    $pdf->SetXY(82.5, 26.5);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('TKP', $classification)) {
-                    $pdf->SetXY(82.5, 26.5); // X,Y coordinate for TKP Kapamilya checkbox (adjust as needed)
+                    $pdf->SetXY(82.5, 26.5);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('TMP', $classification)) {
-                    $pdf->SetXY(82.5, 29.9); // X,Y coordinate for TMP checkbox (adjust as needed)
+                    $pdf->SetXY(82.5, 29.9);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('TPP', $classification)) {
-                    $pdf->SetXY(82.5, 33); // X,Y coordinate for TPP checkbox (adjust as needed)
+                    $pdf->SetXY(82.5, 33);
                     $pdf->Write(0, 'X');
                 }
                 if (in_array('Kapamilya', $classification)) {
-                    $pdf->SetXY(116.5, 26.5); // X,Y coordinate for OG checkbox (adjust as needed)
+                    $pdf->SetXY(116.5, 26.5);
                     $pdf->Write(0, 'X');
                 }
                 
                 // Personal Information
                 // Last Name
-                $pdf->SetXY(32, 55.9); 
+                $pdf->SetXY(32, 55.9);
                 $pdf->Write(0, safe_text($application['last_name']));
                 
                 // First Name
-                $pdf->SetXY(33, 64.5); 
+                $pdf->SetXY(33, 64.5);
                 $pdf->Write(0, safe_text($application['first_name']));
                 
                 // Middle Name
-                $pdf->SetXY(47, 71.5); 
+                $pdf->SetXY(47, 71.5);
                 $pdf->Write(0, safe_text($application['middle_name'] ?: ''));
                 
                 // Date of birth with proper format
-                $pdf->SetXY(100, 66); 
+                $pdf->SetXY(100, 66);
                 $pdf->Write(0, date('m/d/Y', strtotime(safe_text($application['birthdate']))));
                 
                 // Gender checkboxes
@@ -256,70 +258,70 @@ if (!file_exists($template_file)) {
                 }
                 
                 // Age
-                $pdf->SetXY(150, 65); 
+                $pdf->SetXY(150, 65);
                 $pdf->Write(0, safe_text($application['age']));
                 
                 // Birth Place
-                $pdf->SetXY(85, 72.9); 
+                $pdf->SetXY(85, 72.9);
                 $pdf->Write(0, safe_text($application['birth_place']));
                 
                 // Nationality
-                $pdf->SetXY(152, 72.8); 
+                $pdf->SetXY(152, 72.8);
                 $pdf->Write(0, safe_text($application['nationality']));
                 
                 // Mother's Maiden Name
-                $pdf->SetXY(140, 81); 
+                $pdf->SetXY(140, 81);
                 $pdf->Write(0, safe_text($application['mothers_maiden_last_name'] . ', ' . $application['mothers_maiden_first_name'] . ' ' . $application['mothers_maiden_middle_name']));
                 
                 // TIN/SSS/GSIS Number
                 $pdf->SetFont('helvetica', '', 7);
-                $pdf->SetXY(115.5, 77.3); 
+                $pdf->SetXY(115.5, 77.3);
                 $pdf->Write(0, safe_text($application['id_number']));
                 
                 // Other ID
-                $pdf->SetXY(96.5, 84.2); 
+                $pdf->SetXY(96.5, 84.2);
                 $pdf->Write(0, safe_text($application['other_valid_ids']));
-                $pdf->SetFont('helvetica', '', 10); // Set smaller font size using helvetica
-
+                $pdf->SetFont('helvetica', '', 10);
+                
                 // Cell Phone
-                $pdf->SetXY(20, 83); 
+                $pdf->SetXY(20, 83);
                 $pdf->Write(0, '+63' . safe_text($application['cell_phone']));
-                       
+                
                 // Telephone
                 $pdf->SetXY(34, 77);
                 $pdf->Write(0, safe_text($application['contact_no'] ?: 'N/A'));
                 
                 // Addresses
                 // Present Address
-                $pdf->SetFont('helvetica', '', 7); // Set smaller font size using helvetica
-                $pdf->SetXY(3, 91); 
+                $pdf->SetFont('helvetica', '', 7);
+                $pdf->SetXY(3, 91);
                 $pdf->Write(0, safe_text($application['present_address']));
                 
                 // Permanent Address
-                $pdf->SetFont('helvetica', '', 6); // Set smaller font size using helvetica
-                $pdf->SetXY(117, 91); 
+                $pdf->SetFont('helvetica', '', 6);
+                $pdf->SetXY(117, 91);
                 $pdf->Write(0, safe_text($application['permanent_address']));
-
-                $pdf->SetFont('helvetica', '', 7); // Set smaller font size using helvetica
- 
+                
+                $pdf->SetFont('helvetica', '', 7);
+                
                 // Present ZIP
-                $pdf->SetXY(190, 91.5); 
+                $pdf->SetXY(190, 91.5);
                 $pdf->Write(0, safe_text($application['present_zip_code']));
                 
                 // Permanent ZIP
-                $pdf->SetXY(98, 91.5); 
+                $pdf->SetXY(98, 91.5);
                 $pdf->Write(0, safe_text($application['permanent_zip_code']));
-          
+                
                 // Present Brgy Code
-                $pdf->SetXY(101, 87.7); 
+                $pdf->SetXY(101, 87.7);
                 $pdf->Write(0, safe_text($application['present_brgy_code']));
-
+                
                 // Permanent Brgy Code
-                $pdf->SetXY(192, 87.7); 
+                $pdf->SetXY(192, 87.7);
                 $pdf->Write(0, safe_text($application['permanent_brgy_code']));
-
-                $pdf->SetFont('helvetica', '', 10); // Reset to default font size
-
+                
+                $pdf->SetFont('helvetica', '', 10);
+                
                 // Home ownership checkbox
                 if ($application['home_ownership'] == 'Owned') {
                     $pdf->SetXY(30, 94.5);
@@ -331,27 +333,26 @@ if (!file_exists($template_file)) {
                     $pdf->SetXY(59.1, 94.5);
                     $pdf->Write(0, 'X');
                 }
-
+                
                 // Length of Stay
-                $pdf->SetXY(173, 94.5); 
+                $pdf->SetXY(173, 94.5);
                 $pdf->Write(0, safe_text($application['length_of_stay'] . ' year(s)'));
-
-
-                    // Section 2
-                    // Business Information
+                
+                // Section 2
+                // Business Information
                 // Primary Business
-                $pdf->SetFont('helvetica', '', 8); 
-                $pdf->SetXY(78, 103.5); 
+                $pdf->SetFont('helvetica', '', 8);
+                $pdf->SetXY(78, 103.5);
                 $pdf->Write(0, safe_text($application['primary_business']));
-
+                
                 // Business Address
-                $pdf->SetXY(131, 106.8); 
+                $pdf->SetXY(131, 106.8);
                 $pdf->Write(0, safe_text($application['business_address'] ?: 'N/A'));
                 
                 // Years in Business
-                $pdf->SetXY(53.5, 107); 
+                $pdf->SetXY(53.5, 107);
                 $pdf->Write(0, safe_text($application['years_in_business'] . ' year(s)'));
-
+                
                 // Other Income Sources (if any)
                 if (!empty($application["other_income_source_1"])) {
                     $pdf->SetXY(43.7, 110.5);
@@ -371,9 +372,9 @@ if (!file_exists($template_file)) {
                     $pdf->SetXY(171, 110.5);
                     $pdf->Write(0, safe_text($application["other_income_source_4"]));
                 }
-
+                
                 // Spouse Information (if married)
-                $pdf->SetFont('helvetica', '', 10); // Reset to default font size
+                $pdf->SetFont('helvetica', '', 10);
                 if ($application['civil_status'] === 'Married' && !empty($application['spouse_name'])) {
                     // Name
                     $pdf->SetXY(5, 122);
@@ -391,240 +392,66 @@ if (!file_exists($template_file)) {
                     $pdf->SetFont('helvetica', '', 7);
                     $pdf->SetXY(119, 124.8);
                     $pdf->Write(0, safe_text($application['spouse_id_number']));
-
+                    
                     // Spouse Age
-
                     $pdf->SetXY(173, 124.8);
                     $pdf->Write(0, safe_text($application['spouse_age']));
                 }
-
-     
+                
                 // Beneficiaries
                 // Function to add beneficiary in table format
                 $pdf->SetFont('helvetica', '', 10);
                 $beneficiary_y_start = 139;
                 $beneficiary_y_increment = 4.7;
                 
-                // First beneficiary
-                if (!empty($application['beneficiary_fn_1'])) {
-                    $pdf->SetXY(5, $beneficiary_y_start);
-                    $pdf->Write(0, safe_text($application['beneficiary_ln_1']));
-                    
-                    $pdf->SetXY(50, $beneficiary_y_start);
-                    $pdf->Write(0, safe_text($application['beneficiary_fn_1']));
-                    
-                    if (!empty($application['beneficiary_mi_1'])) {
-                        $pdf->SetXY(95, $beneficiary_y_start);
-                        $pdf->Write(0, safe_text($application['beneficiary_mi_1'] . '.'));
-                    }
-                    
-                    if (!empty($application['beneficiary_birthdate_1'])) {
-                        $birthdate = strtotime(safe_text($application['beneficiary_birthdate_1']));
+                // Add all beneficiaries
+                for ($i = 1; $i <= 5; $i++) {
+                    if (!empty($application['beneficiary_fn_' . $i])) {
+                        $y_pos = $beneficiary_y_start + ($i - 1) * $beneficiary_y_increment;
                         
-                        // month    
-                        $pdf->SetXY(106, $beneficiary_y_start);
-                        $pdf->Write(0, date('m', $birthdate));
-
-                        // day
-                        $pdf->SetXY(117, $beneficiary_y_start);
-                        $pdf->Write(0, date('d', $birthdate));
+                        $pdf->SetXY(5, $y_pos);
+                        $pdf->Write(0, safe_text($application['beneficiary_ln_' . $i]));
                         
-                        // year
-                        $pdf->SetXY(125.5, $beneficiary_y_start);
-                        $pdf->Write(0, date('Y', $birthdate));
-                    }
-                    
-                    //beneficiary gender
-                    $pdf->SetXY(140, $beneficiary_y_start);
-                    $pdf->Write(0, safe_text($application['beneficiary_gender_1']));
-                    
-                    //beneficiary relationship
-                    $pdf->SetXY(151, $beneficiary_y_start);
-                    $pdf->Write(0, safe_text($application['beneficiary_relationship_1'])); 
-
-                    // beneficiary dependent    
-                    if ($application['beneficiary_dependent_1'] == 1) {
-                    $pdf->SetXY(196.9, $beneficiary_y_start);
-                    $pdf->Write(0, '/'); 
+                        $pdf->SetXY(50, $y_pos);
+                        $pdf->Write(0, safe_text($application['beneficiary_fn_' . $i]));
+                        
+                        if (!empty($application['beneficiary_mi_' . $i])) {
+                            $pdf->SetXY(95, $y_pos);
+                            $pdf->Write(0, safe_text($application['beneficiary_mi_' . $i] . '.'));
+                        }
+                        
+                        if (!empty($application['beneficiary_birthdate_' . $i])) {
+                            $birthdate = strtotime(safe_text($application['beneficiary_birthdate_' . $i]));
+                            
+                            // month    
+                            $pdf->SetXY(106, $y_pos);
+                            $pdf->Write(0, date('m', $birthdate));
+                            
+                            // day
+                            $pdf->SetXY(117, $y_pos);
+                            $pdf->Write(0, date('d', $birthdate));
+                            
+                            // year
+                            $pdf->SetXY(125.5, $y_pos);
+                            $pdf->Write(0, date('Y', $birthdate));
+                        }
+                        
+                        //beneficiary gender
+                        $pdf->SetXY(140, $y_pos);
+                        $pdf->Write(0, safe_text($application['beneficiary_gender_' . $i]));
+                        
+                        //beneficiary relationship
+                        $pdf->SetXY(151, $y_pos);
+                        $pdf->Write(0, safe_text($application['beneficiary_relationship_' . $i]));
+                        
+                        // beneficiary dependent    
+                        if ($application['beneficiary_dependent_' . $i] == 1) {
+                            $pdf->SetXY(196.9, $y_pos);
+                            $pdf->Write(0, '/');
+                        }
                     }
                 }
-
-                // Second beneficiary
-                if (!empty($application['beneficiary_fn_2'])) {
-                    $pdf->SetXY(5, $beneficiary_y_start + $beneficiary_y_increment);
-                    $pdf->Write(0, safe_text($application['beneficiary_ln_2']));
-                    
-                    $pdf->SetXY(50, $beneficiary_y_start + $beneficiary_y_increment);
-                    $pdf->Write(0, safe_text($application['beneficiary_fn_2']));
-                    
-                    if (!empty($application['beneficiary_mi_2'])) {
-                        $pdf->SetXY(95, $beneficiary_y_start + $beneficiary_y_increment);
-                        $pdf->Write(0, safe_text($application['beneficiary_mi_2'] . '.'));
-                    }
-                    
-                    if (!empty($application['beneficiary_birthdate_2'])) {
-                        $birthdate = strtotime(safe_text($application['beneficiary_birthdate_2']));
-                        
-                        // month    
-                        $pdf->SetXY(106, $beneficiary_y_start + $beneficiary_y_increment);
-                        $pdf->Write(0, date('m', $birthdate));
-
-                        // day
-                        $pdf->SetXY(117, $beneficiary_y_start + $beneficiary_y_increment);
-                        $pdf->Write(0, date('d', $birthdate));
-                        
-                        // year
-                        $pdf->SetXY(125.5, $beneficiary_y_start + $beneficiary_y_increment);
-                        $pdf->Write(0, date('Y', $birthdate));
-                    }
-                    
-                    //beneficiary gender
-                    $pdf->SetXY(140, $beneficiary_y_start + $beneficiary_y_increment);
-                    $pdf->Write(0, safe_text($application['beneficiary_gender_2']));
-                    
-                    //beneficiary relationship
-                    $pdf->SetXY(151, $beneficiary_y_start + $beneficiary_y_increment);
-                    $pdf->Write(0, safe_text($application['beneficiary_relationship_2'])); 
-
-                    // beneficiary dependent    
-                    if ($application['beneficiary_dependent_2'] == 1) {
-                    $pdf->SetXY(196.9, $beneficiary_y_start + $beneficiary_y_increment);
-                    $pdf->Write(0, '/'); 
-                    }
-                }
-
-                // Third beneficiary
-                if (!empty($application['beneficiary_fn_3'])) {
-                    $pdf->SetXY(5, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                    $pdf->Write(0, safe_text($application['beneficiary_ln_3']));
-                    
-                    $pdf->SetXY(50, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                    $pdf->Write(0, safe_text($application['beneficiary_fn_3']));
-                    
-                    if (!empty($application['beneficiary_mi_3'])) {
-                        $pdf->SetXY(95, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                        $pdf->Write(0, safe_text($application['beneficiary_mi_3'] . '.'));
-                    }
-                    
-                    if (!empty($application['beneficiary_birthdate_3'])) {
-                        $birthdate = strtotime(safe_text($application['beneficiary_birthdate_3']));
-                        
-                        // month    
-                        $pdf->SetXY(106, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                        $pdf->Write(0, date('m', $birthdate));
-
-                        // day
-                        $pdf->SetXY(117, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                        $pdf->Write(0, date('d', $birthdate));
-                        
-                        // year
-                        $pdf->SetXY(125.5, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                        $pdf->Write(0, date('Y', $birthdate));
-                    }
-                    
-                    //beneficiary gender
-                    $pdf->SetXY(140, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                    $pdf->Write(0, safe_text($application['beneficiary_gender_3']));
-                    
-                    //beneficiary relationship
-                    $pdf->SetXY(151, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                    $pdf->Write(0, safe_text($application['beneficiary_relationship_3'])); 
-
-                    // beneficiary dependent    
-                    if ($application['beneficiary_dependent_3'] == 1) {
-                    $pdf->SetXY(196.9, $beneficiary_y_start + ($beneficiary_y_increment * 2));
-                    $pdf->Write(0, '/'); 
-                    }
-                }
-
-                // Fourth beneficiary
-                if (!empty($application['beneficiary_fn_4'])) {
-                    $pdf->SetXY(5, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                    $pdf->Write(0, safe_text($application['beneficiary_ln_4']));
-                    
-                    $pdf->SetXY(50, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                    $pdf->Write(0, safe_text($application['beneficiary_fn_4']));
-                    
-                    if (!empty($application['beneficiary_mi_4'])) {
-                        $pdf->SetXY(95, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                        $pdf->Write(0, safe_text($application['beneficiary_mi_4'] . '.'));
-                    }
-                    
-                    if (!empty($application['beneficiary_birthdate_4'])) {
-                        $birthdate = strtotime(safe_text($application['beneficiary_birthdate_4']));
-                        
-                        // month    
-                        $pdf->SetXY(106, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                        $pdf->Write(0, date('m', $birthdate));
-
-                        // day
-                        $pdf->SetXY(117, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                        $pdf->Write(0, date('d', $birthdate));
-                        
-                        // year
-                        $pdf->SetXY(125.5, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                        $pdf->Write(0, date('Y', $birthdate));
-                    }
-                    
-                    //beneficiary gender
-                    $pdf->SetXY(140, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                    $pdf->Write(0, safe_text($application['beneficiary_gender_4']));
-                    
-                    //beneficiary relationship
-                    $pdf->SetXY(151, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                    $pdf->Write(0, safe_text($application['beneficiary_relationship_4'])); 
-
-                    // beneficiary dependent    
-                    if ($application['beneficiary_dependent_4'] == 1) {
-                    $pdf->SetXY(196.9, $beneficiary_y_start + ($beneficiary_y_increment * 3));
-                    $pdf->Write(0, '/'); 
-                    }
-                }
-
-                // Fifth beneficiary
-                if (!empty($application['beneficiary_fn_5'])) {
-                    $pdf->SetXY(5, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                    $pdf->Write(0, safe_text($application['beneficiary_ln_5']));
-                    
-                    $pdf->SetXY(50, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                    $pdf->Write(0, safe_text($application['beneficiary_fn_5']));
-                    
-                    if (!empty($application['beneficiary_mi_5'])) {
-                        $pdf->SetXY(95, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                        $pdf->Write(0, safe_text($application['beneficiary_mi_5'] . '.'));
-                    }
-                    
-                    if (!empty($application['beneficiary_birthdate_5'])) {
-                        $birthdate = strtotime(safe_text($application['beneficiary_birthdate_5']));
-                        
-                        // month    
-                        $pdf->SetXY(106, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                        $pdf->Write(0, date('m', $birthdate));
-
-                        // day
-                        $pdf->SetXY(117, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                        $pdf->Write(0, date('d', $birthdate));
-                        
-                        // year
-                        $pdf->SetXY(125.5, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                        $pdf->Write(0, date('Y', $birthdate));
-                    }
-                    
-                    //beneficiary gender
-                    $pdf->SetXY(140, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                    $pdf->Write(0, safe_text($application['beneficiary_gender_5']));
-                    
-                    //beneficiary relationship
-                    $pdf->SetXY(151, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                    $pdf->Write(0, safe_text($application['beneficiary_relationship_5'])); 
-
-                    // beneficiary dependent    
-                    if ($application['beneficiary_dependent_5'] == 1) {
-                        $pdf->SetXY(196.9, $beneficiary_y_start + ($beneficiary_y_increment * 4));
-                        $pdf->Write(0, '/'); 
-                    }
-                }
-
+                
                 // Trustee Information
                 if (!empty($application['trustee_name'])) {
                     $pdf->SetXY(47, 167.2);
@@ -640,106 +467,82 @@ if (!file_exists($template_file)) {
                         $pdf->Write(0, safe_text($application['trustee_relationship']));
                     }
                 }
-
+                
                 // Member Signature Image PAGE 1
                 if (!empty($application['member_signature'])) {
                     $dbPathMember = $application['member_signature'];
-                
-                    // Remove the leading slash from the database path
                     $cleanedDbPathMember = ltrim($dbPathMember, '/');
-                
-                    // Construct the relative path from the script's location (TSPI/admin)
-                    // to the signatures directory (TSPI/uploads/signatures)
                     $imagePathMember = '../' . $cleanedDbPathMember;
-                
-                    // Resolve the relative path to an absolute file system path
                     $resolvedImagePathMember = realpath($imagePathMember);
-                
-                    // Check if the file exists at the resolved path before attempting to insert
+                    
                     if ($resolvedImagePathMember && file_exists($resolvedImagePathMember)) {
                         $pdf->Image($resolvedImagePathMember, 32, 232.5, 30, 15);
-                    } else {
-     
                     }
                 }
-
+                
                 // Date Signed PAGE 1
                 $pdf->SetY(237.5);
                 $pdf->SetX(123);
                 $pdf->Write(0, date('F j, Y', strtotime(safe_text($application['created_at']))));
-
+                
                 $pdf->SetXY(172.5, 237.5); // CID No
                 $pdf->Write(0, safe_text($application['cid_no']));
-            
-
-            } 
-            elseif ($pageNo == 2) {
-                // PAGE 2 - Business Information, Beneficiaries, Trustee
+                
+            } elseif ($pageNo == 2) {
+                // PAGE 2 content
                 
                 // Member Signature Name
                 $startX1 = 0;
-                $widthOfCenteringArea = 112.5; // 170 - 40 = 130
-
+                $widthOfCenteringArea = 112.5;
+                
                 $pdf->SetY(253.5);
-                $pdf->SetX($startX1); // Move to your desired starting X
+                $pdf->SetX($startX1);
                 $pdf->Cell($widthOfCenteringArea, 10, safe_text($application['member_name']), 0, 0, 'C');
-              
+                
                 // Member Signature Image
                 if (!empty($application['member_signature'])) {
                     $dbPathMember = $application['member_signature'];
-                
-                    // Remove the leading slash from the database path
                     $cleanedDbPathMember = ltrim($dbPathMember, '/');
-                
-                    // Construct the relative path from the script's location (TSPI/admin)
-                    // to the signatures directory (TSPI/uploads/signatures)
                     $imagePathMember = '../' . $cleanedDbPathMember;
-                
-                    // Resolve the relative path to an absolute file system path
                     $resolvedImagePathMember = realpath($imagePathMember);
-                
-                    // Check if the file exists at the resolved path before attempting to insert
+                    
                     if ($resolvedImagePathMember && file_exists($resolvedImagePathMember)) {
                         $pdf->Image($resolvedImagePathMember, 95, 247.5, 40, 20);
                     }
                 }
                 
                 // Add approval information to page 2
-                // LO name at positions 100,295 and 100,290
+                // LO name and signature
                 if (!empty($application['lo_name'])) {
                     $pdf->SetXY(85, 294);
                     $pdf->Write(0, safe_text($application['lo_name']));
-        
-                                       // LO signature image
-                if (!empty($application['lo_signature'])) {
-                    $dbPathLO = $application['lo_signature'];
-                    $cleanedDbPathLO = ltrim($dbPathLO, '/');
-                    $imagePathLO = '../' . $cleanedDbPathLO;
-                    $resolvedImagePathLO = realpath($imagePathLO);
                     
-                    if ($resolvedImagePathLO && file_exists($resolvedImagePathLO)) {
-                        // Insert at two positions as specified
-                        $pdf->Image($resolvedImagePathLO, 87, 285, 30, 15);
+                    if (!empty($application['lo_signature'])) {
+                        $dbPathLO = $application['lo_signature'];
+                        $cleanedDbPathLO = ltrim($dbPathLO, '/');
+                        $imagePathLO = '../' . $cleanedDbPathLO;
+                        $resolvedImagePathLO = realpath($imagePathLO);
+                        
+                        if ($resolvedImagePathLO && file_exists($resolvedImagePathLO)) {
+                            $pdf->Image($resolvedImagePathLO, 87, 285, 30, 15);
+                        }
                     }
-                }
                 }
                 
                 // Secretary name and signature
                 if (!empty($application['secretary_name'])) {
                     $pdf->SetXY(150, 294);
                     $pdf->Write(0, safe_text($application['secretary_name']));
-                }
-                
-                if (!empty($application['secretary_signature'])) {
-                               
-                    // Insert the actual secretary signature image
-                    $dbPathSecretary = $application['secretary_signature'];
-                    $cleanedDbPathSecretary = ltrim($dbPathSecretary, '/');
-                    $imagePathSecretary = '../' . $cleanedDbPathSecretary;
-                    $resolvedImagePathSecretary = realpath($imagePathSecretary);
                     
-                    if ($resolvedImagePathSecretary && file_exists($resolvedImagePathSecretary)) {
-                        $pdf->Image($resolvedImagePathSecretary, 150, 288, 30, 15);
+                    if (!empty($application['secretary_signature'])) {
+                        $dbPathSecretary = $application['secretary_signature'];
+                        $cleanedDbPathSecretary = ltrim($dbPathSecretary, '/');
+                        $imagePathSecretary = '../' . $cleanedDbPathSecretary;
+                        $resolvedImagePathSecretary = realpath($imagePathSecretary);
+                        
+                        if ($resolvedImagePathSecretary && file_exists($resolvedImagePathSecretary)) {
+                            $pdf->Image($resolvedImagePathSecretary, 150, 288, 30, 15);
+                        }
                     }
                 }
                 
@@ -761,8 +564,6 @@ if (!file_exists($template_file)) {
                     $pdf->Write(0, safe_text($application['io_name']));
                     
                     if (!empty($application['io_signature'])) {
-                                   
-                        // Insert the actual IO signature image
                         $dbPathIO = $application['io_signature'];
                         $cleanedDbPathIO = ltrim($dbPathIO, '/');
                         $imagePathIO = '../' . $cleanedDbPathIO;
@@ -774,63 +575,42 @@ if (!file_exists($template_file)) {
                     }
                 }
                 
-          
-                
                 // IO signed date
                 if (!empty($application['io_approval_date'])) {
                     $pdf->SetXY(170, 308);
                     $pdf->Write(0, date('m/d/Y', strtotime(safe_text($application['io_approval_date']))));
                 }
                 
- 
-               
                 // Signed Date Member
                 $pdf->SetY(257);
                 $pdf->SetX(153);
                 $pdf->Write(0, date('F j, Y', strtotime(safe_text($application['created_at']))));
-            
-
-
                 
+                // Beneficiary signature section
                 if (!empty($application['sig_beneficiary_name'])) {
-                // Beneficiary Signature Name
-                $startX2 = 5;
-                $widthOfCenteringArea = 112.5; // 170 - 40 = 130
-
-                $pdf->SetY(269);
-                $pdf->SetX($startX2); // Move to your desired starting X
-                $pdf->Cell($widthOfCenteringArea, 10, safe_text($application['sig_beneficiary_name']), 0, 0, 'C');
-              
-                // Beneficiary Signature Image
-       
-                    $dbPathBeneficiary = $application['beneficiary_signature'];
-                
-                    // Remove the leading slash from the database path
-                    $cleanedDbPathBeneficiary = ltrim($dbPathBeneficiary, '/');
-                
-                    // Construct the relative path
-                    $imagePathBeneficiary = '../' . $cleanedDbPathBeneficiary;
-                
-                    // Resolve the relative path to an absolute file system path
-                    $resolvedImagePathBeneficiary = realpath($imagePathBeneficiary);
-                
-                    // Check if the file exists at the resolved path before attempting to insert
-                    if ($resolvedImagePathBeneficiary && file_exists($resolvedImagePathBeneficiary)) {
-                        // Insert Beneficiary Signature Image (example coordinates, adjusted from member's)
-                        $pdf->Image($resolvedImagePathBeneficiary, 95, 257.5, 40, 20);
-                        }
-              
+                    // Beneficiary Signature Name
+                    $startX2 = 5;
+                    $widthOfCenteringArea = 112.5;
                     
-                $pdf->SetY(272);
-                $pdf->SetX(153);
-                $pdf->Write(0, date('F j, Y', strtotime(safe_text($application['created_at']))));
-            
+                    $pdf->SetY(269);
+                    $pdf->SetX($startX2);
+                    $pdf->Cell($widthOfCenteringArea, 10, safe_text($application['sig_beneficiary_name']), 0, 0, 'C');
+                    
+                    // Beneficiary Signature Image
+                    $dbPathBeneficiary = $application['beneficiary_signature'];
+                    $cleanedDbPathBeneficiary = ltrim($dbPathBeneficiary, '/');
+                    $imagePathBeneficiary = '../' . $cleanedDbPathBeneficiary;
+                    $resolvedImagePathBeneficiary = realpath($imagePathBeneficiary);
+                    
+                    if ($resolvedImagePathBeneficiary && file_exists($resolvedImagePathBeneficiary)) {
+                        $pdf->Image($resolvedImagePathBeneficiary, 95, 257.5, 40, 20);
+                    }
+                    
+                    $pdf->SetY(272);
+                    $pdf->SetX(153);
+                    $pdf->Write(0, date('F j, Y', strtotime(safe_text($application['created_at']))));
                 }
-                
             }
-            
-            // Add status information at bottom of last page
-       
         }
     } catch (Exception $e) {
         $pdf->AddPage();
@@ -843,13 +623,15 @@ if (!file_exists($template_file)) {
 $filename = 'TSPI_Membership_' . $application['id'] . '_' . str_replace(' ', '_', $application['last_name']) . '.pdf';
 
 if (isset($_GET['output_path']) && $mode === 'save') {
-    // Save to specified file path
+    // Save to specified file path - no exit
     $pdf->Output($_GET['output_path'], 'F');
+    return true;
 } else if ($mode === 'download') {
-    // Output as download
-    $pdf->Output($filename, 'D'); // 'D' means download
+    // Output as download - no exit
+    $pdf->Output($filename, 'D');
+    return true;
 } else {
-    // Output inline (preview in browser)
-    $pdf->Output($filename, 'I'); // 'I' means inline
-}
-exit; 
+    // Output inline - no exit
+    $pdf->Output($filename, 'I');
+    return true;
+} 

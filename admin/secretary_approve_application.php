@@ -12,6 +12,10 @@ require_once '../includes/config.php';
 require_once '../includes/functions_logging.php';
 require_admin_login();
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Check if the user has secretary privileges
 $current_user = get_admin_user();
 // Set $current_admin for header.php to use
@@ -21,12 +25,14 @@ if ($current_user['role'] !== 'secretary') {
     $_SESSION['message'] = "You don't have permission to perform final approval.";
     log_message("Access denied: User {$current_user['username']} attempted to access secretary approval without proper role", 'warning', 'access');
     redirect('/admin/index.php');
+    exit;
 }
 
 // Ensure an 'id' parameter is provided
 if (!isset($_GET['id'])) {
     $_SESSION['message'] = "No application ID specified.";
     redirect('/admin/applications.php');
+    exit;
 }
 $id = $_GET['id'];
 
@@ -42,6 +48,7 @@ if (!$application) {
     $_SESSION['message'] = "Application not found.";
     log_message("Error: Secretary attempted to approve non-existent application ID: $id", 'error', 'approval_error');
     redirect('/admin/applications.php');
+    exit;
 }
 
 // Check if both IO and LO have approved
@@ -49,12 +56,14 @@ if ($application['io_approved'] !== 'approved' || $application['lo_approved'] !=
     $_SESSION['message'] = "Cannot perform final approval. Both Insurance Officer and Loan Officer must approve first.";
     log_message("Error: Secretary attempted to approve application ID: $id without prior IO/LO approval", 'warning', 'approval_error');
     redirect('/admin/view_application.php?id=' . $id);
+    exit;
 }
 
 // Check if application is already approved by secretary
 if ($application['secretary_approved'] === 'approved') {
     $_SESSION['message'] = "This application has already been given final approval.";
     redirect('/admin/view_application.php?id=' . $id);
+    exit;
 }
 
 $errors = [];
@@ -62,27 +71,30 @@ $success = false;
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $secretary_name = $_POST['secretary_name'] ?? '';
-    $secretary_comments = $_POST['secretary_comments'] ?? '';
-    $signature_data = $_POST['signature'] ?? '';
-    $approval_action = $_POST['approval_action'] ?? '';
-    $send_email = true; // Always send email for approved applications
-    
-    // Validate inputs
-    if (empty($secretary_name)) {
-        $errors[] = "Your name is required";
-    }
-    
-    if (empty($signature_data)) {
-        $errors[] = "Signature is required";
-    }
-    
-    if (empty($approval_action) || !in_array($approval_action, ['approved', 'rejected'])) {
-        $errors[] = "Please select a valid approval action";
-    }
-    
-    if (empty($errors)) {
-        try {
+    try {
+        // Debug - Log POST data
+        file_put_contents('../logs/secretary_approval_post_data_' . time() . '.json', json_encode($_POST, JSON_PRETTY_PRINT));
+
+        $secretary_name = $_POST['secretary_name'] ?? '';
+        $secretary_comments = $_POST['secretary_comments'] ?? '';
+        $signature_data = $_POST['signature'] ?? '';
+        $approval_action = $_POST['approval_action'] ?? '';
+        $send_email = isset($_POST['send_email']) ? true : false; // Check if send_email is set
+        
+        // Validate inputs
+        if (empty($secretary_name)) {
+            $errors[] = "Your name is required";
+        }
+        
+        if (empty($signature_data)) {
+            $errors[] = "Signature is required";
+        }
+        
+        if (empty($approval_action) || !in_array($approval_action, ['approved', 'rejected'])) {
+            $errors[] = "Please select a valid approval action";
+        }
+        
+        if (empty($errors)) {
             $pdo->beginTransaction();
             
             // Save the signature image
@@ -99,14 +111,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $signature_data = str_replace(' ', '+', $signature_data);
                 $signature_data = base64_decode($signature_data);
                 
+                if ($signature_data === false) {
+                    throw new Exception("Failed to decode signature data");
+                }
+                
                 // Generate unique filename
                 $signature_filename = 'secretary_sig_' . $id . '_' . time() . '.png';
                 $signature_path = $uploads_dir . '/' . $signature_filename;
                 
                 // Save image
-                file_put_contents($signature_path, $signature_data);
+                $result = file_put_contents($signature_path, $signature_data);
+                if ($result === false) {
+                    throw new Exception("Failed to save signature image");
+                }
                 $signature_db_path = 'uploads/signatures/' . $signature_filename;
             }
+            
+            // Debug - Log signature data
+            $signature_debug = [
+                'signature_filename' => $signature_filename,
+                'signature_path' => $signature_path ?? 'not set',
+                'signature_db_path' => $signature_db_path ?? 'not set',
+            ];
+            file_put_contents('../logs/secretary_signature_debug_' . time() . '.json', json_encode($signature_debug, JSON_PRETTY_PRINT));
             
             // Update application status
             $stmt = $pdo->prepare("
@@ -119,13 +146,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     secretary_approval_date = NOW()
                 WHERE id = ?
             ");
-            $stmt->execute([
+            
+            $update_result = $stmt->execute([
                 $approval_action, 
                 $secretary_name, 
                 $signature_db_path, 
                 $secretary_comments, 
                 $id
             ]);
+            
+            if (!$update_result) {
+                throw new Exception("Database update failed: " . implode(", ", $stmt->errorInfo()));
+            }
             
             // Generate and assign MC numbers if approved
             if ($approval_action === 'approved') {
@@ -185,18 +217,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $updateValues[] = $id; // Add ID for WHERE clause
                     $updateQuery = "UPDATE members_information SET " . implode(', ', $updateColumns) . " WHERE id = ?";
                     $updateStmt = $pdo->prepare($updateQuery);
-                    $updateStmt->execute($updateValues);
+                    $updateResult = $updateStmt->execute($updateValues);
+                    
+                    if (!$updateResult) {
+                        throw new Exception("Failed to update MC numbers: " . implode(", ", $updateStmt->errorInfo()));
+                    }
                     
                     // Log the MC numbers generation
                     log_message("Generated MC numbers for application ID: {$id}", 'info', 'approval');
                 }
             }
             
-            log_approval_activity($id, 'secretary', $approval_action, [
-                'secretary_name' => $secretary_name,
-                'has_signature' => !empty($signature_db_path),
-                'send_email' => 'yes'
-            ]);
+            if (function_exists('log_approval_activity')) {
+                log_approval_activity($id, 'secretary', $approval_action, [
+                    'secretary_name' => $secretary_name,
+                    'has_signature' => !empty($signature_db_path),
+                    'send_email' => 'yes'
+                ]);
+            }
             
             // Verify the update worked by querying the database again
             $verify_stmt = $pdo->prepare("SELECT secretary_approved, status FROM members_information WHERE id = ?");
@@ -205,109 +243,238 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             log_message("Verification check - Secretary approval now set to: {$verify_result['secretary_approved']}, Status: {$verify_result['status']}", 'debug', 'approval_debug');
             
+            // Commit the database changes first
             $pdo->commit();
             $success = true;
             
-            // Handle email notification if application is approved
-            if ($approval_action === 'approved' && !empty($application['email'])) {
-                // Ensure email_config is included
-                require_once 'email_config.php';
-                
-                // Get plans from application
-                $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
-                
-                // Set up email message without generating PDFs
-                $html_message = <<<HTML
-                <html>
-                <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                        h1 { color: #0070f3; font-size: 24px; margin-bottom: 20px; }
-                        p { margin-bottom: 15px; }
-                        .footer { margin-top: 30px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>TSPI Membership Approved</h1>
-                        <p>Dear {$application['first_name']} {$application['last_name']},</p>
-                        <p>We are pleased to inform you that your TSPI membership application has been approved.</p>
-                        <p>Your membership ID is: <strong>{$application['cid_no']}</strong></p>
-                        <p>Your official documents can be collected from your local branch office.</p>
-                        <p>If you have any questions about your membership, please contact your assigned branch.</p>
-                        <div class="footer">
-                            <p>Thank you for choosing TSPI.</p>
-                            <p>&copy; TSPI Membership Services</p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-                HTML;
-
-                $text_message = "Dear {$application['first_name']} {$application['last_name']},\n\n"
-                    . "We are pleased to inform you that your TSPI membership application has been approved.\n\n"
-                    . "Your membership ID is: {$application['cid_no']}\n\n"
-                    . "Your official documents can be collected from your local branch office.\n\n"
-                    . "If you have any questions about your membership, please contact your assigned branch.\n\n"
-                    . "Thank you for choosing TSPI.\n\n"
-                    . "TSPI Membership Services";
-                
-                // Send email without attachments
-                try {
-                    // Define email parameters
-                    $to = $application['email'];
-                    $subject = 'TSPI Membership Application Approved';
-                    
-                    // Create email headers
-                    $headers = "From: TSPI Membership <noreply@tspi.org>\r\n";
-                    $headers .= "Reply-To: support@tspi.org\r\n";
-                    $headers .= "MIME-Version: 1.0\r\n";
-                    $boundary = md5(time());
-                    $headers .= "Content-Type: multipart/alternative; boundary=\"".$boundary."\"\r\n";
-                    
-                    // Create email body
-                    $message = "--".$boundary."\r\n";
-                    $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
-                    $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-                    $message .= $text_message."\r\n\r\n";
-                    
-                    $message .= "--".$boundary."\r\n";
-                    $message .= "Content-Type: text/html; charset=UTF-8\r\n";
-                    $message .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-                    $message .= $html_message."\r\n\r\n";
-                    $message .= "--".$boundary."--\r\n\r\n";
-                    
-                    // Send the email
-                    $mail_sent = mail($to, $subject, $message, $headers);
-                    
-                    // Log email sending result
-                    if ($mail_sent) {
-                        log_message("Email notification sent successfully to {$application['email']} for application ID: {$id}", 'info', 'email');
-                    } else {
-                        log_message("Failed to send email notification to {$application['email']} for application ID: {$id}", 'error', 'email');
-                    }
-                } catch (Exception $e) {
-                    log_message("Email sending error: " . $e->getMessage(), 'error', 'email');
-                    $mail_sent = false;
-                }
-                
-                if ($mail_sent) {
-                    $_SESSION['message'] = "Application has been approved and an email notification has been sent to the applicant.";
-                } else {
-                    $_SESSION['message'] = "Application has been approved but there was an issue sending the email notification.";
-                }
+            // Store message for redirect
+            if ($approval_action === 'approved') {
+                $_SESSION['message'] = "Application has been approved successfully.";
             } else {
                 $_SESSION['message'] = "Application has been " . $approval_action . " successfully.";
             }
             
-            // Redirect to the view application page
-            redirect('/admin/view_application.php?id=' . $id);
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $errors[] = "An error occurred: " . $e->getMessage();
-            log_message("Error in secretary approval process: " . $e->getMessage(), 'error', 'approval_error');
+            // Set a flag for redirect that we'll check at the end of the try block
+            $should_redirect = true;
+            
+            // Handle email notification in a separate try-catch block
+            // This way, if email fails, we've already committed the DB changes
+            if ($approval_action === 'approved' && !empty($application['email']) && $send_email) {
+                try {
+                    // Log that we're attempting to send email
+                    log_message("Starting email sending process for application ID: {$id}", 'info', 'email_process');
+                    
+                    // Ensure email_config is included
+                    if (!function_exists('send_email_with_attachments')) {
+                        require_once '../user/email_config.php';
+                    }
+                    
+                    // Get plans from application
+                    $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
+                    
+                    // Generate PDF files for attachments
+                    $attachments = [];
+                    
+                    // Create directory for temporary PDF files if it doesn't exist
+                    $temp_dir = '../uploads/temp';
+                    if (!is_dir($temp_dir)) {
+                        if (!mkdir($temp_dir, 0755, true)) {
+                            log_message("Failed to create temporary directory: $temp_dir", 'error', 'email');
+                        }
+                    }
+                    
+                    // Ensure the directory exists and is writable
+                    if (!is_dir($temp_dir) || !is_writable($temp_dir)) {
+                        log_message("Temporary directory $temp_dir does not exist or is not writable", 'error', 'email');
+                        $temp_dir = sys_get_temp_dir(); // Fallback to system temp directory
+                    }
+                    
+                    // Get absolute path to temp directory
+                    $abs_temp_dir = realpath($temp_dir);
+                    if (!$abs_temp_dir) {
+                        $abs_temp_dir = sys_get_temp_dir(); // Fallback to system temp directory
+                    }
+                    
+                    // Generate and save application PDF
+                    $app_pdf_path = $abs_temp_dir . '/application_' . $id . '.pdf';
+                    try {
+                        // Capture the output from generate_application_pdf.php
+                        ob_start();
+                        // Fix for undefined array key "mode"
+                        $old_mode = isset($_GET['mode']) ? $_GET['mode'] : null;
+                        $_GET['mode'] = 'save';
+                        // Use absolute path for the PDF file
+                        $_GET['output_path'] = realpath($temp_dir) . '/application_' . $id . '.pdf';
+                        
+                        // Temporarily suppress deprecation warnings for TCPDF
+                        $oldErrorLevel = error_reporting();
+                        error_reporting($oldErrorLevel & ~E_DEPRECATED);
+                        
+                        include 'generate_application_pdf.php';
+                        
+                        // Restore error reporting
+                        error_reporting($oldErrorLevel);
+                        
+                        ob_end_clean();
+                        $_GET['mode'] = $old_mode;
+                        
+                        if (file_exists($_GET['output_path'])) {
+                            $attachments[] = $_GET['output_path'];
+                        }
+                    } catch (Exception $e) {
+                        log_message("Error generating application PDF: " . $e->getMessage(), 'error', 'email');
+                    }
+                    
+                    // Generate certificate PDFs for each plan
+                    foreach ($plans as $plan) {
+                        $cert_pdf_path = realpath($temp_dir) . '/certificate_' . $id . '_' . $plan . '.pdf';
+                        try {
+                            // Capture the output from generate_certificate.php
+                            ob_start();
+                            // Fix for undefined array keys
+                            $old_mode = isset($_GET['mode']) ? $_GET['mode'] : null;
+                            $old_plan = isset($_GET['plan']) ? $_GET['plan'] : null;
+                            $_GET['mode'] = 'save';
+                            $_GET['plan'] = $plan;
+                            $_GET['output_path'] = $cert_pdf_path;
+                            
+                            // Temporarily suppress deprecation warnings for TCPDF
+                            $oldErrorLevel = error_reporting();
+                            error_reporting($oldErrorLevel & ~E_DEPRECATED);
+                            
+                            include 'generate_certificate.php';
+                            
+                            // Restore error reporting
+                            error_reporting($oldErrorLevel);
+                            
+                            ob_end_clean();
+                            $_GET['mode'] = $old_mode;
+                            $_GET['plan'] = $old_plan;
+                            
+                            if (file_exists($cert_pdf_path)) {
+                                $attachments[] = $cert_pdf_path;
+                            }
+                        } catch (Exception $e) {
+                            log_message("Error generating certificate PDF for $plan: " . $e->getMessage(), 'error', 'email');
+                        }
+                    }
+                    
+                    // Set up email message with attachments
+                    $html_message = <<<HTML
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                            h1 { color: #0070f3; font-size: 24px; margin-bottom: 20px; }
+                            p { margin-bottom: 15px; }
+                            .footer { margin-top: 30px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>TSPI Membership Approved</h1>
+                            <p>Dear {$application['first_name']} {$application['last_name']},</p>
+                            <p>We are pleased to inform you that your TSPI membership application has been approved.</p>
+                            <p>Your membership ID is: <strong>{$application['cid_no']}</strong></p>
+                            <p>Attached to this email, you will find:</p>
+                            <ul>
+                                <li>Your TSPI Membership Application Form</li>
+                                <li>Your TSPI Membership Certificate(s)</li>
+                            </ul>
+                            <p>If you have any questions about your membership, please contact your assigned branch.</p>
+                            <div class="footer">
+                                <p>Thank you for choosing TSPI.</p>
+                                <p>&copy; TSPI Membership Services</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    HTML;
+
+                    $text_message = "Dear {$application['first_name']} {$application['last_name']},\n\n"
+                        . "We are pleased to inform you that your TSPI membership application has been approved.\n\n"
+                        . "Your membership ID is: {$application['cid_no']}\n\n"
+                        . "Attached to this email, you will find:\n"
+                        . "- Your TSPI Membership Application Form\n"
+                        . "- Your TSPI Membership Certificate(s)\n\n"
+                        . "If you have any questions about your membership, please contact your assigned branch.\n\n"
+                        . "Thank you for choosing TSPI.\n\n"
+                        . "TSPI Membership Services";
+                    
+                    // Send email with attachments
+                    try {
+                        // Define email parameters
+                        $to = $application['email'];
+                        $subject = 'TSPI Membership Application Approved';
+                        
+                        // Debug email data
+                        $debug_email_data = [
+                            'recipient' => $to,
+                            'subject' => $subject,
+                            'application_id' => $id,
+                            'time' => date('Y-m-d H:i:s'),
+                            'attachments' => $attachments
+                        ];
+                        
+                        // Log email attempt
+                        log_message("Attempting to send email to: {$to}, subject: {$subject}, app ID: {$id}", 'info', 'email_debug');
+                        
+                        // Use the send_email_with_attachments function if it exists
+                        if (function_exists('send_email_with_attachments')) {
+                            $mail_sent = send_email_with_attachments($to, $subject, $text_message, $html_message, $attachments);
+                        } else {
+                            // Fallback to basic email without attachments
+                            $mail_sent = send_email($to, $subject, $html_message);
+                        }
+                        
+                        // Write debug info to file
+                        $debug_email_data['mail_sent'] = $mail_sent ? 'yes' : 'no';
+                        file_put_contents('../logs/email_status_' . $id . '.json', json_encode($debug_email_data, JSON_PRETTY_PRINT));
+                        
+                        // Log email sending result
+                        if ($mail_sent) {
+                            log_message("Email notification sent successfully to {$application['email']} for application ID: {$id}", 'info', 'email');
+                            $_SESSION['message'] .= " An email notification with certificates has been sent to the applicant.";
+                        } else {
+                            log_message("Failed to send email notification to {$application['email']} for application ID: {$id}", 'error', 'email');
+                            $_SESSION['message'] .= " But there was an issue sending the email notification.";
+                        }
+                    } catch (Exception $e) {
+                        log_message("Email sending error: " . $e->getMessage(), 'error', 'email');
+                        file_put_contents('../logs/email_exception_' . $id . '.txt', $e->getMessage() . "\n" . $e->getTraceAsString());
+                        $_SESSION['message'] .= " But there was an error sending the email: " . $e->getMessage();
+                    }
+                } catch (Exception $emailEx) {
+                    // Log email generation/sending errors but don't block the redirect
+                    log_message("Email process error: " . $emailEx->getMessage(), 'error', 'email_process');
+                    $_SESSION['message'] .= " Email could not be sent: " . $emailEx->getMessage();
+                }
+            }
+            
+            // Always redirect if we should - this ensures the redirect happens even if email processing fails
+            if ($should_redirect) {
+                log_message("Redirecting to view_application.php with id={$id}", 'info', 'redirect');
+                header("Location: view_application.php?id=" . $id);
+                exit;
+            }
         }
+    } catch (Exception $e) {
+        // If an exception occurred, roll back the transaction
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        
+        // Log the error and add to errors array
+        $errors[] = "An error occurred: " . $e->getMessage();
+        log_message("Error in secretary approval process: " . $e->getMessage() . "\n" . $e->getTraceAsString(), 'error', 'approval_error');
+        
+        // Write detailed error to log file for debugging
+        file_put_contents('../logs/secretary_approval_error_' . time() . '.txt', 
+            "Error: " . $e->getMessage() . "\n" . 
+            "Trace: " . $e->getTraceAsString() . "\n" . 
+            "POST data: " . json_encode($_POST, JSON_PRETTY_PRINT) . "\n"
+        );
     }
 }
 ?><!DOCTYPE html>
@@ -862,6 +1029,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 14px;
             font-weight: bold;
         }
+
+        /* Add loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .loading-spinner i {
+            color: #0070f3;
+            margin-bottom: 15px;
+        }
+        
+        .loading-spinner p {
+            margin: 10px 0 0;
+            color: #333;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body class="<?php echo $body_class; ?>">
@@ -986,20 +1186,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="admin-card">
                 <div class="admin-card-header">
                     <h2>Secretary Final Approval</h2>
+                    <?php if (!empty($application['email'])): ?>
+                    <a href="test_email.php?id=<?php echo $id; ?>" target="_blank" class="btn btn-info" style="float: right;">
+                        <i class="fas fa-envelope"></i> Test Email System
+                    </a>
+                    <?php endif; ?>
                 </div>
                 <div class="admin-card-body">
                     <form method="post" id="final-approval-form">
                         <!-- Secretary's name is now hidden, using the current user's name -->
                         <input type="hidden" id="secretary_name" name="secretary_name" value="<?php echo $current_user['name'] ?? ''; ?>">
                         <input type="hidden" id="action-input" name="approval_action" value="">
+                        <!-- Always set send_email to true -->
+                        <input type="hidden" name="send_email" value="1">
                         
                         <div class="form-group">
                             <label for="secretary_comments">Comments (optional):</label>
                             <textarea id="secretary_comments" name="secretary_comments" rows="3"></textarea>
                         </div>
-                        
-                        <!-- Email notification is always sent when approved, so hidden input -->
-                        <input type="hidden" name="send_email" value="1">
                         
                         <div class="form-group">
                             <label for="signature">Your Signature:</label>
@@ -1077,10 +1281,19 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('signature-data').value = signaturePad.toDataURL();
     });
     
-    // Form submission - capture signature
-    document.getElementById('final-approval-form').addEventListener('submit', function(e) {
+    // Form submission - improved with loading overlay
+    const form = document.getElementById('final-approval-form');
+    let isSubmitting = false; // Flag to prevent double submissions
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        
+        // Prevent double submission
+        if (isSubmitting) {
+            return;
+        }
+        
         if (signaturePad.isEmpty()) {
-            e.preventDefault();
             alert('Please provide your signature before submitting.');
             return;
         }
@@ -1088,7 +1301,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if disclaimer is checked
         const disclaimerChecked = document.getElementById('disclaimer_agreement').checked;
         if (!disclaimerChecked) {
-            e.preventDefault();
             alert('Please confirm the disclaimer before proceeding.');
             return;
         }
@@ -1096,13 +1308,38 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if an approval option is selected
         const actionInput = document.getElementById('action-input');
         if (!actionInput.value) {
-            e.preventDefault();
             alert('Please select either Approve or Reject before proceeding.');
             return;
         }
         
         // Save signature data to the hidden input
         document.getElementById('signature-data').value = signaturePad.toDataURL();
+        
+        // Set the submitting flag
+        isSubmitting = true;
+        
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        // Create and append the loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = `
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin fa-3x"></i>
+                <p>Processing your request...</p>
+                <p class="small">Please don't close this page</p>
+            </div>
+        `;
+        document.body.appendChild(loadingOverlay);
+        
+        // Submit the form
+        setTimeout(function() {
+            form.submit();
+        }, 100);
     });
     
     // Handle approval option selection

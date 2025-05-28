@@ -1,0 +1,13 @@
+{
+    "recipient": "ritscstdio@gmail.com",
+    "subject": "TSPI Membership Application Approved",
+    "application_id": "34",
+    "time": "2025-05-28 09:43:39",
+    "error": {
+        "type": 2,
+        "message": "mail(): Failed to connect to mailserver at &quot;localhost&quot; port 25, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set()",
+        "file": "D:\\Programs\\XAMPP\\htdocs\\TSPI\\admin\\secretary_approve_application.php",
+        "line": 311
+    },
+    "mail_sent": "no"
+}
