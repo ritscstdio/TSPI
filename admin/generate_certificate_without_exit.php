@@ -77,6 +77,11 @@ switch (strtoupper($plan)) {
         break;
 }
 
+// If MC number is still empty, use the CID number as a fallback
+if (empty($mcNumber) && !empty($application['cid_no'])) {
+    $mcNumber = $application['cid_no'] . '-' . strtoupper($plan);
+}
+
 // Format date as MM/DD/YYYY
 $approvalDate = !empty($application['secretary_approval_date']) 
     ? date('m/d/Y', strtotime($application['secretary_approval_date'])) 
@@ -93,19 +98,50 @@ switch (strtoupper($plan)) {
         break;
     case 'LPIP':
         $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-LPIP.pdf';
+        // If LPIP template doesn't exist, use BLIP as a fallback
+        if (!file_exists($templatePath)) {
+            // Log that we're using a fallback
+            error_log("LPIP template not found at {$templatePath}, falling back to BLIP template");
+            $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-BLIP.pdf';
+        }
         break;
     case 'LMIP':
         $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-LMIP.pdf';
+        // If LMIP template doesn't exist, use BLIP as a fallback
+        if (!file_exists($templatePath)) {
+            error_log("LMIP template not found at {$templatePath}, falling back to BLIP template");
+            $templatePath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-BLIP.pdf';
+        }
         break;
     default:
         $templatePath = '../templates/membership_template.pdf';
 }
 
-// Check if template exists
+// Check if template exists - if not, use a default template
 if (!file_exists($templatePath)) {
-    $pdf_error = "Certificate template not found. Please contact system administrator.";
-    return false;
+    // Try to use BLIP template as fallback
+    $fallbackPath = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-BLIP.pdf';
+    error_log("Template not found at {$templatePath}, trying fallback: {$fallbackPath}");
+    $templatePath = $fallbackPath;
+    
+    // If still not found, use generic template
+    if (!file_exists($templatePath)) {
+        $genericPath = '../templates/membership_template.pdf';
+        error_log("Fallback template not found, trying generic template: {$genericPath}");
+        $templatePath = $genericPath;
+    }
+    
+    // If still not found, we can't proceed
+    if (!file_exists($templatePath)) {
+        $error_message = "Certificate template not found for plan {$plan}. Please check template paths.";
+        error_log($error_message);
+        $pdf_error = $error_message;
+        return false;
+    }
 }
+
+// For debugging purposes, log which template we're actually using
+error_log("Using certificate template for {$plan}: {$templatePath}");
 
 // President signature path
 $presidentSignaturePath = '../templates/president_signature.png';
@@ -178,65 +214,36 @@ if (!empty($secretaryName)) {
     $pdf->Cell(70, 10, $secretaryName, 0, 1, 'C');
 }
 
-// Write Member Name
-$pdf->SetFont('helvetica', 'B', 22);
-$pdf->SetXY(25, 175);
-$pdf->SetTextColor(0, 0, 0);
-$memberName = $application['first_name'] . ' ' . 
-              ($application['middle_name'] ? substr($application['middle_name'], 0, 1) . '. ' : '') . 
-              $application['last_name'];
-$pdf->Cell(162, 0, safe_text($memberName), 0, 0, 'C');
-
-// Write MC Number
-if (!empty($application[$planMcField])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(75, 187);
-    $pdf->Cell(60, 0, safe_text($application[$planMcField]), 0, 0, 'C');
-}
-
-// Write Certificate Date (Secretary Approval Date)
-if (!empty($application['secretary_approval_date'])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(85, 222);
-    $formattedDate = date('F j, Y', strtotime(safe_text($application['secretary_approval_date'])));
-    $pdf->Cell(40, 0, $formattedDate, 0, 0, 'C');
-}
-
-// Write CID Number
-if (!empty($application['cid_no'])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(129, 206);
-    $pdf->Cell(40, 0, safe_text($application['cid_no']), 0, 0, 'L');
-}
-
-// Write Branch
-if (!empty($application['branch'])) {
-    $pdf->SetFont('helvetica', '', 12);
-    $pdf->SetXY(106, 228);
-    $pdf->Cell(60, 0, safe_text($application['branch']), 0, 0, 'L');
-}
-
-// Secretary signature and name
-if (!empty($application['secretary_signature'])) {
-    $signaturePath = __DIR__ . '/../' . $application['secretary_signature'];
-    if (file_exists($signaturePath)) {
-        $pdf->Image($signaturePath, 128, 245, 35, 0, 'PNG');
-    }
-}
-
-if (!empty($application['secretary_name'])) {
-    $pdf->SetFont('helvetica', 'B', 12);
-    $pdf->SetXY(110, 264);
-    $pdf->Cell(70, 0, safe_text($application['secretary_name']), 0, 0, 'C');
+// Add the second page of the template if it exists
+if ($pageCount >= 2) {
+    $pdf->AddPage();
+    $tplId2 = $pdf->importPage(2); // Import second page of template
+    $pdf->useTemplate($tplId2, 0, 0, 297, 210); // Use template on full page (A4 landscape)
+    
 }
 
 // Output the PDF
 $filename = 'TSPI_Certificate_' . $application['id'] . '_' . $plan . '_' . date('Ymd') . '.pdf';
 
+// Add more detailed error handling for PDF output
 if (isset($_GET['output_path']) && $mode === 'save') {
-    // Save to specified file path without exiting
-    $pdf->Output($_GET['output_path'], 'F');
-    return true; // Return true to indicate success
+    try {
+        // Save to specified file path without exiting
+        $output_path = $_GET['output_path'];
+        $result = $pdf->Output($output_path, 'F');
+        
+        // Verify file was created
+        if (file_exists($output_path)) {
+            error_log("Successfully created certificate PDF at: {$output_path}");
+            return true; // Return true to indicate success
+        } else {
+            error_log("Failed to create certificate PDF at: {$output_path} despite no exceptions");
+            return false;
+        }
+    } catch (Exception $e) {
+        error_log("Exception while generating certificate for {$plan}: " . $e->getMessage());
+        return false;
+    }
 } else if ($mode === 'download') {
     // Output as download without exiting
     $pdf->Output($filename, 'D');

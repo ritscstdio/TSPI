@@ -295,6 +295,43 @@ The website includes a comprehensive membership form for users to join TSPI. Thi
 
 These enhancements improve form usability, validation, and overall user experience while maintaining a clean separation of concerns between HTML, CSS, and JavaScript.
 
+## Email Testing System
+
+The admin section includes an email testing tool (`admin/test_email.php`) that allows administrators to verify that the email functionality is working correctly. This tool is essential for troubleshooting email-related issues.
+
+### Email Testing Features:
+
+1. **Simple Test Email**
+   - Sends a basic test email without attachments
+   - Confirms that the email configuration is working correctly
+
+2. **Full Test with PDF Attachments**
+   - Tests the complete email workflow including PDF generation and attachment
+   - Generates both application PDF and certificate PDFs (one per plan)
+   - Uses special versions of the PDF generators that don't terminate execution
+
+### Modified PDF Generation for Email Testing:
+
+To support email testing with PDF attachments, special versions of the PDF generators were created:
+
+1. **`generate_application_pdf_without_exit.php`**
+   - A modified version of `generate_application_pdf.php` that doesn't use `exit`
+   - Includes `generate_application_pdf_for_inclusion.php` which contains the actual PDF generation logic
+   - Safely handles output buffering to prevent premature output
+
+2. **`generate_certificate_without_exit.php`**
+   - A modified version of `generate_certificate.php` that doesn't use `exit`
+   - Ensures all certificate data is kept on the first page
+   - Doesn't add redundant data on a second page
+
+These modifications allow the email testing system to generate PDFs without terminating script execution, enabling the attachments to be properly added to test emails.
+
+### Implementation Notes:
+
+- The `safe_text()` function is conditionally defined in each file using `if (!function_exists('safe_text'))` to prevent redefinition errors
+- Proper output buffer management is used to capture and clean up output from included files
+- Each plan in a member's application generates a separate certificate PDF file
+
 ## Project Documentation
 
 ### General Flow

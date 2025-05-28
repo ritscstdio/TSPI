@@ -1,0 +1,12 @@
+{
+    "to": "ritscstdio@gmail.com",
+    "subject": "TSPI Membership Application Approved (TEST)",
+    "time": "2025-05-28 14:33:36",
+    "application_id": "34",
+    "test_mode": "with_attachments",
+    "attachments": [
+        "Application PDF: application_34.pdf",
+        "Certificate PDF (BLIP): certificate_34_BLIP.pdf"
+    ],
+    "result": "success"
+}

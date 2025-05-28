@@ -99,6 +99,70 @@ HTML;
                 // Get plans from application
                 $plans = json_decode($application['plans'] ?? '[]', true) ?: [];
                 
+                // Debug - print plans data
+                echo "<div style='background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin: 10px 0; font-family: monospace;'>";
+                echo "<h3>Debug - Plans Data:</h3>";
+                echo "<p>Raw plans value: " . htmlspecialchars($application['plans']) . "</p>";
+                echo "<p>Decoded plans: </p><pre>" . print_r($plans, true) . "</pre>";
+                echo "</div>";
+                
+                // Make sure plans is always an array
+                if (!is_array($plans)) {
+                    $plans = [];
+                }
+                
+                // If plans is empty but we have plan fields in the application, try to reconstruct
+                if (empty($plans)) {
+                    // Check individual plan fields that might exist in the database
+                    $possible_plans = ['BLIP', 'LPIP', 'LMIP', 'CLIP', 'MRI', 'GLIP'];
+                    foreach ($possible_plans as $plan) {
+                        $plan_field = strtolower($plan) . '_mc';
+                        if (!empty($application[$plan_field])) {
+                            $plans[] = $plan;
+                        }
+                    }
+                    
+                    echo "<div style='background-color: #ffe9e9; border: 1px solid #f5c6cb; padding: 10px; margin: 10px 0;'>";
+                    echo "<h3>Plans Reconstructed:</h3>";
+                    echo "<pre>" . print_r($plans, true) . "</pre>";
+                    echo "</div>";
+                }
+                
+                // Check for forced plans from the form
+                if (isset($_POST['force_plans']) && is_array($_POST['force_plans'])) {
+                    $forced_plans = $_POST['force_plans'];
+                    
+                    // If we have forced plans, ONLY use those (don't merge with existing)
+                    if (!empty($forced_plans)) {
+                        echo "<div style='background-color: #e8f5e9; border: 1px solid #c8e6c9; padding: 10px; margin: 10px 0;'>";
+                        echo "<h3>Using only forced plans from form:</h3>";
+                        echo "<pre>" . print_r($forced_plans, true) . "</pre>";
+                        echo "</div>";
+                        $plans = $forced_plans;
+                    } else {
+                        // Add any forced plans that aren't already in the plans array
+                        foreach ($forced_plans as $forced_plan) {
+                            if (!in_array($forced_plan, $plans)) {
+                                $plans[] = $forced_plan;
+                            }
+                        }
+                        
+                        echo "<div style='background-color: #e8f5e9; border: 1px solid #c8e6c9; padding: 10px; margin: 10px 0;'>";
+                        echo "<h3>Plans After Forcing:</h3>";
+                        echo "<pre>" . print_r($plans, true) . "</pre>";
+                        echo "</div>";
+                    }
+                }
+                
+                // If we still have no plans, default to BLIP
+                if (empty($plans)) {
+                    $plans = ['BLIP'];
+                    echo "<div style='background-color: #fff3e0; border: 1px solid #ffe0b2; padding: 10px; margin: 10px 0;'>";
+                    echo "<h3>No plans found, defaulting to BLIP:</h3>";
+                    echo "<pre>" . print_r($plans, true) . "</pre>";
+                    echo "</div>";
+                }
+                
                 // Generate PDF files for attachments
                 $attachments = [];
                 
@@ -165,6 +229,9 @@ HTML;
                 foreach ($plans as $plan) {
                     $cert_pdf_path = $abs_temp_dir . '/certificate_' . $id . '_' . $plan . '.pdf';
                     try {
+                        echo "<div style='background-color: #e0f7fa; border: 1px solid #b3e5fc; padding: 10px; margin: 5px 0; font-family: monospace;'>";
+                        echo "Generating certificate for plan: {$plan}...";
+                        
                         // Capture the output from generate_certificate.php
                         ob_start();
                         
@@ -175,13 +242,21 @@ HTML;
                         $_GET['plan'] = $plan;
                         $_GET['output_path'] = $cert_pdf_path;
                         
+                        echo " Setting _GET variables: mode={$_GET['mode']}, plan={$_GET['plan']}, output_path={$_GET['output_path']}... ";
+                        
                         // Temporarily suppress deprecation warnings for TCPDF
                         $oldErrorLevel = error_reporting();
                         error_reporting($oldErrorLevel & ~E_DEPRECATED);
                         
                         // Instead of include, we'll use require_once with proper output buffer management
                         $old_ob_level = ob_get_level();
-                        require_once 'generate_certificate_without_exit.php';
+                        echo "Including certificate generator... ";
+                        
+                        // Store existing error state before include
+                        $pdf_error_before = isset($pdf_error) ? $pdf_error : null;
+                        
+                        // Execute certificate generator and capture its return value
+                        $generate_result = require 'generate_certificate_without_exit.php';
                         
                         // Restore error reporting
                         error_reporting($oldErrorLevel);
@@ -194,11 +269,29 @@ HTML;
                         $_GET['mode'] = $old_mode;
                         $_GET['plan'] = $old_plan;
                         
-                        if (file_exists($cert_pdf_path)) {
+                        // Check if certificate generation was successful 
+                        if (file_exists($cert_pdf_path) && $generate_result !== false) {
                             $attachments[] = $cert_pdf_path;
                             $attachments_list[] = "Certificate PDF ($plan): " . basename($cert_pdf_path);
+                            echo "SUCCESS! File created at {$cert_pdf_path}";
+                        } else {
+                            // Error details
+                            $error_msg = isset($pdf_error) && $pdf_error !== $pdf_error_before 
+                                ? $pdf_error 
+                                : "Unknown error generating certificate";
+                            echo "FAILED! File not created at {$cert_pdf_path}. Error: {$error_msg}";
+                            
+                            // Check if template exists
+                            $template_path = '../templates/Membership-Certificate-for-Basic-Life-Insurance-Plan-' . $plan . '.pdf';
+                            if (!file_exists($template_path)) {
+                                echo " (Template file not found: {$template_path})";
+                            }
                         }
+                        echo "</div>";
                     } catch (Exception $e) {
+                        echo "<div style='background-color: #ffebee; border: 1px solid #ffcdd2; padding: 10px; margin: 5px 0;'>";
+                        echo "Error generating certificate PDF for $plan: " . $e->getMessage();
+                        echo "</div>";
                         error_log("Error generating certificate PDF for $plan: " . $e->getMessage());
                         $debug_info['certificate_pdf_error_' . $plan] = $e->getMessage();
                     }
@@ -550,6 +643,51 @@ $page_title = "Email Test Tool";
                                     </label>
                                 </div>
                             </div>
+                            
+                            <?php if ($application): ?>
+                            <div class="form-group" id="force_plans_container" style="display: none;">
+                                <label>Force Include Plans:</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <div class="radio-option">
+                                        <input type="checkbox" id="force_blip" name="force_plans[]" value="BLIP">
+                                        <label for="force_blip">BLIP</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="checkbox" id="force_lpip" name="force_plans[]" value="LPIP">
+                                        <label for="force_lpip">LPIP</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="checkbox" id="force_lmip" name="force_plans[]" value="LMIP">
+                                        <label for="force_lmip">LMIP</label>
+                                    </div>
+                                </div>
+                                <p class="help-text" style="font-size: 0.85rem; color: #6c757d; margin-top: 5px;">
+                                    Select plans to force include in the email regardless of what's stored in the database.
+                                </p>
+                            </div>
+                            
+                            <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const testModeRadios = document.querySelectorAll('input[name="test_mode"]');
+                                const forcePlansContainer = document.getElementById('force_plans_container');
+                                
+                                testModeRadios.forEach(radio => {
+                                    radio.addEventListener('change', function() {
+                                        if (this.value === 'with_attachments') {
+                                            forcePlansContainer.style.display = 'block';
+                                        } else {
+                                            forcePlansContainer.style.display = 'none';
+                                        }
+                                    });
+                                });
+                                
+                                // Initialize state
+                                if (document.getElementById('test_mode_full').checked) {
+                                    forcePlansContainer.style.display = 'block';
+                                }
+                            });
+                            </script>
+                            <?php endif; ?>
                             
                             <div class="buttons-row">
                                 <button type="submit" name="send_test" class="btn-primary">
