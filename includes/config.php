@@ -1,21 +1,28 @@
 <?php
 // Database configuration
-
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root'); // Change in production
-define('DB_PASS', '');     // Change in production
-define('DB_NAME', 'tspi_blog');
-define('DB_PORT', '3306');
+// XAMPP LOCAL DB
+// define('DB_HOST', 'localhost');
+// define('DB_USER', 'root'); // Change in production
+// define('DB_PASS', '');     // Change in production
+// define('DB_NAME', 'tspi_blog');
+// define('DB_PORT', '3306');
 
 // RAILWAY DATABASE
-// define('DB_HOST', 'crossover.proxy.rlwy.net');
-// define('DB_USER', 'root'); // Change in production
-// define('DB_PASS', 'mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt');     // Change in production
-// define('DB_NAME', 'railway');
-// define('DB_PORT', '50379');
+// Use environment variables for Railway
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'crossover.proxy.rlwy.net');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? 'mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'railway');
+define('DB_PORT', $_ENV['DB_PORT'] ?? '50379');
 
 // Site configuration
-define('SITE_URL', 'http://localhost/TSPI'); // Project base URL
+
+// Dynamic site URL for Railway
+define('SITE_URL', $_ENV['RAILWAY_STATIC_URL'] ?? 'http://localhost/TSPI');
+
+// XAMPP LOCAL SITE URL
+// define('SITE_URL', 'http://localhost/TSPI'); // Project base URL
+
 // define('SITE_URL', 'http://www.tspi.site/'); // Preparing for deployment
 define('SITE_NAME', 'TSPI Site');
 define('ADMIN_EMAIL', 'no-reply@tspi.site');
@@ -161,7 +168,7 @@ function redirect_after_auth() {
 // After logout, also change to homepage.php
 
 // edit_1: enable a dedicated profile-pics folder
-define('PROFILE_PICS_DIR', UPLOADS_DIR . '/profile_pics');
+define('PROFILE_PICS_DIR', __DIR__ . '/../uploads/profile_pics');
 if (!is_dir(PROFILE_PICS_DIR)) {
     mkdir(PROFILE_PICS_DIR, 0755, true);
 }
