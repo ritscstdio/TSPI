@@ -295,63 +295,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $abs_temp_dir = sys_get_temp_dir(); // Fallback to system temp directory
                     }
                     
-                    // Generate and save application PDF
+                    // Generate and save application PDF using non-exit generator
                     $app_pdf_path = $abs_temp_dir . '/application_' . $id . '.pdf';
                     try {
-                        // Capture the output from generate_application_pdf.php
-                        ob_start();
-                        // Fix for undefined array key "mode"
                         $old_mode = isset($_GET['mode']) ? $_GET['mode'] : null;
                         $_GET['mode'] = 'save';
-                        // Use absolute path for the PDF file
-                        $_GET['output_path'] = realpath($temp_dir) . '/application_' . $id . '.pdf';
-                        
-                        // Temporarily suppress deprecation warnings for TCPDF
+                        $_GET['output_path'] = $app_pdf_path;
                         $oldErrorLevel = error_reporting();
                         error_reporting($oldErrorLevel & ~E_DEPRECATED);
-                        
-                        include 'generate_application_pdf.php';
-                        
-                        // Restore error reporting
+                        // Start output buffering to capture generator output
+                        ob_start();
+                        $old_ob_level = ob_get_level();
+                        require_once 'generate_application_pdf_for_inclusion.php';
                         error_reporting($oldErrorLevel);
-                        
-                        ob_end_clean();
+                        while (ob_get_level() > $old_ob_level) {
+                            ob_end_clean();
+                        }
                         $_GET['mode'] = $old_mode;
-                        
-                        if (file_exists($_GET['output_path'])) {
-                            $attachments[] = $_GET['output_path'];
+                        if (file_exists($app_pdf_path)) {
+                            $attachments[] = $app_pdf_path;
                         }
                     } catch (Exception $e) {
                         log_message("Error generating application PDF: " . $e->getMessage(), 'error', 'email');
                     }
                     
-                    // Generate certificate PDFs for each plan
+                    // Generate certificate PDFs for each plan using non-exit generator
                     foreach ($plans as $plan) {
-                        $cert_pdf_path = realpath($temp_dir) . '/certificate_' . $id . '_' . $plan . '.pdf';
+                        $cert_pdf_path = $abs_temp_dir . '/certificate_' . $id . '_' . $plan . '.pdf';
                         try {
-                            // Capture the output from generate_certificate.php
-                            ob_start();
-                            // Fix for undefined array keys
                             $old_mode = isset($_GET['mode']) ? $_GET['mode'] : null;
                             $old_plan = isset($_GET['plan']) ? $_GET['plan'] : null;
                             $_GET['mode'] = 'save';
                             $_GET['plan'] = $plan;
                             $_GET['output_path'] = $cert_pdf_path;
-                            
-                            // Temporarily suppress deprecation warnings for TCPDF
                             $oldErrorLevel = error_reporting();
                             error_reporting($oldErrorLevel & ~E_DEPRECATED);
-                            
-                            include 'generate_certificate.php';
-                            
-                            // Restore error reporting
+                            // Start output buffering to capture generator output
+                            ob_start();
+                            $old_ob_level = ob_get_level();
+                            $generate_result = require 'generate_certificate_without_exit.php';
                             error_reporting($oldErrorLevel);
-                            
-                            ob_end_clean();
+                            while (ob_get_level() > $old_ob_level) {
+                                ob_end_clean();
+                            }
                             $_GET['mode'] = $old_mode;
                             $_GET['plan'] = $old_plan;
-                            
-                            if (file_exists($cert_pdf_path)) {
+                            if (file_exists($cert_pdf_path) && $generate_result !== false) {
                                 $attachments[] = $cert_pdf_path;
                             }
                         } catch (Exception $e) {
@@ -402,48 +391,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         . "Thank you for choosing TSPI.\n\n"
                         . "TSPI Membership Services";
                     
-                    // Send email with attachments
-                    try {
-                        // Define email parameters
-                        $to = $application['email'];
-                        $subject = 'TSPI Membership Application Approved';
-                        
-                        // Debug email data
-                        $debug_email_data = [
-                            'recipient' => $to,
-                            'subject' => $subject,
-                            'application_id' => $id,
-                            'time' => date('Y-m-d H:i:s'),
-                            'attachments' => $attachments
-                        ];
-                        
-                        // Log email attempt
-                        log_message("Attempting to send email to: {$to}, subject: {$subject}, app ID: {$id}", 'info', 'email_debug');
-                        
-                        // Use the send_email_with_attachments function if it exists
-                        if (function_exists('send_email_with_attachments')) {
-                            $mail_sent = send_email_with_attachments($to, $subject, $text_message, $html_message, $attachments);
-                        } else {
-                            // Fallback to basic email without attachments
-                            $mail_sent = send_email($to, $subject, $html_message);
-                        }
-                        
-                        // Write debug info to file
-                        $debug_email_data['mail_sent'] = $mail_sent ? 'yes' : 'no';
-                        file_put_contents('../logs/email_status_' . $id . '.json', json_encode($debug_email_data, JSON_PRETTY_PRINT));
-                        
-                        // Log email sending result
-                        if ($mail_sent) {
-                            log_message("Email notification sent successfully to {$application['email']} for application ID: {$id}", 'info', 'email');
-                            $_SESSION['message'] .= " An email notification with certificates has been sent to the applicant.";
-                        } else {
-                            log_message("Failed to send email notification to {$application['email']} for application ID: {$id}", 'error', 'email');
-                            $_SESSION['message'] .= " But there was an issue sending the email notification.";
-                        }
-                    } catch (Exception $e) {
-                        log_message("Email sending error: " . $e->getMessage(), 'error', 'email');
-                        file_put_contents('../logs/email_exception_' . $id . '.txt', $e->getMessage() . "\n" . $e->getTraceAsString());
-                        $_SESSION['message'] .= " But there was an error sending the email: " . $e->getMessage();
+                    // Send email with attachments (using test_email.php logic)
+                    $to = $application['email'];
+                    $subject = 'TSPI Membership Application Approved';
+                    if (function_exists('send_email_with_attachments')) {
+                        $mail_sent = send_email_with_attachments(
+                            $to,
+                            $subject,
+                            $text_message,
+                            $html_message,
+                            $attachments
+                        );
+                    } else {
+                        $mail_sent = send_email(
+                            $to,
+                            $subject,
+                            $html_message
+                        );
+                    }
+                    if ($mail_sent) {
+                        $_SESSION['message'] .= " An email notification with certificates has been sent to the applicant.";
+                    } else {
+                        $_SESSION['message'] .= " Failed to send email. Check logs for details.";
                     }
                 } catch (Exception $emailEx) {
                     // Log email generation/sending errors but don't block the redirect

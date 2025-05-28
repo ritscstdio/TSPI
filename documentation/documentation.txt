@@ -67,6 +67,7 @@ This ensures users are informed about cookie usage and can provide consent, whic
         *   (Pending) To be added to the main site navigation under "Who We Are" > "About Us" > "Our Branches" (after Mission & Vision).
 *   **Fixed Navbar Offset:** Applied `scroll-margin-top: var(--navbar-scroll-offset);` to all section IDs (`#about-tspi-ngo`, `#our-leaders`, `#about-tspi-mbai`, `#vision-mission`, `#core-values`, `#board-of-trustees`, `#senior-management-team`, `#our-branches`) to prevent content from being hidden behind the fixed navbar during in-page navigation.
 *   **"Our Leaders" Section:** This section was temporarily removed during an edit but has been restored. It displays information about the Board of Trustees and Senior Management Team.
+*   **Secretary Approval Email Refactor:** In `admin/secretary_approve_application.php`, replaced the nested email sending try-catch logic with the unified `send_email_with_attachments` function call from `admin/test_email.php`, streamlining PDF attachment email dispatch.
 
 **Structure of "Our Branches":**
 ```html
