@@ -90,7 +90,6 @@ include '../includes/header.php';
         
         <div class="auth-links">
             <p>Don't have an account? <a href="<?php echo SITE_URL; ?>/user/signup.php">Sign Up</a></p>
-            <p><a href="<?php echo SITE_URL; ?>/user/forgot-password.php">Forgot Password?</a></p>
         </div>
     </div>
 </main>

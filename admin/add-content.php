@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             background-color: var(--light-blue);
             color: var(--primary-blue);
-            padding: 0.3rem 0.6rem;
+            padding: 0.3rem 0.6rem; 
             border-radius: 4px;
             font-size: 0.9rem;
         }
@@ -341,60 +341,192 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="../assets/js/admin.js"></script>
     
     <script>
-    // Fix for thumbnail preview update
-    document.addEventListener('DOMContentLoaded', function() {
-        // Completely replace the original function to ensure it works on first click
-        window.onMediaThumbClick = function(img) {
-            const modal = document.getElementById('media-modal');
-            const thumbnailSelect = document.getElementById('thumbnail_select');
-            const thumbnailPreview = document.getElementById('thumbnail-preview');
+        // Fix for thumbnail preview update and auto-select uploaded images
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent double uploads by storing original handler and disabling it
+            const mediaUploadInput = document.getElementById('media-upload-input');
             
-            if (window._selectThumbnailMode) {
-                // Update both the hidden input value and the visible preview
-                if (thumbnailSelect) {
-                    thumbnailSelect.value = img.dataset.url;
+            if (mediaUploadInput) {
+                // IMPORTANT: Remove all existing event listeners to prevent double uploads
+                const newMediaInput = mediaUploadInput.cloneNode(true);
+                if (mediaUploadInput.parentNode) {
+                    mediaUploadInput.parentNode.replaceChild(newMediaInput, mediaUploadInput);
                 }
                 
-                if (thumbnailPreview) {
-                    // Make sure we're using the full URL for the preview
-                    thumbnailPreview.src = img.dataset.url.startsWith('http') 
-                        ? img.dataset.url 
-                        : '<?php echo SITE_URL; ?>/' + img.dataset.url;
-                }
+                // Now add our custom handler to the new clean input
+                const mediaModal = document.getElementById('media-modal');
+                const uploadUrl = mediaModal ? mediaModal.dataset.uploadUrl : null;
                 
-                window._selectThumbnailMode = false;
-            } else {
-                document.execCommand('insertImage', false, img.dataset.url);
-            }
-            
-            modal.style.display = 'none';
-        };
-        
-        // Re-bind all media thumbs with our new function
-        window.bindMediaThumbs = function() {
-            document.querySelectorAll('#media-modal .media-thumb').forEach(img => {
-                // Remove any existing click handlers first
-                img.onclick = null;
-                // Add our new click handler
-                img.onclick = function() {
-                    window.onMediaThumbClick(img);
+                newMediaInput.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    if (!file) return;
+                    
+                    const formData = new FormData();
+                    formData.append('media_file', file);
+                    
+                    // Show loading state
+                    const mediaItems = document.querySelector('.media-items');
+                    if (mediaItems) {
+                        const loadingEl = document.createElement('div');
+                        loadingEl.className = 'upload-loading';
+                        loadingEl.innerHTML = 'Uploading...';
+                        loadingEl.style.cssText = 'padding: 1rem; text-align: center; font-style: italic;';
+                        mediaItems.prepend(loadingEl);
+                    }
+                    
+                    fetch(uploadUrl, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Upload response:', data);
+                        
+                        // Remove loading indicator
+                        const loadingEl = document.querySelector('.upload-loading');
+                        if (loadingEl) loadingEl.remove();
+                        
+                        if (!data.url) {
+                            console.error('Upload failed:', data.error || 'Unknown error');
+                            return;
+                        }
+                        
+                        // Create new thumbnail in media library
+                        const img = document.createElement('img');
+                        img.src = data.url;
+                        img.dataset.url = data.url;
+                        img.classList.add('media-thumb');
+                        img.style.cssText = 'width:100px; height:auto; margin:0.5rem; cursor:pointer; border:2px solid transparent;';
+                        
+                        const mediaItems = document.querySelector('.media-items');
+                        if (mediaItems) {
+                            mediaItems.prepend(img);
+                        }
+                        
+                        // Bind click handler to the new thumbnail
+                        img.onclick = function() {
+                            if (window._selectThumbnailMode) {
+                                // Auto-select thumbnail if in thumbnail mode
+                                const thumbnailSelect = document.getElementById('thumbnail_select');
+                                const thumbnailPreview = document.getElementById('thumbnail-preview');
+                                
+                                if (thumbnailSelect) {
+                                    thumbnailSelect.value = data.url;
+                                }
+                                
+                                if (thumbnailPreview) {
+                                    thumbnailPreview.src = data.url;
+                                }
+                                
+                                // Close modal
+                                const modal = document.getElementById('media-modal');
+                                if (modal) {
+                                    modal.style.display = 'none';
+                                }
+                                
+                                window._selectThumbnailMode = false;
+                            } else {
+                                // Insert into editor if not in thumbnail mode
+                                document.execCommand('insertImage', false, data.url);
+                                
+                                // Close modal
+                                const modal = document.getElementById('media-modal');
+                                if (modal) {
+                                    modal.style.display = 'none';
+                                }
+                            }
+                        };
+                        
+                        // Auto-select the image if in thumbnail selection mode
+                        if (window._selectThumbnailMode) {
+                            const thumbnailSelect = document.getElementById('thumbnail_select');
+                            const thumbnailPreview = document.getElementById('thumbnail-preview');
+                            
+                            if (thumbnailSelect) {
+                                thumbnailSelect.value = data.url;
+                            }
+                            
+                            if (thumbnailPreview) {
+                                thumbnailPreview.src = data.url;
+                            }
+                            
+                            // Close modal and show success message
+                            const modal = document.getElementById('media-modal');
+                            if (modal) {
+                                modal.style.display = 'none';
+                            }
+                            
+                            window._selectThumbnailMode = false;
+                        }
+                        
+                        // Reset file input
+                        newMediaInput.value = '';
+                    })
+                    .catch(err => {
+                        console.error('Upload error:', err);
+                        
+                        // Remove loading indicator
+                        const loadingEl = document.querySelector('.upload-loading');
+                        if (loadingEl) loadingEl.remove();
+                        
+                        // Reset file input
+                        newMediaInput.value = '';
+                    });
+                });
+                
+                // Completely replace the original function to ensure it works on first click
+                window.onMediaThumbClick = function(img) {
+                    const modal = document.getElementById('media-modal');
+                    const thumbnailSelect = document.getElementById('thumbnail_select');
+                    const thumbnailPreview = document.getElementById('thumbnail-preview');
+                    
+                    if (window._selectThumbnailMode) {
+                        // Update both the hidden input value and the visible preview
+                        if (thumbnailSelect) {
+                            thumbnailSelect.value = img.dataset.url;
+                        }
+                        
+                        if (thumbnailPreview) {
+                            // Make sure we're using the full URL for the preview
+                            thumbnailPreview.src = img.dataset.url.startsWith('http') 
+                                ? img.dataset.url 
+                                : '<?php echo SITE_URL; ?>/' + img.dataset.url;
+                        }
+                        
+                        window._selectThumbnailMode = false;
+                    } else {
+                        document.execCommand('insertImage', false, img.dataset.url);
+                    }
+                    
+                    modal.style.display = 'none';
                 };
-            });
-        };
-        
-        // Initialize with our new bindings when media modal opens
-        const thumbnailSelectBtn = document.getElementById('thumbnail-select-btn');
-        if (thumbnailSelectBtn) {
-            thumbnailSelectBtn.addEventListener('click', function() {
-                window._selectThumbnailMode = true;
-                const modal = document.getElementById('media-modal');
-                if (modal) {
-                    modal.style.display = 'flex';
-                    window.bindMediaThumbs();
+                
+                // Re-bind all media thumbs with our new function
+                window.bindMediaThumbs = function() {
+                    document.querySelectorAll('#media-modal .media-thumb').forEach(img => {
+                        // Remove any existing click handlers first
+                        img.onclick = null;
+                        // Add our new click handler
+                        img.onclick = function() {
+                            window.onMediaThumbClick(img);
+                        };
+                    });
+                };
+                
+                // Initialize with our new bindings when media modal opens
+                const thumbnailSelectBtn = document.getElementById('thumbnail-select-btn');
+                if (thumbnailSelectBtn) {
+                    thumbnailSelectBtn.addEventListener('click', function() {
+                        window._selectThumbnailMode = true;
+                        const modal = document.getElementById('media-modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            window.bindMediaThumbs();
+                        }
+                    });
                 }
-            });
-        }
-    });
+            }
+        });
     </script>
 </body>
 </html>

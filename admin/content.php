@@ -294,7 +294,7 @@ $contents = $stmt->fetchAll();
                                             <td class="actions">
                                                 <a href="edit-content.php?id=<?php echo $content['id']; ?>" class="btn-icon" title="Edit"><i class="fas fa-edit"></i></a>
                                                 <a href="../content.php?slug=<?php echo $content['slug']; ?>" target="_blank" class="btn-icon" title="View"><i class="fas fa-eye"></i></a>
-                                                <a href="contents.php?delete=<?php echo $content['id']; ?>" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this content?"><i class="fas fa-trash"></i></a>
+                                                <a href="content.php?delete=<?php echo $content['id']; ?>" class="btn-icon delete-btn" title="Delete" data-confirm="Are you sure you want to delete this content?"><i class="fas fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

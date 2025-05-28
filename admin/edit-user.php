@@ -81,39 +81,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php include 'includes/header.php'; ?>
             <div class="dashboard-container">
                 <div class="page-header">
-                    <h1>Edit User</h1>
+                    <h1><i class="fas fa-user-edit"></i> Edit User</h1>
                     <a href="users.php" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Users</a>
                 </div>
                 <?php if (!empty($errors)): ?>
-                    <div class="message error"><ul><?php foreach ($errors as $e): ?><li><?php echo $e; ?></li><?php endforeach; ?></ul></div>
-                <?php endif; ?>
-                <form action="" method="post" class="form">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" value="<?php echo sanitize($username ?? $user['username']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password (leave blank to keep unchanged)</label>
-                        <input type="password" id="password" name="password">
-                    </div>
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" value="<?php echo sanitize($name ?? $user['name']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" value="<?php echo sanitize($email ?? $user['email']); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="role">Role</label>
-                        <select id="role" name="role">
-                            <?php foreach ($available_roles as $key => $label): ?>
-                                <option value="<?php echo $key; ?>" <?php echo (isset($role) ? $role : $user['role']) === $key ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                    <div class="message error">
+                        <ul>
+                            <?php foreach ($errors as $e): ?>
+                                <li><?php echo $e; ?></li>
                             <?php endforeach; ?>
-                        </select>
+                        </ul>
                     </div>
-                    <button type="submit" class="btn btn-primary">Update User</button>
-                </form>
+                <?php endif; ?>
+                
+                <div class="admin-form-container">
+                    <form action="" method="post" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username" value="<?php echo sanitize($username ?? $user['username']); ?>" required>
+                                <small>The username is used for login and cannot be changed later.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password">
+                                <small>Leave blank to keep the current password unchanged.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" value="<?php echo sanitize($name ?? $user['name']); ?>" required>
+                                <small>Enter the administrator's full name.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" value="<?php echo sanitize($email ?? $user['email']); ?>" required>
+                                <small>A valid email address is required.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="role">User Role</label>
+                            <select id="role" name="role">
+                                <?php foreach ($available_roles as $key => $label): ?>
+                                    <option value="<?php echo $key; ?>" <?php echo (isset($role) ? $role : $user['role']) === $key ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small>Select the appropriate role for this administrator.</small>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update User</button>
+                            <a href="users.php" class="btn btn-light"><i class="fas fa-times"></i> Cancel</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
     </div>
