@@ -26,6 +26,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Configure Apache
 RUN a2enmod rewrite
 RUN a2enmod headers
+RUN a2enmod expires
 
 # Set PHP configurations
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf

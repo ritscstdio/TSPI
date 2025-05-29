@@ -9,12 +9,27 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Include the secrets file (which is not committed to version control)
-require_once __DIR__ . '/email_secrets.php';
+// Get SendGrid API key from environment variables
+$sendgrid_api_key = getenv('SENDGRID_API_KEY') ?: $_ENV['SENDGRID_API_KEY'] ?? null;
+
+// If SENDGRID_API_KEY is not set in environment, try to include the secrets file
+// This allows for development environment to still use the secrets file if available
+if (!$sendgrid_api_key) {
+    $secrets_file = __DIR__ . '/email_secrets.php';
+    if (file_exists($secrets_file)) {
+        require_once $secrets_file;
+        $sendgrid_api_key = defined('SENDGRID_API_KEY') ? SENDGRID_API_KEY : null;
+    }
+}
+
+// Exit with error if API key is still not available
+if (!$sendgrid_api_key) {
+    error_log('SendGrid API key not found in environment or secrets file');
+}
 
 // Configuration for email sending
 $email_config = [
-    'sendgrid_api_key' => SENDGRID_API_KEY,
+    'sendgrid_api_key' => $sendgrid_api_key,
     'from_email' => 'no-reply@tspi.site',
     'from_name' => 'TSPI (Ketano)',
     'reply_to' => 'reply@tspi.site'

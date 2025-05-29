@@ -31,27 +31,17 @@ function resolve_asset_path($path) {
         // Return the path to the file in the Docker container
         return SITE_URL . '/uploads/media/' . $filename;
     }
+
+    // Handle paths to asset directories that might be causing problems
+    if (strpos($path, 'src/assets/') !== false) {
+        // Extract the filename from the path
+        $filename = basename($path);
+        // Return the path to the file with correct URL
+        return SITE_URL . '/src/assets/' . $filename;
+    }
     
     // Fix for Railway - handle absolute paths without hostname
     if (substr($path, 0, 1) === '/') {
-        // Check if this is a direct path to an asset file
-        if (file_exists($_SERVER['DOCUMENT_ROOT'] . $path)) {
-            return SITE_URL . $path;
-        }
-        
-        // Make sure assets directory paths have proper case sensitivity
-        if (strpos(strtolower($path), '/src/assets/') !== false) {
-            // Normalize path to ensure correct case sensitivity for 'src/assets'
-            $pathParts = explode('/', ltrim($path, '/'));
-            $normalizedPath = [];
-            foreach ($pathParts as $part) {
-                if (strtolower($part) == 'src') $normalizedPath[] = 'src';
-                else if (strtolower($part) == 'assets') $normalizedPath[] = 'assets';
-                else $normalizedPath[] = $part;
-            }
-            return SITE_URL . '/' . implode('/', $normalizedPath);
-        }
-        
         return SITE_URL . $path;
     }
     
@@ -77,46 +67,7 @@ function resolve_css_path($path) {
     // Ensure path starts with a slash
     $path = '/' . ltrim($path, '/');
     
-    // Make sure assets directory paths have proper case sensitivity
-    if (strpos(strtolower($path), '/src/css/') !== false || 
-        strpos(strtolower($path), '/assets/css/') !== false) {
-        // Normalize path to ensure correct case sensitivity for asset directories
-        $pathParts = explode('/', ltrim($path, '/'));
-        $normalizedPath = [];
-        foreach ($pathParts as $part) {
-            if (strtolower($part) == 'src') $normalizedPath[] = 'src';
-            else if (strtolower($part) == 'assets') $normalizedPath[] = 'assets';
-            else if (strtolower($part) == 'css') $normalizedPath[] = 'css';
-            else $normalizedPath[] = $part;
-        }
-        $path = '/' . implode('/', $normalizedPath);
-    }
-    
     // Return full URL
-    return SITE_URL . $path;
-}
-
-// Function to generate clean URLs without .php extension
-function clean_url($path) {
-    // If path is empty, return the site URL
-    if (empty($path)) {
-        return SITE_URL;
-    }
-    
-    // If path already starts with http or https, return as is
-    if (preg_match('#^https?://#i', $path)) {
-        return $path;
-    }
-    
-    // Remove .php extension if present
-    if (substr($path, -4) === '.php') {
-        $path = substr($path, 0, -4);
-    }
-    
-    // Ensure path starts with slash
-    $path = '/' . ltrim($path, '/');
-    
-    // Return the complete URL
     return SITE_URL . $path;
 }
 ?>
@@ -412,7 +363,7 @@ function clean_url($path) {
         </div>
         <nav class="main-nav">
             <div class="logo">
-                <a href="<?php echo clean_url('/homepage.php'); ?>">
+                <a href="<?php echo SITE_URL; ?>/homepage.php">
                     <img src="<?php echo SITE_URL; ?>/src/assets/logo.jpg" alt="TSPI Logo">
                 </a>
                 <button class="mobile-menu-toggle">
@@ -424,108 +375,108 @@ function clean_url($path) {
                 </button>
             </div>
             <div class="nav-links">
-                <a href="<?php echo clean_url('/homepage.php'); ?>">Home</a>
+                <a href="<?php echo SITE_URL; ?>/homepage.php">Home</a>
                 <div class="dropdown">
                     <button class="dropdown-btn">Who We Are <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <div class="sub-dropdown-trigger">
-                            <a href="<?php echo clean_url('/AboutUs.php'); ?>">About Us <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/AboutUs.php">About Us <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="<?php echo clean_url('/AboutUs.php'); ?>#vision-mission">Mission & Vision</a>
-                                <a href="<?php echo clean_url('/AboutUs.php'); ?>#our-leaders">Our Leaders</a>
-                                <a href="<?php echo clean_url('/AboutUs.php'); ?>#our-branches">Our Branches</a>
-                                <a href="<?php echo clean_url('/AboutUs.php'); ?>#about-tspi-mbai">Our Partner (MBAI)</a>
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-branches">Our Branches</a>
+                                <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                             </div>
                         </div>
                         <div class="sub-dropdown-trigger">
-                            <a href="<?php echo clean_url('/awards.php'); ?>">Awards & Recognitions <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/awards.php">Awards & Recognitions <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="<?php echo clean_url('/awards.php'); ?>?category=org_awards">Organization</a>
-                                <a href="<?php echo clean_url('/awards.php'); ?>?category=cli_awards">Clients</a>
+                                <a href="<?php echo SITE_URL; ?>/awards.php?category=org_awards">Organization</a>
+                                <a href="<?php echo SITE_URL; ?>/awards.php?category=cli_awards">Clients</a>
                             </div>
                         </div>
                     </div>
                 </div>
-                <a href="<?php echo clean_url('/offers.php'); ?>">What We Offer</a>
+                <a href="<?php echo SITE_URL; ?>/offers.php">What We Offer</a>
                 <div class="dropdown">
                     <button class="dropdown-btn">Our Impact <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="<?php echo clean_url('/stories.php'); ?>">Client Stories</a>
-                        <a href="<?php echo clean_url('/reports.php'); ?>">Annual Reports</a>
+                        <a href="<?php echo SITE_URL; ?>/stories.php">Client Stories</a>
+                        <a href="<?php echo SITE_URL; ?>/reports.php">Annual Reports</a>
                         <div class="sub-dropdown-trigger">
-                            <a href="<?php echo clean_url('/sambayanihan.php'); ?>">SAMBAYANIHAN <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/sambayanihan.php">SAMBAYANIHAN <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="<?php echo clean_url('/sambayanihan.php'); ?>?category=sambayanihan_client">Clients</a>
-                                <a href="<?php echo clean_url('/sambayanihan.php'); ?>?category=sambayanihan_employees">Employees</a>
+                                <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_client">Clients</a>
+                                <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_employees">Employees</a>
                             </div>
                         </div>
                     </div>
                 </div>
-                <a href="<?php echo clean_url('/news.php'); ?>">News</a>
+                <a href="<?php echo SITE_URL; ?>/news.php">News</a>
                 <div class="dropdown">
                     <button class="dropdown-btn">Resources <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <div class="sub-dropdown-trigger">
-                            <a href="<?php echo clean_url('/publications.php'); ?>">Publications <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/publications.php">Publications <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="<?php echo clean_url('/publications.php'); ?>?category=ann_reports">Annual Reports</a>
-                                <a href="<?php echo clean_url('/publications.php'); ?>?category=aud_financial">Audited Financial Statements</a>
-                                <a href="<?php echo clean_url('/publications.php'); ?>?category=newsletter">Newsletter</a>
+                                <a href="<?php echo SITE_URL; ?>/publications.php?category=ann_reports">Annual Reports</a>
+                                <a href="<?php echo SITE_URL; ?>/publications.php?category=aud_financial">Audited Financial Statements</a>
+                                <a href="<?php echo SITE_URL; ?>/publications.php?category=newsletter">Newsletter</a>
                             </div>
                         </div>
                         <div class="sub-dropdown-trigger">
-                            <a href="<?php echo clean_url('/governance.php'); ?>">Corporate Governance <i class="fas fa-chevron-right"></i></a>
+                            <a href="<?php echo SITE_URL; ?>/governance.php">Corporate Governance <i class="fas fa-chevron-right"></i></a>
                             <div class="sub-dropdown-content">
-                                <a href="<?php echo clean_url('/governance.php'); ?>?category=leg_documents">Foundational Legal Documents</a>
-                                <a href="<?php echo clean_url('/governance.php'); ?>?category=reg_registrations">Regulatory Compliance</a>
-                                <a href="<?php echo clean_url('/governance.php'); ?>?category=gov_framework">Governance Framework</a>
+                                <a href="<?php echo SITE_URL; ?>/governance.php?category=leg_documents">Foundational Legal Documents</a>
+                                <a href="<?php echo SITE_URL; ?>/governance.php?category=reg_registrations">Regulatory Compliance</a>
+                                <a href="<?php echo SITE_URL; ?>/governance.php?category=gov_framework">Governance Framework</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="mobile-nav">
-                <a href="<?php echo clean_url('/homepage.php'); ?>" class="home-link">Home</a>
+                <a href="<?php echo SITE_URL; ?>/homepage.php" class="home-link">Home</a>
                 <details class="main-dropdown-details">
                     <summary>Who We Are</summary>
                     <details class="sub-dropdown-details">
-                        <summary><a href="<?php echo clean_url('/AboutUs.php'); ?>" class="summary-link-mobile">About Us</a></summary>
-                        <a href="<?php echo clean_url('/AboutUs.php'); ?>#vision-mission">Mission & Vision</a>
-                        <a href="<?php echo clean_url('/AboutUs.php'); ?>#our-leaders">Our Leaders</a>
-                        <a href="<?php echo clean_url('/AboutUs.php'); ?>#our-branches">Our Branches</a>
-                        <a href="<?php echo clean_url('/AboutUs.php'); ?>#about-tspi-mbai">Our Partner (MBAI)</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/AboutUs.php" class="summary-link-mobile">About Us</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#vision-mission">Mission & Vision</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-leaders">Our Leaders</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#our-branches">Our Branches</a>
+                        <a href="<?php echo SITE_URL; ?>/AboutUs.php#about-tspi-mbai">Our Partner (MBAI)</a>
                     </details>
                     <details class="sub-dropdown-details">
                         <summary>Awards & Recognitions</summary>
-                        <a href="<?php echo clean_url('/awards.php'); ?>?category=org_awards">Organization</a>
-                        <a href="<?php echo clean_url('/awards.php'); ?>?category=cli_awards">Clients</a>
+                        <a href="<?php echo SITE_URL; ?>/awards.php?category=org_awards">Organization</a>
+                        <a href="<?php echo SITE_URL; ?>/awards.php?category=cli_awards">Clients</a>
                     </details>
                 </details>
-                <a href="<?php echo clean_url('/offers.php'); ?>" class="what-we-offer-link">What We Offer</a>
+                <a href="<?php echo SITE_URL; ?>/offers.php" class="what-we-offer-link">What We Offer</a>
                 <details>
                     <summary>Our Impact</summary>
-                    <a href="<?php echo clean_url('/stories.php'); ?>">Client Stories</a>
-                    <a href="<?php echo clean_url('/reports.php'); ?>">Annual Reports</a>
+                    <a href="<?php echo SITE_URL; ?>/stories.php">Client Stories</a>
+                    <a href="<?php echo SITE_URL; ?>/reports.php">Annual Reports</a>
                     <details class="sub-dropdown-details">
-                        <summary><a href="<?php echo clean_url('/sambayanihan.php'); ?>" class="summary-link-mobile">SAMBAYANIHAN</a></summary>
-                        <a href="<?php echo clean_url('/sambayanihan.php'); ?>?category=sambayanihan_client">Clients</a>
-                        <a href="<?php echo clean_url('/sambayanihan.php'); ?>?category=sambayanihan_employees">Employees</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/sambayanihan.php" class="summary-link-mobile">SAMBAYANIHAN</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_client">Clients</a>
+                        <a href="<?php echo SITE_URL; ?>/sambayanihan.php?category=sambayanihan_employees">Employees</a>
                     </details>
                 </details>
-                <a href="<?php echo clean_url('/news.php'); ?>" class="news-link">News</a>
+                <a href="<?php echo SITE_URL; ?>/news.php" class="news-link">News</a>
                 <details>
                     <summary>Resources</summary>
                     <details class="sub-dropdown-details">
-                        <summary><a href="<?php echo clean_url('/publications.php'); ?>" class="summary-link-mobile">Publications</a></summary>
-                        <a href="<?php echo clean_url('/publications.php'); ?>?category=ann_reports">Annual Reports</a>
-                        <a href="<?php echo clean_url('/publications.php'); ?>?category=aud_financial">Audited Financial Statements</a>
-                        <a href="<?php echo clean_url('/publications.php'); ?>?category=newsletter">Newsletter</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/publications.php" class="summary-link-mobile">Publications</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/publications.php?category=ann_reports">Annual Reports</a>
+                        <a href="<?php echo SITE_URL; ?>/publications.php?category=aud_financial">Audited Financial Statements</a>
+                        <a href="<?php echo SITE_URL; ?>/publications.php?category=newsletter">Newsletter</a>
                     </details>
                     <details class="sub-dropdown-details">
-                        <summary><a href="<?php echo clean_url('/governance.php'); ?>" class="summary-link-mobile">Corporate Governance</a></summary>
-                        <a href="<?php echo clean_url('/governance.php'); ?>?category=leg_documents">Foundational Legal Documents</a>
-                        <a href="<?php echo clean_url('/governance.php'); ?>?category=reg_registrations">Regulatory Compliance</a>
-                        <a href="<?php echo clean_url('/governance.php'); ?>?category=gov_framework">Governance Framework</a>
+                        <summary><a href="<?php echo SITE_URL; ?>/governance.php" class="summary-link-mobile">Corporate Governance</a></summary>
+                        <a href="<?php echo SITE_URL; ?>/governance.php?category=leg_documents">Foundational Legal Documents</a>
+                        <a href="<?php echo SITE_URL; ?>/governance.php?category=reg_registrations">Regulatory Compliance</a>
+                        <a href="<?php echo SITE_URL; ?>/governance.php?category=gov_framework">Governance Framework</a>
                     </details>
                 </details>
             </div>
@@ -544,11 +495,11 @@ function clean_url($path) {
                 </button>
                 <div class="user-dropdown-content">
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="<?php echo clean_url('/user/profile.php'); ?>">My Profile</a>
-                        <a href="<?php echo clean_url('/user/logout.php'); ?>">Logout</a>
+                        <a href="<?php echo SITE_URL; ?>/user/profile.php">My Profile</a>
+                        <a href="<?php echo SITE_URL; ?>/user/logout.php">Logout</a>
                     <?php else: ?>
-                        <a href="<?php echo clean_url('/user/login.php'); ?>">Login</a>
-                        <a href="<?php echo clean_url('/user/signup.php'); ?>">Sign Up</a>
+                        <a href="<?php echo SITE_URL; ?>/user/login.php">Login</a>
+                        <a href="<?php echo SITE_URL; ?>/user/signup.php">Sign Up</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -599,7 +550,7 @@ function clean_url($path) {
                                         day: 'numeric'
                                     });
                                     
-                                    html += `<a href="<?php echo SITE_URL; ?>/content?slug=${content.slug}" class="search-result-item">
+                                    html += `<a href="<?php echo SITE_URL; ?>/content.php?slug=${content.slug}" class="search-result-item">
                                         <span class="result-title">${content.title}</span>
                                         <span class="result-meta">${content.author} | ${formattedDate}</span>
                                     </a>`;
