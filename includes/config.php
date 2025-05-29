@@ -84,6 +84,11 @@ function redirect($path) {
         $path = isset($parsedPath['path']) ? $parsedPath['path'] : '/';
     }
     
+    // Remove .php extension for cleaner URLs
+    if (substr($path, -4) === '.php') {
+        $path = substr($path, 0, -4);
+    }
+    
     // Normalize path to ensure it starts with a slash
     $path = '/' . ltrim($path, '/');
     
