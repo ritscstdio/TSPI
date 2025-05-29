@@ -1,4 +1,37 @@
-node_modules
+# Local development
+.env
+.env.local
+php.ini
+php_backup/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Local uploads and temporary files
+/uploads/media/*
+!/uploads/media/.gitkeep
+/uploads/profile_pics/*
+!/uploads/profile_pics/.gitkeep
+/tmp/
+/logs/
+
+# IDE files
+.idea/
+.vscode/
+*.code-workspace
+.editorconfig
+
+# Dependency directories
+/vendor/
+/node_modules/
+
+# Windows path errors
+*DProgramsXAMPP*
+
+# Cache
+/cache/
+*.cache
 
 # Environment and secrets files
 .env
@@ -16,7 +49,4 @@ temp/
 */email_secrets.php
 */email_debug.txt
 */email_log.txt
-
-# Vendor directory (managed by Composer)
-/vendor/
 

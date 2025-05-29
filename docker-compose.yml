@@ -4,16 +4,17 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "${PORT:-80}:80"
     # No volume mounts to avoid Windows path issues
     environment:
-      - DB_HOST=crossover.proxy.rlwy.net
-      - DB_USER=root
-      - DB_PASS=mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt
-      - DB_NAME=railway
-      - DB_PORT=50379
-      - RAILWAY_STATIC_URL=
-      - SENDGRID_API_KEY=
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - RAILWAY_STATIC_URL=${RAILWAY_STATIC_URL}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - PORT=${PORT:-80}
     networks:
       - tspi_network
 

@@ -32,6 +32,11 @@ function resolve_asset_path($path) {
         return SITE_URL . '/uploads/media/' . $filename;
     }
     
+    // Fix for Railway - handle absolute paths without hostname
+    if (substr($path, 0, 1) === '/') {
+        return SITE_URL . $path;
+    }
+    
     // Otherwise, just prepend SITE_URL
     return SITE_URL . '/' . ltrim($path, '/');
 }

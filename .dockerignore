@@ -1,0 +1,36 @@
+# Local development files
+.git
+.github
+.env
+.env.*
+php.ini
+php_backup/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Debug logs
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Local uploads (these will be created in the container)
+/uploads/media/*
+!/uploads/media/.gitkeep
+/uploads/profile_pics/*
+!/uploads/profile_pics/.gitkeep
+
+# IDE configurations
+.idea
+.vscode
+*.sublime-*
+*.code-workspace
+
+# Local development tools
+docker-compose*.yml
+*.md
+/node_modules
+
+# Windows path errors
+*DProgramsXAMPP* 

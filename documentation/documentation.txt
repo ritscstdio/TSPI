@@ -723,3 +723,49 @@ Use `.card` class for content containers with border, padding, and subtle shadow
 +    - Card and section padding adjusts from 1.5rem to 1rem on mobile.
 +    
 + By centralizing these responsive patterns in `admin.css`, all admin pages inherently adapt to various device widths without per-page adjustments.
+
+# TSPI Web Application Documentation
+
+## Railway Deployment Guide
+
+### Overview
+This application is configured to deploy on Railway's platform using Docker. The deployment process is automated through Railway's integration with GitHub.
+
+### Environment Variables
+When deploying to Railway, you need to set the following environment variables:
+
+- `DB_HOST` - Database hostname (provided by Railway)
+- `DB_USER` - Database username (provided by Railway)
+- `DB_PASS` - Database password (provided by Railway)
+- `DB_NAME` - Database name (provided by Railway)
+- `DB_PORT` - Database port (provided by Railway)
+- `PORT` - The port on which the web server will listen (set automatically by Railway)
+- `RAILWAY_STATIC_URL` - (Optional) Custom domain URL if configured
+
+### Deployment Steps
+1. Connect your GitHub repository to Railway
+2. Create a new Railway project
+3. Add a MySQL database service to your project
+4. Add a web service using the Dockerfile in your repository
+5. Configure the environment variables in the Railway dashboard
+6. Deploy the application
+
+### File Paths
+The application is designed to handle paths correctly between local development and Railway deployment:
+- All assets are referenced using relative paths or through the `resolve_asset_path()` function
+- The `SITE_URL` constant is dynamically set based on the environment
+- Upload directories are automatically created during the Docker build process
+
+### Database Setup
+The application will connect to the Railway-provided MySQL database using the environment variables. Ensure your database schema is properly migrated to the Railway database before deployment.
+
+### Troubleshooting
+- If images are not displaying, check that they exist in the correct upload directories
+- If the application cannot connect to the database, verify the environment variables
+- For path issues, check the server logs for file not found errors
+
+### Local Development vs. Railway
+The application detects whether it's running locally or on Railway and adjusts paths accordingly:
+- Local development uses `http://localhost` as the base URL
+- Railway deployment uses the Railway-provided domain or custom domain
+- Database connection parameters are different between environments

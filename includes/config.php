@@ -1,29 +1,31 @@
 <?php
-// Database configuration
-// XAMPP LOCAL DB
-// define('DB_HOST', 'localhost');
-// define('DB_USER', 'root'); // Change in production
-// define('DB_PASS', '');     // Change in production
-// define('DB_NAME', 'tspi_blog');
-// define('DB_PORT', '3306');
-
-// RAILWAY DATABASE
-// Use environment variables for Railway
-define('DB_HOST', $_ENV['DB_HOST'] ?? 'crossover.proxy.rlwy.net');
-define('DB_USER', $_ENV['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? 'mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt');
-define('DB_NAME', $_ENV['DB_NAME'] ?? 'railway');
-define('DB_PORT', $_ENV['DB_PORT'] ?? '50379');
+// Database configuration - Use environment variables for Railway deployment
+define('DB_HOST', getenv('DB_HOST') ?: $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_USER', getenv('DB_USER') ?: $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', getenv('DB_PASS') ?: $_ENV['DB_PASS'] ?? '');
+define('DB_NAME', getenv('DB_NAME') ?: $_ENV['DB_NAME'] ?? 'railway');
+define('DB_PORT', getenv('DB_PORT') ?: $_ENV['DB_PORT'] ?? '3306');
 
 // Site configuration
+// Dynamic site URL for Railway - will work with Railway's auto-assigned domain
+$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://" : "http://";
+$railwayDomain = getenv('RAILWAY_STATIC_URL') ?: $_ENV['RAILWAY_STATIC_URL'] ?? '';
 
-// Dynamic site URL for Railway
-define('SITE_URL', $_ENV['RAILWAY_STATIC_URL'] ?? 'http://localhost');
+if (!empty($railwayDomain)) {
+    define('SITE_URL', $railwayDomain);
+} else {
+    // Detect if we're running on Railway (they set PORT env variable)
+    if (getenv('PORT') || isset($_ENV['PORT'])) {
+        // Running on Railway without custom domain
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        define('SITE_URL', $protocol . $host);
+    } else {
+        // Local development
+        define('SITE_URL', 'http://localhost');
+    }
+}
 
-// XAMPP LOCAL SITE URL
-// define('SITE_URL', 'http://localhost/TSPI'); // Project base URL
-
-// define('SITE_URL', 'http://www.tspi.site/'); // Preparing for deployment
+// Site constants
 define('SITE_NAME', 'TSPI Site');
 define('ADMIN_EMAIL', 'no-reply@tspi.site');
 define('UPLOADS_DIR', __DIR__ . '/../uploads');
