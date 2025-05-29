@@ -1,9 +1,41 @@
-<?php // Ensure config.php is included only once
-if (!defined('DB_HOST')) {
-    require_once 'config.php';
+<?php
+// Ensure config is loaded
+require_once __DIR__ . '/config.php';
+
+// Function to resolve image paths correctly in both environments
+function resolve_asset_path($path) {
+    // If path is empty or null, return default image path
+    if (empty($path)) {
+        return SITE_URL . '/src/assets/default-thumbnail.jpg';
+    }
+    
+    // If path already starts with http:// or https://, it's an external URL
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+    
+    // If path already starts with SITE_URL, return as is
+    if (strpos($path, SITE_URL) === 0) {
+        return $path;
+    }
+    
+    // If path starts with /TSPI/, remove it and prepend SITE_URL
+    if (strpos($path, '/TSPI/') === 0) {
+        return SITE_URL . substr($path, 5); // Remove '/TSPI'
+    }
+    
+    // Handle paths to media uploads
+    if (strpos($path, 'uploads/media/') !== false) {
+        // Extract the filename from the path
+        $filename = basename($path);
+        // Return the path to the file in the Docker container
+        return SITE_URL . '/uploads/media/' . $filename;
+    }
+    
+    // Otherwise, just prepend SITE_URL
+    return SITE_URL . '/' . ltrim($path, '/');
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">

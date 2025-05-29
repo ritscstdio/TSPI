@@ -276,3 +276,100 @@ The membership application approval process follows these steps:
 5. Only when both IO and LO have approved the application will the overall status change to 'approved'
 
 This README will be updated as the project evolves.
+
+## Docker and Railway Deployment
+
+### Docker Setup
+
+This project can be run using Docker for both local development and deployment to Railway.
+
+#### Prerequisites for Docker
+
+- Docker and Docker Compose installed on your machine
+- Git (to clone the repository)
+
+#### Local Development with Docker
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd TSPI
+   ```
+
+2. **Create a .env file:**
+   Create a `.env` file in the root directory with the following contents (adjust as needed):
+   ```
+   # Database configuration for local development
+   DB_HOST=db
+   DB_USER=root
+   DB_PASS=your_password_here
+   DB_NAME=railway
+   DB_PORT=3306
+
+   # Site URL
+   RAILWAY_STATIC_URL=http://localhost
+
+   # SendGrid API Key (replace with your actual key)
+   SENDGRID_API_KEY=SG.your_sendgrid_api_key
+   ```
+
+3. **Run the setup script:**
+   - On Windows: Run `setup-local-dev.bat`
+   - On Linux/Mac: Run `chmod +x setup-local-dev.sh && ./setup-local-dev.sh`
+
+4. **Start the Docker containers:**
+   ```bash
+   docker-compose up -d
+   ```
+
+5. **Access the website:**
+   Open your browser and navigate to `http://localhost`
+
+### Railway Deployment
+
+To deploy this application to Railway:
+
+1. **Install the Railway CLI:**
+   ```bash
+   npm i -g @railway/cli
+   ```
+
+2. **Login to Railway:**
+   ```bash
+   railway login
+   ```
+
+3. **Initialize a new Railway project (if needed):**
+   ```bash
+   railway init
+   ```
+
+4. **Create a Railway MySQL database (if needed):**
+   - Go to the Railway dashboard: https://railway.app/dashboard
+   - Click "New Project" → "Database" → "MySQL"
+   - Note the connection details
+
+5. **Update environment variables:**
+   - In the Railway dashboard, go to your project
+   - Click on the "Variables" tab
+   - Add the following variables (adjust as needed):
+     ```
+     DB_HOST=your_railway_db_host
+     DB_USER=your_railway_db_user
+     DB_PASS=your_railway_db_password
+     DB_NAME=railway
+     DB_PORT=your_railway_db_port
+     RAILWAY_STATIC_URL=https://your-app-name.up.railway.app
+     SENDGRID_API_KEY=your_sendgrid_api_key
+     ```
+
+6. **Deploy to Railway:**
+   ```bash
+   railway up
+   ```
+
+7. **Access your deployed application:**
+   - In the Railway dashboard, go to your project
+   - Click on the "Settings" tab
+   - Click "Generate Domain" if you haven't already
+   - Click on the generated domain to access your application

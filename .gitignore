@@ -7,3 +7,16 @@ user/email_secrets.php
 user/email_debug.txt
 user/email_log.txt
 
+# Docker and environment files
+.env
+docker-compose.override.yml
+
+# Temporary files
+temp/
+*/email_secrets.php
+*/email_debug.txt
+*/email_log.txt
+
+# Vendor directory (managed by Composer)
+/vendor/
+

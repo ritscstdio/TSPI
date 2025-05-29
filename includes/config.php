@@ -18,7 +18,7 @@ define('DB_PORT', $_ENV['DB_PORT'] ?? '50379');
 // Site configuration
 
 // Dynamic site URL for Railway
-define('SITE_URL', $_ENV['RAILWAY_STATIC_URL'] ?? 'http://localhost/TSPI');
+define('SITE_URL', $_ENV['RAILWAY_STATIC_URL'] ?? 'http://localhost');
 
 // XAMPP LOCAL SITE URL
 // define('SITE_URL', 'http://localhost/TSPI'); // Project base URL

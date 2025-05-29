@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    # No volume mounts to avoid Windows path issues
+    environment:
+      - DB_HOST=crossover.proxy.rlwy.net
+      - DB_USER=root
+      - DB_PASS=mQXhlFdbZwNPUnyQBGWSBKPHOMajvArt
+      - DB_NAME=railway
+      - DB_PORT=50379
+      - RAILWAY_STATIC_URL=
+      - SENDGRID_API_KEY=
+    networks:
+      - tspi_network
+
+networks:
+  tspi_network:
+    driver: bridge
+
+volumes:
+  mysql_data: 

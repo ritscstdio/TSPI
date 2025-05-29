@@ -720,9 +720,9 @@ include 'includes/header.php';
         <header class="content-header">
             <div class="content-thumbnail">
                 <?php if ($content['thumbnail']): ?>
-                    <img src="<?php echo $content['thumbnail']; ?>" alt="<?php echo sanitize($content['title']); ?>">
+                    <img src="<?php echo resolve_asset_path($content['thumbnail']); ?>" alt="<?php echo sanitize($content['title']); ?>">
                 <?php else: ?>
-                    <img src="assets/default-thumbnail.jpg" alt="<?php echo sanitize($content['title']); ?>">
+                    <img src="<?php echo resolve_asset_path('assets/default-thumbnail.jpg'); ?>" alt="<?php echo sanitize($content['title']); ?>">
                 <?php endif; ?>
             </div>
             
@@ -747,9 +747,32 @@ include 'includes/header.php';
         <!-- content Body -->
         <div class="content-body">
             <?php
-                // Wrap iframes in a responsive container
+                // Wrap iframes in a responsive container and fix image paths
                 $bodyContent = $content['content'];
+                
+                // Fix iframe responsiveness
                 $bodyContent = preg_replace('/<iframe(.*?)>(.*?)<\/iframe>/is', '<div class="video-embed-container"><iframe$1>$2</iframe></div>', $bodyContent);
+                
+                // Fix image paths in the content
+                $bodyContent = preg_replace_callback('/<img([^>]*?)src=["\'](\/TSPI\/[^"\']*?)["\']([^>]*?)>/i', function($matches) {
+                    $attrs = $matches[1];
+                    $path = $matches[2];
+                    $endAttrs = $matches[3];
+                    $newPath = resolve_asset_path($path);
+                    return "<img{$attrs}src=\"{$newPath}\"{$endAttrs}>";
+                }, $bodyContent);
+                
+                // Also handle any other paths that might be in the uploads directory
+                $bodyContent = preg_replace_callback('/<img([^>]*?)src=["\']((?:\.\.\/)?uploads\/media\/[^"\']*?)["\']([^>]*?)>/i', function($matches) {
+                    $attrs = $matches[1];
+                    $path = $matches[2];
+                    $endAttrs = $matches[3];
+                    // Extract the filename
+                    $filename = basename($path);
+                    $newPath = SITE_URL . '/uploads/media/' . $filename;
+                    return "<img{$attrs}src=\"{$newPath}\"{$endAttrs}>";
+                }, $bodyContent);
+                
                 echo $bodyContent;
             ?>
         </div>
@@ -811,9 +834,9 @@ include 'includes/header.php';
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
                                     <?php if ($similar['thumbnail']): ?>
-                                        <img src="<?php echo $similar['thumbnail']; ?>" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
+                                        <img src="<?php echo resolve_asset_path($similar['thumbnail']); ?>" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
                                     <?php else: ?>
-                                        <img src="assets/default-thumbnail.jpg" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
+                                        <img src="<?php echo resolve_asset_path('assets/default-thumbnail.jpg'); ?>" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
                                     <?php endif; ?>
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">
@@ -849,7 +872,7 @@ include 'includes/header.php';
                             <div class="comment-content">
                                 <div class="comment-header">
                                     <?php if ($comment['profile_picture']): ?>
-                                        <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($comment['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
+                                        <img src="<?php echo resolve_asset_path('uploads/profile_pics/' . sanitize($comment['profile_picture'])); ?>" alt="Avatar" class="comment-avatar">
                                     <?php else: ?>
                                         <i class="fas fa-user-circle comment-avatar-icon"></i>
                                     <?php endif; ?>
@@ -913,7 +936,7 @@ include 'includes/header.php';
                                         <div class="comment-content">
                                             <div class="comment-header">
                                                 <?php if ($reply['profile_picture']): ?>
-                                                    <img src="<?php echo SITE_URL . '/uploads/profile_pics/' . sanitize($reply['profile_picture']); ?>" alt="Avatar" class="comment-avatar">
+                                                    <img src="<?php echo resolve_asset_path('uploads/profile_pics/' . sanitize($reply['profile_picture'])); ?>" alt="Avatar" class="comment-avatar">
                                                 <?php else: ?>
                                                     <i class="fas fa-user-circle comment-avatar-icon"></i>
                                                 <?php endif; ?>

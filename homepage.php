@@ -9,7 +9,7 @@ include 'includes/header.php';
     <!-- Hero Section -->
     <section class="hero" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 350px;">
         <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease-in-out;">
-            <source src="<?php echo SITE_URL; ?>/src/assets/TSPI Intro.mp4" type="video/mp4">
+            <source src="<?php echo resolve_asset_path('/src/assets/TSPI Intro.mp4'); ?>" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         <div class="hero-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--primary-blue), var(--dark-navy)); opacity: 0.7; z-index: 1;"></div>
@@ -44,10 +44,16 @@ include 'includes/header.php';
                 if (preg_match('#^https?://#i', $art['thumbnail'])) {
                     $bg = $art['thumbnail'];
                 } else {
-                    $bg = SITE_URL . '/' . $art['thumbnail'];
+                    // Check if it's a path to an upload in the media directory
+                    if (strpos($art['thumbnail'], 'uploads/media/') !== false) {
+                        $filename = basename($art['thumbnail']);
+                        $bg = SITE_URL . '/uploads/media/' . $filename;
+                    } else {
+                        $bg = resolve_asset_path($art['thumbnail']);
+                    }
                 }
             } else {
-                $bg = SITE_URL . '/src/assets/default-thumbnail.jpg';
+                $bg = resolve_asset_path('/src/assets/default-thumbnail.jpg');
             }
             $excerpt = substr(strip_tags($art['content']), 0, 100);
             ?>
@@ -71,7 +77,7 @@ include 'includes/header.php';
     <section class="message-section">
         <div class="message-content">
             <div class="message-image">
-                <img src="<?php echo SITE_URL; ?>/src/assets/chairman.jpg" alt="Chairman">
+                <img src="<?php echo resolve_asset_path('/src/assets/chairman.jpg'); ?>" alt="Chairman">
             </div>
             <div class="message-text">
                 <h2>THE TRANSFORMING POWER OF GOD'S LOVE</h2>
@@ -91,7 +97,7 @@ include 'includes/header.php';
                 <a href="<?php echo SITE_URL; ?>/AboutUs.php#leader-rene-e-cristobal" class="read-more">Read More <span class="read-more-arrow">→</span></a>
             </div>
             <div class="message-image">
-                <img src="<?php echo SITE_URL; ?>/src/assets/president.jpg" alt="President">
+                <img src="<?php echo resolve_asset_path('/src/assets/president.jpg'); ?>" alt="President">
             </div>
         </div>
     </section>
