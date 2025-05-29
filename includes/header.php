@@ -48,6 +48,14 @@ function resolve_css_path($path) {
         return $path;
     }
     
+    // Check if the path contains the domain name already
+    $domain = parse_url(SITE_URL, PHP_URL_HOST);
+    if ($domain && strpos($path, $domain) !== false) {
+        // Extract just the path part
+        $parsedPath = parse_url($path);
+        $path = isset($parsedPath['path']) ? $parsedPath['path'] : '/';
+    }
+    
     // Ensure path starts with a slash
     $path = '/' . ltrim($path, '/');
     

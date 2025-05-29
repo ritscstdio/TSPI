@@ -12,13 +12,18 @@ $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://
 $railwayDomain = getenv('RAILWAY_STATIC_URL') ?: $_ENV['RAILWAY_STATIC_URL'] ?? '';
 
 if (!empty($railwayDomain)) {
-    define('SITE_URL', rtrim($railwayDomain, '/')); // Ensure no trailing slash
+    // For custom domains, ensure protocol is included and no trailing slash
+    if (strpos($railwayDomain, 'http://') === 0 || strpos($railwayDomain, 'https://') === 0) {
+        define('SITE_URL', rtrim($railwayDomain, '/'));
+    } else {
+        define('SITE_URL', $protocol . rtrim($railwayDomain, '/'));
+    }
 } else {
     // Detect if we're running on Railway (they set PORT env variable)
     if (getenv('PORT') || isset($_ENV['PORT'])) {
         // Running on Railway without custom domain
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        define('SITE_URL', rtrim($protocol . $host, '/')); // Ensure no trailing slash
+        define('SITE_URL', rtrim($protocol . $host, '/'));
     } else {
         // Local development
         define('SITE_URL', 'http://localhost');
@@ -28,7 +33,7 @@ if (!empty($railwayDomain)) {
 // Define BASE_PATH constant for subdirectory installations
 // For Railway and production, this should be empty
 // For local XAMPP installation, this might be '/TSPI'
-define('BASE_PATH', getenv('BASE_PATH') ?: $_ENV['BASE_PATH'] ?? '');
+define('BASE_PATH', '');
 
 // Site constants
 define('SITE_NAME', 'TSPI Site');
@@ -69,6 +74,14 @@ function redirect($path) {
     if (filter_var($path, FILTER_VALIDATE_URL)) {
         header("Location: " . $path);
         exit;
+    }
+    
+    // If path already has domain name, remove it to avoid duplication
+    $domain = parse_url(SITE_URL, PHP_URL_HOST);
+    if ($domain && strpos($path, $domain) !== false) {
+        // Extract just the path part after the domain
+        $parsedPath = parse_url($path);
+        $path = isset($parsedPath['path']) ? $parsedPath['path'] : '/';
     }
     
     // Normalize path to ensure it starts with a slash

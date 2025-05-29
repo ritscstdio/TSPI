@@ -11,7 +11,13 @@ RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
 # Fix for Railway duplicate domain issue
-# If URL contains domain duplicated (e.g., example.com/example.com/)
+# If URL contains domain duplicated in the path (e.g., example.com/example.com/) - improved regex
+RewriteCond %{HTTP_HOST} ^([^.]+\.[^.]+)$ [NC]
+RewriteCond %{REQUEST_URI} ^/+%1(/.*)?$ [NC]
+RewriteRule ^(.*)$ /$1 [R=301,L]
+
+# Alternative fix for any domain duplication pattern
+RewriteCond %{HTTP_HOST} ^([^.]+\.[^.]+)$ [NC]
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+([^/]+)/\1/ [NC]
 RewriteRule ^ /%1/ [R=301,L]
 
