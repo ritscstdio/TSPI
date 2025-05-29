@@ -34,8 +34,22 @@ function resolve_asset_path($path) {
     if (strpos($path, 'uploads/media/') !== false) {
         // Extract the filename from the path
         $filename = basename($path);
+        $full_url = SITE_URL . '/uploads/media/' . $filename;
+        
+        // Check if the file actually exists on the server (only for Railway environment)
+        if ($_SERVER['HTTP_HOST'] !== 'localhost') {
+            // Attempt to check if file exists - this is more reliable than just checking specific filenames
+            $server_path = $_SERVER['DOCUMENT_ROOT'] . '/uploads/media/' . $filename;
+            if (!file_exists($server_path)) {
+                // File doesn't exist on server, try fallback to GitHub raw content
+                // Replace YOUR_GITHUB_USERNAME/REPOSITORY with the actual repository information
+                $github_url = 'https://raw.githubusercontent.com/ritscstdio/TSPI/main/uploads/media/' . $filename;
+                return $github_url;
+            }
+        }
+        
         // Return the path to the file in the Docker container
-        return SITE_URL . '/uploads/media/' . $filename;
+        return $full_url;
     }
 
     // Handle paths to asset directories that might be causing problems

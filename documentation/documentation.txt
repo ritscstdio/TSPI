@@ -775,4 +775,58 @@ If you encounter path issues (broken images, missing CSS):
 3. Make sure BASE_PATH is set correctly in your environment variables
 4. Verify the .htaccess file is properly deployed and working
 
+## Media URL Handling and Troubleshooting
+
+The website uses a mixed approach for serving media files, handling both static assets in the source code (`src/assets/` directory) and user-uploaded media (`uploads/media/` directory).
+
+### Media Path Resolution
+
+1. **Path Resolution Functions**
+   - `resolve_asset_path()` - In `includes/header.php` for properly resolving image paths
+   - `resolve_css_path()` - For resolving CSS and JavaScript file paths
+
+2. **GitHub Fallback Mechanism**
+   - For critical media files that might be missing on the production server, a GitHub fallback URL pattern is used
+   - Implemented in `includes/header.php` to check if files exist on the server before trying to load them
+   - If a file doesn't exist on the server, it will attempt to load from the GitHub repository instead
+
+### Troubleshooting Media Tools
+
+Two helper scripts have been created to diagnose and fix media loading issues:
+
+1. **`fix-missing-media.php`**
+   - Checks which media files exist on the server and in the database
+   - Shows which ones might be missing
+   - Provides an option to update database references to use GitHub URLs as fallback
+   - Access restricted to administrators only
+
+2. **`upload-missing-media.php`**
+   - Identifies media files that exist in the GitHub repository but are missing from the server
+   - Allows administrators to download missing files directly to the server
+   - Shows status of each file (missing/available)
+   - Access restricted to administrators only
+
+### Common Media Issues
+
+1. **404 Errors for Media Files**
+   - Check if the file exists in the correct location on the server
+   - Verify the database references the correct path
+   - Use `fix-missing-media.php` to diagnose and fix path issues
+
+2. **Broken Images on Production vs. Development**
+   - Production URLs might differ from development URLs
+   - The system tries to fix localhost URLs automatically
+   - Run `fix-media-urls.php` to update database entries that reference localhost
+
+3. **Mixed Content Warnings**
+   - Sometimes occurs when HTTP URLs are used in an HTTPS site
+   - Fixed by using protocol-relative URLs or ensuring HTTPS in all media paths
+
+### Media Upload Configuration
+
+- All user-uploaded media is stored in the `uploads/media/` directory
+- Files are renamed with a unique prefix (timestamp-based) to prevent conflicts
+- The system checks MIME types to ensure only valid image files are uploaded
+- File size is limited to 5MB per upload
+
 // ... existing documentation ...

@@ -13,7 +13,7 @@ This is the web application for Tulay sa Pag-unlad, Inc., a financial institutio
 ### Installation with XAMPP
 1. Clone this repository into your XAMPP htdocs folder:
    ```
-   git clone https://github.com/your-username/TSPI.git /path/to/xampp/htdocs/TSPI
+   git clone https://github.com/ritscstdio/TSPI.git /path/to/xampp/htdocs/TSPI
    ```
 
 2. Create a database named `railway` in your MySQL server
@@ -27,7 +27,7 @@ This is the web application for Tulay sa Pag-unlad, Inc., a financial institutio
 ### Installation with Docker
 1. Clone this repository:
    ```
-   git clone https://github.com/your-username/TSPI.git
+   git clone https://github.com/ritscstdio/TSPI.git
    cd TSPI
    ```
 
@@ -83,6 +83,29 @@ Set these variables in the Railway dashboard:
 - User authentication and authorization
 - Media uploads
 - And more...
+
+## Media Handling
+
+The application handles two types of media content:
+- Static assets (`src/assets/`) - Part of the codebase
+- User-uploaded media (`uploads/media/`) - Dynamically uploaded content
+
+### Troubleshooting Media Issues
+
+If you encounter issues with media not loading properly on your deployment:
+
+1. First, verify that all files exist in the correct location on your server
+2. Use the admin tools to diagnose and fix issues:
+   - `fix-missing-media.php` - Check which media files are missing and update database references
+   - `upload-missing-media.php` - Download missing media files from GitHub to your server
+
+### GitHub Integration
+
+The system has a fallback mechanism that attempts to load media from the GitHub repository when it's not available on the server. This is particularly useful for live deployments where media uploads from local development might not have been transferred.
+
+To configure this fallback mechanism:
+1. Make sure your GitHub repository is public
+2. Update the GitHub URL pattern in `includes/header.php` to match your repository
 
 ## Documentation
 Additional documentation can be found in the `documentation` folder.
