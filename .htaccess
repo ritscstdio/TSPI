@@ -1,0 +1,37 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Set the base directory for rewrites
+# This helps with Railway deployment
+RewriteBase /
+
+# If the request is for an actual file or directory, skip rewrites
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Fix for Railway duplicate domain issue
+# If URL contains domain duplicated (e.g., example.com/example.com/)
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+([^/]+)/\1/ [NC]
+RewriteRule ^ /%1/ [R=301,L]
+
+# Prevent duplicate slashes in URLs
+RewriteCond %{THE_REQUEST} //
+RewriteRule .* /$0 [R=301,L,NE]
+
+# Remove trailing slashes for non-directories
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+# Security: Prevent direct access to PHP files in specific directories
+# Uncomment if needed
+# RewriteRule ^includes/.+\.php$ - [F,L]
+
+# Security: Protect .htaccess file
+<Files .htaccess>
+  Order Allow,Deny
+  Deny from all
+</Files>
+
+# Security: Disable directory browsing
+Options -Indexes 

@@ -40,6 +40,20 @@ function resolve_asset_path($path) {
     // Otherwise, just prepend SITE_URL
     return SITE_URL . '/' . ltrim($path, '/');
 }
+
+// Function to resolve CSS and JS paths
+function resolve_css_path($path) {
+    // If path already has protocol, return as is
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+    
+    // Ensure path starts with a slash
+    $path = '/' . ltrim($path, '/');
+    
+    // Return full URL
+    return SITE_URL . $path;
+}
 ?>
 
 <!DOCTYPE html>
@@ -61,9 +75,9 @@ function resolve_asset_path($path) {
     <meta property="og:image" content="<?php echo $page_image ?? SITE_URL . '/assets/default-thumbnail.jpg'; ?>" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="<?php echo SITE_URL; ?>/src/assets/favicon.png">
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/styles.css">
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/src/css/mainstyles.css">
+    <link rel="icon" type="image/png" href="<?php echo resolve_css_path('/src/assets/favicon.png'); ?>">
+    <link rel="stylesheet" href="<?php echo resolve_css_path('/assets/css/styles.css'); ?>">
+    <link rel="stylesheet" href="<?php echo resolve_css_path('/src/css/mainstyles.css'); ?>">
     <style>
         /* Search results styling */
         .search-results a.search-result-item {

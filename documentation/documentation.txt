@@ -740,32 +740,39 @@ When deploying to Railway, you need to set the following environment variables:
 - `DB_NAME` - Database name (provided by Railway)
 - `DB_PORT` - Database port (provided by Railway)
 - `PORT` - The port on which the web server will listen (set automatically by Railway)
-- `RAILWAY_STATIC_URL` - (Optional) Custom domain URL if configured
+- `RAILWAY_STATIC_URL` - (Optional) Custom domain URL if configured (e.g. 'https://tspi.site')
+- `BASE_PATH` - Set to empty string ('') for Railway, or '/TSPI' for local XAMPP development
 
-### Deployment Steps
-1. Connect your GitHub repository to Railway
-2. Create a new Railway project
-3. Add a MySQL database service to your project
-4. Add a web service using the Dockerfile in your repository
-5. Configure the environment variables in the Railway dashboard
-6. Deploy the application
+### Path Resolution
+The application uses a path resolution system to handle the differences between local development (with XAMPP under /TSPI/) and production deployment (with Railway at the root domain).
 
-### File Paths
-The application is designed to handle paths correctly between local development and Railway deployment:
-- All assets are referenced using relative paths or through the `resolve_asset_path()` function
-- The `SITE_URL` constant is dynamically set based on the environment
-- Upload directories are automatically created during the Docker build process
+Two main functions handle this:
+- `resolve_asset_path()` - For handling image and media paths
+- `resolve_css_path()` - For handling CSS and JavaScript files
 
-### Database Setup
-The application will connect to the Railway-provided MySQL database using the environment variables. Ensure your database schema is properly migrated to the Railway database before deployment.
+The system automatically detects the environment and adjusts paths accordingly:
+- In XAMPP, assets are loaded from: http://localhost/TSPI/assets/...
+- In Railway, assets are loaded from: https://tspi.site/assets/...
 
-### Troubleshooting
-- If images are not displaying, check that they exist in the correct upload directories
-- If the application cannot connect to the database, verify the environment variables
-- For path issues, check the server logs for file not found errors
+### CSS and Asset Loading
+All CSS, JavaScript, and other assets are loaded using the `resolve_css_path()` function to ensure they work in both environments.
 
-### Local Development vs. Railway
-The application detects whether it's running locally or on Railway and adjusts paths accordingly:
-- Local development uses `http://localhost` as the base URL
-- Railway deployment uses the Railway-provided domain or custom domain
-- Database connection parameters are different between environments
+### URL Structure
+The application uses a URL structure that's consistent across environments:
+- Base URL: SITE_URL (e.g., 'https://tspi.site')
+- Pages: SITE_URL/page.php (e.g., 'https://tspi.site/homepage.php')
+
+The .htaccess file handles URL normalization to prevent issues like:
+- Duplicate domains (https://tspi.site/tspi.site/)
+- Trailing slashes
+- Duplicate slashes
+
+### Troubleshooting Path Issues
+If you encounter path issues (broken images, missing CSS):
+
+1. Check that SITE_URL is set correctly in config.php
+2. Ensure all asset paths use the resolve_asset_path() or resolve_css_path() functions
+3. Make sure BASE_PATH is set correctly in your environment variables
+4. Verify the .htaccess file is properly deployed and working
+
+// ... existing documentation ...

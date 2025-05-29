@@ -12,18 +12,23 @@ $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https://
 $railwayDomain = getenv('RAILWAY_STATIC_URL') ?: $_ENV['RAILWAY_STATIC_URL'] ?? '';
 
 if (!empty($railwayDomain)) {
-    define('SITE_URL', $railwayDomain);
+    define('SITE_URL', rtrim($railwayDomain, '/')); // Ensure no trailing slash
 } else {
     // Detect if we're running on Railway (they set PORT env variable)
     if (getenv('PORT') || isset($_ENV['PORT'])) {
         // Running on Railway without custom domain
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        define('SITE_URL', $protocol . $host);
+        define('SITE_URL', rtrim($protocol . $host, '/')); // Ensure no trailing slash
     } else {
         // Local development
         define('SITE_URL', 'http://localhost');
     }
 }
+
+// Define BASE_PATH constant for subdirectory installations
+// For Railway and production, this should be empty
+// For local XAMPP installation, this might be '/TSPI'
+define('BASE_PATH', getenv('BASE_PATH') ?: $_ENV['BASE_PATH'] ?? '');
 
 // Site constants
 define('SITE_NAME', 'TSPI Site');
@@ -60,10 +65,19 @@ if (!$conn) {
 
 // Helper functions
 function redirect($path) {
-    // Normalize base URL and path to ensure a single slash between
-    $base = rtrim(SITE_URL, '/');
+    // Check if path is already a full URL
+    if (filter_var($path, FILTER_VALIDATE_URL)) {
+        header("Location: " . $path);
+        exit;
+    }
+    
+    // Normalize path to ensure it starts with a slash
     $path = '/' . ltrim($path, '/');
-    header("Location: " . $base . $path);
+    
+    // Create full URL without duplication
+    $url = SITE_URL . $path;
+    
+    header("Location: " . $url);
     exit;
 }
 
