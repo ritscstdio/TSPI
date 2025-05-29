@@ -720,9 +720,24 @@ include 'includes/header.php';
         <header class="content-header">
             <div class="content-thumbnail">
                 <?php if ($content['thumbnail']): ?>
-                    <img src="<?php echo resolve_asset_path($content['thumbnail']); ?>" alt="<?php echo sanitize($content['title']); ?>">
+                    <?php
+                    // Improved thumbnail handling
+                    $thumb_url = '';
+                    if (preg_match('#^https?://#i', $content['thumbnail'])) {
+                        $thumb_url = $content['thumbnail'];
+                    } else if (strpos($content['thumbnail'], 'uploads/media/') !== false) {
+                        $filename = basename($content['thumbnail']);
+                        $thumb_url = SITE_URL . '/uploads/media/' . $filename;
+                    } else if (strpos($content['thumbnail'], 'src/assets/') !== false) {
+                        $filename = basename($content['thumbnail']);
+                        $thumb_url = SITE_URL . '/src/assets/' . $filename;
+                    } else {
+                        $thumb_url = resolve_asset_path($content['thumbnail']);
+                    }
+                    ?>
+                    <img src="<?php echo $thumb_url; ?>" alt="<?php echo sanitize($content['title']); ?>">
                 <?php else: ?>
-                    <img src="<?php echo resolve_asset_path('assets/default-thumbnail.jpg'); ?>" alt="<?php echo sanitize($content['title']); ?>">
+                    <img src="<?php echo SITE_URL; ?>/src/assets/default-thumbnail.jpg" alt="<?php echo sanitize($content['title']); ?>">
                 <?php endif; ?>
             </div>
             
@@ -833,11 +848,26 @@ include 'includes/header.php';
                         <?php foreach ($similar_contents as $similar): ?>
                             <div class="carousel-slide">
                                 <div class="similar-post-card">
-                                    <?php if ($similar['thumbnail']): ?>
-                                        <img src="<?php echo resolve_asset_path($similar['thumbnail']); ?>" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
-                                    <?php else: ?>
-                                        <img src="<?php echo resolve_asset_path('assets/default-thumbnail.jpg'); ?>" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
-                                    <?php endif; ?>
+                                    <?php 
+                                    // Improved thumbnail handling
+                                    $similar_thumb_url = '';
+                                    if ($similar['thumbnail']) {
+                                        if (preg_match('#^https?://#i', $similar['thumbnail'])) {
+                                            $similar_thumb_url = $similar['thumbnail'];
+                                        } else if (strpos($similar['thumbnail'], 'uploads/media/') !== false) {
+                                            $filename = basename($similar['thumbnail']);
+                                            $similar_thumb_url = SITE_URL . '/uploads/media/' . $filename;
+                                        } else if (strpos($similar['thumbnail'], 'src/assets/') !== false) {
+                                            $filename = basename($similar['thumbnail']);
+                                            $similar_thumb_url = SITE_URL . '/src/assets/' . $filename;
+                                        } else {
+                                            $similar_thumb_url = resolve_asset_path($similar['thumbnail']);
+                                        }
+                                    } else {
+                                        $similar_thumb_url = SITE_URL . '/src/assets/default-thumbnail.jpg';
+                                    }
+                                    ?>
+                                    <img src="<?php echo $similar_thumb_url; ?>" alt="<?php echo sanitize($similar['title']); ?>" class="similar-post-thumbnail">
                                     <div class="similar-post-content">
                                         <h3 class="similar-post-title">
                                             <a href="content.php?slug=<?php echo $similar['slug']; ?>"><?php echo sanitize($similar['title']); ?></a>

@@ -8,10 +8,11 @@ include 'includes/header.php';
 <main>
     <!-- Hero Section -->
     <section class="hero" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 350px;">
-        <video class="hero-bg-video" autoplay muted loop playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease-in-out;">
+        <video class="hero-bg-video" autoplay muted loop playsinline preload="auto" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0; transition: opacity 1.5s ease-in-out;">
             <source src="<?php echo resolve_asset_path('/src/assets/TSPI Intro.mp4'); ?>" type="video/mp4">
             Your browser does not support the video tag.
         </video>
+        <div class="hero-bg-fallback" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--primary-blue); z-index: 0;"></div>
         <div class="hero-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--primary-blue), var(--dark-navy)); opacity: 0.7; z-index: 1;"></div>
         <div class="hero-fade-up" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center;">
             <h1>TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
@@ -40,6 +41,7 @@ include 'includes/header.php';
         <div class="news-grid">
         <?php foreach ($latest_contents as $art): ?>
             <?php
+            // Improved thumbnail handling
             if ($art['thumbnail']) {
                 if (preg_match('#^https?://#i', $art['thumbnail'])) {
                     $bg = $art['thumbnail'];
@@ -48,12 +50,15 @@ include 'includes/header.php';
                     if (strpos($art['thumbnail'], 'uploads/media/') !== false) {
                         $filename = basename($art['thumbnail']);
                         $bg = SITE_URL . '/uploads/media/' . $filename;
+                    } else if (strpos($art['thumbnail'], 'src/assets/') !== false) {
+                        $filename = basename($art['thumbnail']);
+                        $bg = SITE_URL . '/src/assets/' . $filename;
                     } else {
                         $bg = resolve_asset_path($art['thumbnail']);
                     }
                 }
             } else {
-                $bg = resolve_asset_path('/src/assets/default-thumbnail.jpg');
+                $bg = SITE_URL . '/src/assets/default-thumbnail.jpg';
             }
             $excerpt = substr(strip_tags($art['content']), 0, 100);
             ?>
@@ -129,15 +134,44 @@ window.addEventListener('scroll', function() {
     }
 });
 
-// Fade in hero video
+// Improved video loading handling
 document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        const heroVideo = document.querySelector('.hero-bg-video');
-        if (heroVideo) {
+    const heroVideo = document.querySelector('.hero-bg-video');
+    const fallbackBg = document.querySelector('.hero-bg-fallback');
+    
+    if (heroVideo) {
+        // Try to load video with timeout
+        const videoLoadTimeout = setTimeout(function() {
+            // If video hasn't loaded after 5 seconds, show fallback
+            if (heroVideo.readyState < 3) {
+                console.log('Video taking too long to load, showing fallback');
+                if (fallbackBg) fallbackBg.style.opacity = '1';
+            }
+        }, 5000);
+        
+        // Set up event listeners for video
+        heroVideo.addEventListener('canplaythrough', function() {
+            // Video can play through, fade it in
+            clearTimeout(videoLoadTimeout);
             heroVideo.style.opacity = '1';
-            heroVideo.style.transition = 'opacity 1.8s ease-in-out'; // Smoother, longer fade in
+            heroVideo.style.transition = 'opacity 1.8s ease-in-out';
+            // Hide fallback if it was showing
+            if (fallbackBg) fallbackBg.style.opacity = '0';
+        });
+        
+        heroVideo.addEventListener('error', function(e) {
+            // Video error occurred
+            console.error('Video error:', e);
+            clearTimeout(videoLoadTimeout);
+            // Show fallback
+            if (fallbackBg) fallbackBg.style.opacity = '1';
+        });
+        
+        // Force a reload of the video if it hasn't started loading
+        if (heroVideo.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+            heroVideo.load();
         }
-    }, 300);
+    }
 });
 </script>
 
@@ -145,6 +179,12 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Additional styles to override any underlines */
 .cta-button {
     text-decoration: none !important; /* Remove underline from CTA buttons */
+}
+
+/* Video fallback styling */
+.hero-bg-fallback {
+    opacity: 0;
+    transition: opacity 1s ease;
 }
 </style>
 

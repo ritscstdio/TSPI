@@ -215,14 +215,134 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $success = true;
             
-            // Redirect to homepage after successful registration
-            $_SESSION['message'] = "Registration successful! Please check your email to verify your account.";
-            redirect('/homepage.php');
+            // Show verification notification page instead of immediate redirect
+            $_SESSION['verification_email'] = $email;
+            $_SESSION['verification_sent'] = true;
+            // Don't redirect here - we'll show the notification first
         } catch (PDOException $e) {
             $pdo->rollBack();
             $errors[] = "Registration failed: " . $e->getMessage();
         }
     }
+}
+
+// Check if we need to show the verification notification
+if (isset($_SESSION['verification_sent']) && $_SESSION['verification_sent']) {
+    $verification_email = $_SESSION['verification_email'] ?? '';
+    
+    // Clear the session variables
+    unset($_SESSION['verification_sent']);
+    unset($_SESSION['verification_email']);
+    
+    // Store a success message for the homepage
+    $_SESSION['message'] = "Registration successful! Please check your email to verify your account.";
+    
+    // Show notification page
+    include '../includes/header.php';
+    ?>
+    <main class="container verification-notification">
+        <div class="notification-box">
+            <i class="fas fa-envelope-open-text notification-icon"></i>
+            <h1>Verification Email Sent!</h1>
+            <p>We've sent a verification link to <strong><?php echo sanitize($verification_email); ?></strong></p>
+            <p>Please check your inbox (and spam folder) to complete your registration.</p>
+            <div class="progress-container">
+                <div class="progress-bar" id="redirect-progress"></div>
+            </div>
+            <p id="redirect-text">Redirecting to the homepage in <span id="countdown">5</span> seconds...</p>
+            <p class="notification-note">You can close this page if you've already verified your account.</p>
+        </div>
+    </main>
+    
+    <style>
+        .verification-notification {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - var(--navbar-height));
+            padding: 2rem 1rem;
+        }
+        
+        .notification-box {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .notification-icon {
+            font-size: 4rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+        }
+        
+        .notification-box h1 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .notification-box p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #555;
+        }
+        
+        .notification-note {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 2rem;
+        }
+        
+        .progress-container {
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            height: 8px;
+            width: 100%;
+            margin: 1.5rem 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: var(--primary-blue);
+            border-radius: 20px;
+            width: 0;
+            transition: width 5s linear;
+        }
+        
+        #redirect-text {
+            font-size: 1rem;
+            color: #666;
+        }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start the progress bar animation
+            const progressBar = document.getElementById('redirect-progress');
+            progressBar.style.width = '100%';
+            
+            // Countdown timer
+            let countdown = 5;
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(function() {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = '<?php echo SITE_URL; ?>/homepage.php';
+                }
+            }, 1000);
+        });
+    </script>
+    
+    <?php
+    include '../includes/footer.php';
+    exit;
 }
 
 include '../includes/header.php';

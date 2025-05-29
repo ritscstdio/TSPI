@@ -91,14 +91,22 @@ if ($filter_category) {
         <div class="contents-grid">
             <?php foreach ($news_contents as $art): ?>
                 <?php
+                // Improved thumbnail handling
+                $img = '';
                 if ($art['thumbnail']) {
                     if (preg_match('#^https?://#i', $art['thumbnail'])) {
                         $img = $art['thumbnail'];
+                    } else if (strpos($art['thumbnail'], 'uploads/media/') !== false) {
+                        $filename = basename($art['thumbnail']);
+                        $img = SITE_URL . '/uploads/media/' . $filename;
+                    } else if (strpos($art['thumbnail'], 'src/assets/') !== false) {
+                        $filename = basename($art['thumbnail']);
+                        $img = SITE_URL . '/src/assets/' . $filename;
                     } else {
-                        $img = SITE_URL . '/' . $art['thumbnail'];
+                        $img = resolve_asset_path($art['thumbnail']);
                     }
                 } else {
-                    $img = SITE_URL . '/assets/default-thumbnail.jpg';
+                    $img = SITE_URL . '/src/assets/default-thumbnail.jpg';
                 }
                 ?>
                 <a href="<?php echo SITE_URL; ?>/content.php?slug=<?php echo $art['slug']; ?>" class="similar-post-card">
