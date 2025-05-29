@@ -15,7 +15,7 @@ include 'includes/header.php';
         <div class="hero-bg-fallback" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--primary-blue); z-index: 0;"></div>
         <div class="hero-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, var(--primary-blue), var(--dark-navy)); opacity: 0.7; z-index: 1;"></div>
         <div class="hero-fade-up" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center;">
-            <h1>TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
+            <h1 class="hero-title" style="pointer-events: none;">TSPI CELEBRATES GOD'S FAITHFULNESS THROUGH THE DECADES</h1>
             <p>Tulay sa Pag-unlad, Inc. (TSPI) is a microfinance NGO in the Philippines dedicated to empowering communities through financial inclusion and sustainable development. For decades, we have been committed to providing financial services and support to underserved communities, helping them build better futures.</p>
             <a href="<?php echo SITE_URL; ?>/user/membership-form.php?join=true" class="cta-button">Join Us!</a>
         </div>
@@ -185,6 +185,22 @@ document.addEventListener('DOMContentLoaded', function() {
 .hero-bg-fallback {
     opacity: 0;
     transition: opacity 1s ease;
+}
+
+/* Ensure the hero title is not clickable */
+.hero-title {
+    pointer-events: none;
+    user-select: text;
+    cursor: default;
+    position: relative;
+}
+
+/* Make sure parent elements don't capture clicks */
+.hero-fade-up {
+    pointer-events: auto;
+}
+.hero-fade-up > * {
+    pointer-events: auto;
 }
 </style>
 
