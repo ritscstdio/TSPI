@@ -9,8 +9,14 @@ function resolve_asset_path($path) {
         return SITE_URL . '/src/assets/default-thumbnail.jpg';
     }
     
-    // If path already starts with http:// or https://, it's an external URL
+    // If path already starts with http:// or https://, check if it's from localhost and needs fixing
     if (preg_match('#^https?://#i', $path)) {
+        // If it's a localhost URL but we're on the live site, fix the URL
+        if (strpos($path, 'localhost/TSPI') !== false && $_SERVER['HTTP_HOST'] !== 'localhost') {
+            // Extract just the relative path (after /TSPI/)
+            $relative_path = preg_replace('#^.*?/TSPI/#', '', $path);
+            return SITE_URL . '/' . $relative_path;
+        }
         return $path;
     }
     

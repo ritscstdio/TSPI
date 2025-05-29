@@ -66,12 +66,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $thumbRaw = $content['thumbnail'] ?? '';
 if ($thumbRaw) {
     if (preg_match('#^https?://#i', $thumbRaw)) {
+        // For display purposes only - keep full URL
         $thumbnailUrl = htmlspecialchars($thumbRaw);
     } else {
         $thumbnailUrl = SITE_URL . '/' . htmlspecialchars($thumbRaw);
     }
 } else {
     $thumbnailUrl = '';
+}
+
+// Fix for thumbnail update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['thumbnail_select'])) {
+    $new_thumbnail = $_POST['thumbnail_select'] ?? '';
+    
+    // If it's a full URL, extract just the relative path for storage
+    if (preg_match('#^https?://[^/]+/(.+)$#i', $new_thumbnail, $matches)) {
+        $relative_path = $matches[1];
+        
+        // Update the content's thumbnail with just the relative path
+        $update_stmt = $pdo->prepare("UPDATE content SET thumbnail = ? WHERE id = ?");
+        $update_stmt->execute([$relative_path, $content_id]);
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -115,7 +130,14 @@ if ($thumbRaw) {
                             <label for="thumbnail_select">Thumbnail Image</label>
                             <div class="thumbnail-controls">
                                 <button type="button" id="thumbnail-select-btn" class="btn btn-secondary">Choose a thumbnail</button>
-                                <input type="hidden" id="thumbnail_select" name="thumbnail_select" value="<?php echo $thumbnailUrl; ?>">
+                                <?php
+                                // Extract the relative path for storing in the form value
+                                $thumbnail_path = $thumbRaw;
+                                if (preg_match('#^https?://[^/]+/(.+)$#i', $thumbnailUrl, $matches)) {
+                                    $thumbnail_path = $matches[1];
+                                }
+                                ?>
+                                <input type="hidden" id="thumbnail_select" name="thumbnail_select" value="<?php echo htmlspecialchars($thumbnail_path); ?>">
                             </div>
                             <div class="thumbnail-preview-container" style="margin-top: 1rem;">
                                 <img id="thumbnail-preview" src="<?php echo $thumbnailUrl ? $thumbnailUrl : '../assets/placeholder-image.jpg'; ?>" alt="Thumbnail Preview" style="max-width: 300px; border-radius: 4px;">
